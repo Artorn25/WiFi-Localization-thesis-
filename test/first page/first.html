@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Map WiFi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="first.css" rel="stylesheet">
+</head>
+<body>
+    <div class="background-image"></div>
+    <div class="sidebar-overlay"></div>
+    <div class="sidebar">
+        <ul>
+            <li><a href="\test\map\maps.html"><i class="icon-map"></i>Maps</a></li>
+            <li><a href="\test\freewifi\freewifi.html"><i class="icon-wifi"></i>Free Wifi</a></li>
+            <li><a href="#wifi-router"><i class="icon-router"></i>Wifi Router</a></li>
+            <li><a href="#dashboard"><i class="icon-dashboard"></i>Dashboard</a></li>
+            <li><a href="#setting"><i class="icon-setting"></i>Setting</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <nav>
+            <div class="container">
+                <div class="nav-content">
+                    <button id="sidebar-toggle" class="sidebar-toggle-btn">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <div class="logo">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search...">
+                        <button type="submit">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <ul class="nav-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#feedback">Feedback</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <header id="home">
+            <div class="container">
+                <h1>Project Map WiFi</h1>
+                <p class="subtitle">
+                    <span class="orange">Navigate,</span>
+                    <span class="blue">use</span> and
+                    <span class="pink">stay on trend</span>
+                </p>
+                <button class="cta-button">Click!!</button>
+            </div>
+        </header>
+
+        <section id="features">
+            <div class="container">
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Free WiFi Across Campus</h3>
+                        <p>With free WiFi, you can stay connected no matter where you are at the university, as long as you register.</p>
+                        <img src="placeholder-image-1.jpg" alt="Free WiFi">
+                    </div>
+                    <div class="feature-card">
+                        <h3>Interactive Campus Map</h3>
+                        <p>Our map will help you explore all the points of interest in the faculty building.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Easy Indoor Navigation</h3>
+                        <p>Use the app to easily navigate inside our faculty building.</p>
+                        <img src="placeholder-image-2.jpg" alt="Indoor Navigation">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="first.js"></script>
+</body>
+</html>

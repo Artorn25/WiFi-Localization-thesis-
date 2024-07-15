@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BU WiFi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="bu_wifi.css">
+</head>
+<body>
+    <div class="container">
+        <h1>BU WiFi</h1>
+        <div class="content">
+            <p>Welcome to BU WiFi. Connect here for campus-wide internet access.</p>
+            <div class="image-grid">
+                <img src="\templates\image\wifib1.jpg" alt="BU WiFi Image 1" onclick="openModal(this)">
+                <img src="\templates\image\wifib2.jpg" alt="BU WiFi Image 2" onclick="openModal(this)">
+                <img src="\templates\image\wifib3.jpg" alt="BU WiFi Image 3" onclick="openModal(this)">
+                <img src="\templates\image\wifib4.jpg" alt="BU WiFi Image 4" onclick="openModal(this)">
+                <img src="\templates\image\wifib5.jpg" alt="BU WiFi Image 5" onclick="openModal(this)">
+                <img src="\templates\image\wifib6.jpg" alt="BU WiFi Image 6" onclick="openModal(this)">
+                <img src="\templates\image\wifib7.jpg" alt="BU WiFi Image 7" onclick="openModal(this)">
+                <img src="\templates\image\wifib8.jpg" alt="BU WiFi Image 8" onclick="openModal(this)">
+                <img src="\templates\image\wifib9.jpg" alt="BU WiFi Image 9" onclick="openModal(this)">
+            </div>
+        </div>
+        <a href="\test\freewifi\freewifi.html" class="back-button">Back to WiFi Options</a>
+    </div>
+
+    <!-- Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div class="navigation">
+            <a class="prev" onclick="changeImage(-1)">&#10094;</a>
+            <a class="next" onclick="changeImage(1)">&#10095;</a>
+        </div>
+    </div>
+
+    <script src="bu_wifi.js"></script>
+</body>
+</html>

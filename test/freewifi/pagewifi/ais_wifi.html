@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIS WiFi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="ais_wifi.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AIS WiFi</h1>
+        <div class="content">
+            <p>Connect to AIS WiFi for high-speed internet access. Choose your device type below:</p>
+            <div class="tabs">
+                <button class="tab-button active" onclick="openTab(event, 'android')">Android</button>
+                <button class="tab-button" onclick="openTab(event, 'ios')">iOS</button>
+            </div>
+            <div id="android" class="tab-content active">
+                <h2>Android Instructions</h2>
+                <div class="image-grid">
+                    <img src="\templates\image\wifia5.jpg" alt="AIS Android WiFi 1" onclick="openModal(this)">
+                    <img src="\templates\image\wifia6.jpg" alt="AIS Android WiFi 2" onclick="openModal(this)">
+                    <img src="\templates\image\wifia7.jpg" alt="AIS Android WiFi 3" onclick="openModal(this)">
+                    <img src="\templates\image\wifia8.jpg" alt="AIS Android WiFi 4" onclick="openModal(this)">
+                </div>
+            </div>
+            <div id="ios" class="tab-content">
+                <h2>iOS Instructions</h2>
+                <div class="image-grid">
+                    <img src="\templates\image\wifia1.jpg" alt="AIS iOS WiFi 1" onclick="openModal(this)">
+                    <img src="\templates\image\wifia2.jpg" alt="AIS iOS WiFi 2" onclick="openModal(this)">
+                    <img src="\templates\image\wifia3.jpg" alt="AIS iOS WiFi 3" onclick="openModal(this)">
+                    <img src="\templates\image\wifia4.jpg" alt="AIS iOS WiFi 4" onclick="openModal(this)">
+                </div>
+            </div>
+        </div>
+        <a href="\test\freewifi\freewifi.html" class="back-button">Back to WiFi Options</a>
+    </div>
+
+    <!-- Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div class="navigation">
+            <a class="prev" onclick="changeImage(-1)">&#10094;</a>
+            <a class="next" onclick="changeImage(1)">&#10095;</a>
+        </div>
+    </div>
+
+    <script src="ais_wifi.js"></script>
+</body>
+</html>

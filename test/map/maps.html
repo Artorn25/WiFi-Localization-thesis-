@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Maps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="maps.css" rel="stylesheet">
+</head>
+<body>
+    <div class="main-content">
+        <nav>
+            <div class="container">
+                <div class="nav-content">
+                    <h1>Campus Maps</h1>
+                    <div class="nav-links">
+                        <a href="\test\first page\first.html" class="active">Home</a>
+                        <a href="maps.html">Maps</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <section id="map-container">
+            <div class="container">
+                <div id="campus-map">
+                    <img src="campus-map-placeholder.jpg" alt="Campus Map" id="map-image">
+                </div>
+                <div id="map-controls">
+                    <button id="zoom-in">Zoom In</button>
+                    <button id="zoom-out">Zoom Out</button>
+                    <select id="map-select">
+                        <option value="">Select Map</option>
+                    </select>
+                    <button id="delete-map">Delete Map</button>
+                    <input type="file" id="map-upload" accept="image/*">
+                    <label for="map-upload" class="upload-label">Upload Map</label>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="maps.js"></script>
+</body>
+</html>
