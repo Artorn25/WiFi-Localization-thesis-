@@ -1,12 +1,9 @@
-// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: ["./*.{html,js}"],
-    theme: {
-      extend: {},
-    },
-    plugins: [require("daisyui")],
-    daisyui: {
-      themes: ["cupcake"], // เลือกธีมที่ต้องการ
-    },
-  }
-  
+  content: ["./src/**/*.{html,js}", "./pages/dashboard/dashboard.html"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
