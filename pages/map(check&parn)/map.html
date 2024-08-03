@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Image, Get Pixel Position, and Draw Point</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="file" id="imageUpload" accept="image/*"><br>
+    <canvas id="myCanvas" width="1423px" height="653px"></canvas><br>
+    <input type="text" id="pointName" placeholder="Enter point name"><br>
+    <button onclick="logPoints()">Log Points</button>
+    <button onclick="resetPoints()">Reset</button>
+    <button onclick="toggleMode()">Toggle Mode</button>
+    <select id="point1Select"></select>
+    <select id="point2Select"></select>
+    <button onclick="showDistance()">Show Distance</button>
+    <div id="distanceDisplay"></div>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let points = [];
+        let drawMode = true;
+        let markerCoordinates = [
+            { x: 190, y: 286 },
+            { x: 747, y: 288 },
+            { x: 1345, y: 287 }
+        ];
+
+        const img = new Image();
+        img.onload = function () {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            if (drawMode) {
+                drawMarkers();
+            }
+        };
+
+        document.getElementById('imageUpload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function drawMarkers() {
+            ctx.save();
+            ctx.fillStyle = 'blue';
+            markerCoordinates.forEach(marker => {
+                drawMarker(marker.x, marker.y);
+            });
+            ctx.restore();
+        }
+
+        function drawMarker(x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function drawPoint(x, y, name) {
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.font = '12px Arial';
+            ctx.fillText(`${name} (${Math.round(x)}, ${Math.round(y)})`, x + 5, y - 5);
+        }
+
+        canvas.addEventListener('click', function (event) {
+            if (!drawMode) {
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                const pointName = document.getElementById('pointName').value || `Point ${points.length + 1}`;
+                drawPoint(x, y, pointName);
+                points.push({ x, y, name: pointName });
+
+                if (points.length >= 2) {
+                    const distance = calculateDistance(points[points.length - 2], points[points.length - 1]);
+                    points[points.length - 1].distance = distance;
+                    drawDistanceLabel(x, y, distance);
+                }
+
+                document.getElementById('pointName').value = '';
+                updatePointSelects();
+            }
+        });
+
+        function calculateDistance(point1, point2) {
+            const dx = point2.x - point1.x;
+            const dy = point2.y - point1.y;
+            return Math.sqrt(dx * dx + dy * dy) / 83.5; // Assuming 83.5 pixels = 1 meter
+        }
+
+        function drawDistanceLabel(x, y, distance) {
+            ctx.fillStyle = 'black';
+            ctx.font = '12px Arial';
+            ctx.fillText(`${distance.toFixed(2)} m`, x + 5, y - 15);
+        }
+
+        function resetPoints() {
+            points = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            if (drawMode) {
+                drawMarkers();
+            }
+            document.getElementById('distanceDisplay').innerText = '';
+            updatePointSelects();
+        }
+
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Index,X,Y,Name\n";
+            points.forEach((point, index) => {
+                csvContent += `${index + 1},${Math.round(point.x)},${Math.round(point.y)},${point.name}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "points.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        function logPoints() {
+            points.forEach((point, index) => {
+                console.log(`Point ${index + 1}: (${Math.round(point.x)}, ${Math.round(point.y)}) - Name: ${point.name}`);
+            });
+            exportToCSV();
+        }
+
+        function updatePointSelects() {
+            const point1Select = document.getElementById('point1Select');
+            const point2Select = document.getElementById('point2Select');
+
+            point1Select.innerHTML = '';
+            point2Select.innerHTML = '';
+
+            points.forEach((point, index) => {
+                const option1 = document.createElement('option');
+                option1.value = index;
+                option1.innerText = point.name;
+                point1Select.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = index;
+                option2.innerText = point.name;
+                point2Select.appendChild(option2);
+            });
+        }
+
+        function displayDistance(index1, index2) {
+            const point1 = points[index1];
+            const point2 = points[index2];
+
+            const dx = point2.x - point1.x;
+            const dy = point2.y - point1.y;
+
+            const pixelDistance = Math.sqrt(dx * dx + dy * dy);
+            const meterDistance = pixelDistance / 83.5;
+
+            document.getElementById('distanceDisplay').innerText =
+                `Distance between ${point1.name} and ${point2.name}: ${meterDistance.toFixed(2)} meters`;
+        }
+
+        function showDistance() {
+            const index1 = document.getElementById('point1Select').value;
+            const index2 = document.getElementById('point2Select').value;
+
+            if (index1 && index2) {
+                displayDistance(index1, index2);
+            }
+        }
+
+        function toggleMode() {
+            drawMode = !drawMode;
+            resetPoints();
+        }
+    </script>
+</body>
+
+</html>
