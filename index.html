@@ -33,12 +33,12 @@
         }
 
         nav {
-            background-color: var(--white-color);
+            background-color: white;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 10px 0;
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 800;
         }
 
         .nav-content {
@@ -60,6 +60,7 @@
 
         .search-bar input {
             max-width: 300px;
+            border-color: orange;
         }
 
         .search-bar button {
@@ -68,6 +69,10 @@
             color: var(--white-color);
             cursor: pointer;
             border: none;
+        }
+        .search-bar button:hover {
+            background-color: var(--white-color); 
+            color: var(--primary-color);
         }
 
         .nav-links {
@@ -101,6 +106,10 @@
             transform: translateX(-100%);
             transition: transform var(--transition-duration) ease-in-out;
             z-index: 1000;
+        }
+
+        .sidebartext{
+            z-index: 1001;
         }
 
         .sidebar.open {
@@ -161,6 +170,13 @@
             font-weight: 700;
         }
 
+        .togglebtn:hover {
+            background-color: orange;
+            
+            border-radius: 5px;
+            border-color: #feb47b;
+        }
+
         header .cta-button {
             margin-top: 30px;
             padding: 15px 30px;
@@ -177,6 +193,7 @@
         header .cta-button:hover {
             background-color: var(--secondary-color);
             transform: scale(1.1);
+            color: var(--white-color);
             box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
         }
 
@@ -278,7 +295,7 @@
                 background-position: center;
                 background-repeat: no-repeat;
                 animation: gradientBackground 10s ease infinite;
-                z-index: -1;
+                z-index: 1;
                 opacity: 0.7;
             }
 
@@ -304,7 +321,7 @@
     <div class="sidebar" aria-hidden="true">
         <span class="close-btn" id="close-sidebar">&times;</span>
         <ul>
-            <li><a href="\pages\map\maps.html"><i class="icon-map"></i>Maps</a></li>
+            <li class="sidebartext"><a href="\pages\map\maps.html"><i class="icon-map"></i>Maps</a></li>
             <li><a href="\pages\freewifi\freewifi.html"><i class="icon-wifi"></i>Free Wifi</a></li>
             <li><a href="#wifi-router"><i class="icon-router"></i>Wifi Router</a></li>
             <li><a href="pages\dashboard\dashboard.html"><i class="icon-dashboard"></i>Dashboard</a></li>
@@ -314,7 +331,7 @@
     </div>
 
     <main class="main-content">
-        <nav>
+        <nav class="navbartop">
             <div class="container">
                 <div class="nav-content">
                     <div class="logo">
@@ -334,7 +351,7 @@
                         <a href="#home">Home</a>
                         <a href="#feedback">Feedback</a>
                     </div>
-                    <button id="toggle-sidebar" aria-controls="sidebar" aria-expanded="false">☰</button>
+                    <button class="togglebtn" id="toggle-sidebar" aria-controls="sidebar" aria-expanded="false">☰</button>
                 </div>
             </div>
         </nav>
