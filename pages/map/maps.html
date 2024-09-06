@@ -1,339 +1,464 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Campus Maps</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        nav {
-            background-color: #2196F3;
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            transition: opacity 0.3s;
-        }
-        .nav-links a:hover {
-            opacity: 0.8;
-        }
-        #map-container {
-            margin-top: 2rem;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-        #campus-map {
-            max-width: 100%;
-            overflow: auto;
-        }
-        canvas {
-            border: 1px solid #e0e0e0;
-            max-width: 100%;
-            border-radius: 4px;
-        }
-        #map-controls {
-            margin-top: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        button, select, .upload-label {
-            padding: 8px 16px;
-            cursor: pointer;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-        button:hover, .upload-label:hover {
-            background-color: #1976D2;
-        }
-        select {
-            background-color: white;
-            color: #333;
-        }
-        #map-upload {
-            display: none;
-        }
-        .upload-label {
-            display: inline-block;
-        }
-        input[type="text"] {
-            padding: 8px;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        #distanceDisplay {
-            margin-top: 1rem;
-            font-weight: bold;
-        }
-        #modeIndicator {
-            margin-top: 1rem;
-            font-style: italic;
-        }
-    </style>
-</head>
-<body>
-    <div class="main-content">
-        <nav>
-            <div class="container">
-                <div class="nav-content">
-                    <h1>Campus Maps</h1>
-                    <div class="nav-links">
-                        <a href="/index.html">Home</a>
-                        <a href="maps.html" class="active">Maps</a>
-                    </div>
-                </div>
-            </div>
-        </nav>
+      body {
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      .container {
+        text-align: center;
 
-        <section id="map-container">
-            <div class="container">
-                <canvas id="myCanvas" width="1423" height="653"></canvas>
-                <div id="map-controls">
-                    <select id="map-select">
-                        <option value="">Select Map</option>
-                    </select>
-                    <button id="delete-map">Delete Map</button>
-                    <input type="file" id="map-upload" accept="image/*">
-                    <label for="map-upload" class="upload-label">Upload Map</label>
-                    <input type="text" id="pointName" placeholder="Enter point name">
-                    <button id="logPoints">Log Points</button>
-                    <button id="resetPoints">Reset</button>
-                    <button id="toggleMode">Toggle Mode</button>
-                    <select id="point1Select"></select>
-                    <select id="point2Select"></select>
-                    <button id="showDistance">Show Distance</button>
-                </div>
-                <div id="modeIndicator"></div>
-                <div id="distanceDisplay"></div>
+        /* max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px; */
+      }
+      nav {
+        background-color: #2196f3;
+        color: white;
+        padding: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .nav-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .nav-links a {
+        color: white;
+        text-decoration: none;
+        margin-left: 20px;
+        transition: opacity 0.3s;
+      }
+      .nav-links a:hover {
+        opacity: 0.8;
+      }
+      #map-container {
+        margin-top: 2rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
+      #campus-map {
+        max-width: 100%;
+        overflow: auto;
+      }
+      canvas {
+        border: 1px solid #e0e0e0;
+        max-width: 100%;
+        border-radius: 4px;
+      }
+      #map-controls {
+        text-align: center;
+        margin-top: 1rem;
+        margin-left: 320px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      button,
+      select,
+      .upload-label {
+        padding: 8px 16px;
+        cursor: pointer;
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: background-color 0.3s;
+      }
+      button:hover,
+      .upload-label:hover {
+        background-color: #1976d2;
+      }
+      select {
+        background-color: white;
+        color: #333;
+      }
+      #map-upload {
+        display: none;
+      }
+      .upload-label {
+        display: inline-block;
+      }
+      input[type="text"] {
+        padding: 8px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      #distanceDisplay {
+        margin-top: 1rem;
+        font-weight: bold;
+      }
+      #modeIndicator {
+        margin-top: 1rem;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-content">
+      <nav>
+        <div class="container">
+          <div class="nav-content">
+            <h1>Campus Maps</h1>
+            <div class="nav-links">
+              <a href="/index.html">Home</a>
+              <a href="maps.html" class="active">Maps</a>
             </div>
-        </section>
+          </div>
+        </div>
+      </nav>
+
+      <div id="map-container">
+        <div class="container">
+          <canvas id="myCanvas" width="1423px" height="653px"></canvas>
+          <div id="map-controls">
+            <select id="map-select">
+              <option value="">Select Map</option>
+            </select>
+            <button id="delete-map">Delete Map</button>
+            <input type="file" id="map-upload" accept="image/*" />
+            <label for="map-upload" class="upload-label">Upload Map</label>
+            <input type="text" id="pointName" placeholder="Enter point name" />
+            <button id="logPoints">Log Points</button>
+            <button id="resetPoints">Reset</button>
+            <button id="toggleMode">Toggle Mode</button>
+            <select id="point1Select"></select>
+            <select id="point2Select"></select>
+            <button id="showDistance">Show Distance</button>
+          </div>
+          <div id="modeIndicator"></div>
+          <div id="distanceDisplay"></div>
+        </div>
+      </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('myCanvas');
-        const ctx = canvas.getContext('2d');
+      const canvas = document.getElementById("myCanvas");
+      const ctx = canvas.getContext("2d");
 
-        let points = [];
-        let drawMode = true;
-        let maps = {};
-        let currentMap = null;
+      let points = [];
+      let drawMode = true;
+      let maps = {};
+      let currentMap = null;
+      let markerCoordinates = [
+        { x: 190, y: 286 },
+        { x: 747, y: 288 },
+        { x: 1345, y: 287 },
+      ];
 
-        function resetCanvas() {
-            if (currentMap) {
-                canvas.width = currentMap.width;
-                canvas.height = currentMap.height;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(currentMap, 0, 0, canvas.width, canvas.height);
-                redrawPoints();
-                updateModeIndicator();
-            }
+      function resetCanvas() {
+        if (currentMap) {
+          canvas.width = currentMap.width;
+          canvas.height = currentMap.height;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(currentMap, 0, 0, canvas.width, canvas.height);
+          redrawPoints();
+          updateModeIndicator();
         }
+      }
+      const img = new Image();
+      img.src = "./2.jpg";
+      img.onload = function () {
+        //   maps[file.name] = img;
+        //   updateMapSelect();
+        //   currentMap = img;
+        //   resetCanvas();
+        console.log("Image is : " , img);
 
-        document.getElementById('map-upload').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        maps[file.name] = img;
-                        updateMapSelect();
-                        currentMap = img;
-                        resetCanvas();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (drawMode) {
+          drawMarkers();
+        }
+      };
+
+      document
+        .getElementById("map-upload")
+        .addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              img.src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+          }
         });
 
-        function updateMapSelect() {
-            const mapSelect = document.getElementById('map-select');
-            mapSelect.innerHTML = '<option value="">Select Map</option>';
-            for (let mapName in maps) {
-                const option = document.createElement('option');
-                option.value = mapName;
-                option.textContent = mapName;
-                mapSelect.appendChild(option);
-            }
+      function updateMapSelect() {
+        const mapSelect = document.getElementById("map-select");
+        mapSelect.innerHTML = '<option value="">Select Map</option>';
+        for (let mapName in maps) {
+          const option = document.createElement("option");
+          option.value = mapName;
+          option.textContent = mapName;
+          mapSelect.appendChild(option);
         }
+      }
 
-        document.getElementById('map-select').addEventListener('change', function (event) {
-            const selectedMap = event.target.value;
-            if (selectedMap && maps[selectedMap]) {
-                currentMap = maps[selectedMap];
-                resetCanvas();
-            }
+      document
+        .getElementById("map-select")
+        .addEventListener("change", function (event) {
+          const selectedMap = event.target.value;
+          if (selectedMap && maps[selectedMap]) {
+            currentMap = maps[selectedMap];
+            // resetCanvas();
+          }
         });
 
-        function drawPoint(x, y, name) {
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.fillStyle = 'black';
-            ctx.font = '12px Roboto';
-            ctx.fillText(`${name} (${Math.round(x)}, ${Math.round(y)})`, x + 5, y - 5);
+      function drawMarkers() {
+        ctx.save();
+        ctx.fillStyle = "blue";
+        markerCoordinates.forEach((marker) => {
+          drawMarker(marker.x, marker.y);
+        });
+        ctx.restore();
+      }
+
+      function drawMarker(x, y) {
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function drawPoint(x, y, name) {
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = "black";
+        ctx.font = "12px Arial";
+        ctx.fillText(
+          `${name} (${Math.round(x)}, ${Math.round(y)})`,
+          x + 5,
+          y - 5
+        );
+      }
+      canvas.addEventListener("mousemove", function (event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        const imageData = ctx.getImageData(x, y, 1, 1);
+        const pixelData = imageData.data;
+        const pointName =
+          document.getElementById("pointName").value ||
+          `Point ${points.length + 1}`;
+        console.log(
+          `Pixel at (${x}, ${y}) - RGBA(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`
+        );
+      });
+      
+      canvas.addEventListener("click", function (event) {
+  if (img != null) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    if (!drawMode) {
+      const imageData = ctx.getImageData(x, y, 1, 1);
+      const pixelData = imageData.data;
+      const pointName =
+        document.getElementById("pointName").value || `Point ${points.length + 1}`;
+
+      console.log(
+        `Pixel at (${x}, ${y}) - RGBA(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`
+      );
+
+      drawPoint(x, y);
+      points.push({
+        x,
+        y,
+        name: pointName,
+      });
+      if (points.length >= 2) {
+        const distance = calculateDistance(
+          points[points.length - 2],
+          points[points.length - 1]
+        );
+        points[points.length - 1].distance = distance;
+        drawDistanceLabel(x, y, distance);
+      }
+      document.getElementById("pointName").value = "";
+      updatePointSelects();
+    } else if (drawMode) {
+      const imageData = ctx.getImageData(x, y, 1, 1);
+      const pixelData = imageData.data;
+      const pointName =
+        document.getElementById("pointName").value || `Point ${points.length + 1}`;
+
+      markerCoordinates.push({
+        x,
+        y,
+      });
+      points.push({
+        x,
+        y,
+        name: pointName,
+      });
+      if (points.length >= 2) {
+        const distance = calculateDistance(
+          points[points.length - 2],
+          points[points.length - 1]
+        );
+        points[points.length - 1].distance = distance;
+        drawDistanceLabel(x, y, distance);
+        drawMarkers();
+        document.getElementById("pointName").value = "";
+        updatePointSelects();
+      }
+    }
+  }
+});
+
+
+      function calculateDistance(point1, point2) {
+        const dx = point2.x - point1.x;
+        const dy = point2.y - point1.y;
+        return Math.sqrt(dx * dx + dy * dy) / 83.5; // Assuming 83.5 pixels = 1 meter
+      }
+
+      function drawDistanceLabel(x, y, distance) {
+        ctx.fillStyle = "black";
+        ctx.font = "12px Roboto";
+        ctx.fillText(`${distance.toFixed(2)} m`, x + 5, y - 15);
+      }
+
+      document
+        .getElementById("resetPoints")
+        .addEventListener("click", function () {
+          points = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (drawMode) {
+          drawMarkers();
         }
-
-        function redrawPoints() {
-            points.forEach(point => {
-                drawPoint(point.x, point.y, point.name);
-            });
-        }
-
-        canvas.addEventListener('click', function (event) {
-            if (currentMap) {
-                const rect = canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
-
-                if (drawMode) {
-                    ctx.fillStyle = 'blue';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 10, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.stroke();
-                } else {
-                    const pointName = document.getElementById('pointName').value || `Point ${points.length + 1}`;
-                    points.push({ x, y, name: pointName });
-                    drawPoint(x, y, pointName);
-
-                    if (points.length >= 2) {
-                        const distance = calculateDistance(points[points.length - 2], points[points.length - 1]);
-                        points[points.length - 1].distance = distance;
-                        drawDistanceLabel(x, y, distance);
-                    }
-
-                    document.getElementById('pointName').value = '';
-                    updatePointSelects();
-                }
-            }
+        document.getElementById("distanceDisplay").innerText = "";
+        updatePointSelects();
         });
 
-        function calculateDistance(point1, point2) {
-            const dx = point2.x - point1.x;
-            const dy = point2.y - point1.y;
-            return Math.sqrt(dx * dx + dy * dy) / 83.5; // Assuming 83.5 pixels = 1 meter
-        }
-
-        function drawDistanceLabel(x, y, distance) {
-            ctx.fillStyle = 'black';
-            ctx.font = '12px Roboto';
-            ctx.fillText(`${distance.toFixed(2)} m`, x + 5, y - 15);
-        }
-
-        document.getElementById('resetPoints').addEventListener('click', function() {
-            points = [];
-            resetCanvas();
-            document.getElementById('distanceDisplay').innerText = '';
-            updatePointSelects();
+      document
+        .getElementById("logPoints")
+        .addEventListener("click", function () {
+          points.forEach((point, index) => {
+            console.log(
+              `Point ${index + 1}: (${Math.round(point.x)}, ${Math.round(
+                point.y
+              )}) - Name: ${point.name}`
+            );
+          });
+          exportToCSV();
         });
 
-        document.getElementById('logPoints').addEventListener('click', function() {
-            points.forEach((point, index) => {
-                console.log(`Point ${index + 1}: (${Math.round(point.x)}, ${Math.round(point.y)}) - Name: ${point.name}`);
-            });
-            exportToCSV();
+      document
+        .getElementById("toggleMode")
+        .addEventListener("click", function () {
+          drawMode = !drawMode;
+          updateModeIndicator();
+          resetPoints();
+
         });
 
-        document.getElementById('toggleMode').addEventListener('click', function() {
-            drawMode = !drawMode;
-            updateModeIndicator();
+      function updateModeIndicator() {
+        const modeIndicator = document.getElementById("modeIndicator");
+        modeIndicator.textContent = drawMode
+          ? "Mode: Drawing Markers"
+          : "Mode: Adding Points";
+      }
+      function resetPoints() {
+        points = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (drawMode) {
+          drawMarkers();
+        }
+        document.getElementById("distanceDisplay").innerText = "";
+        updatePointSelects();
+      }
+
+      document
+        .getElementById("showDistance")
+        .addEventListener("click", function () {
+          const index1 = document.getElementById("point1Select").value;
+          const index2 = document.getElementById("point2Select").value;
+
+          if (index1 && index2) {
+            displayDistance(index1, index2);
+          }
         });
 
-        function updateModeIndicator() {
-            const modeIndicator = document.getElementById('modeIndicator');
-            modeIndicator.textContent = drawMode ? "Mode: Drawing Markers" : "Mode: Adding Points";
-        }
+      function updatePointSelects() {
+        const point1Select = document.getElementById("point1Select");
+        const point2Select = document.getElementById("point2Select");
 
-        document.getElementById('showDistance').addEventListener('click', function() {
-            const index1 = document.getElementById('point1Select').value;
-            const index2 = document.getElementById('point2Select').value;
+        point1Select.innerHTML = "";
+        point2Select.innerHTML = "";
 
-            if (index1 && index2) {
-                displayDistance(index1, index2);
-            }
+        points.forEach((point, index) => {
+          const option1 = document.createElement("option");
+          option1.value = index;
+          option1.innerText = point.name;
+          point1Select.appendChild(option1);
+
+          const option2 = document.createElement("option");
+          option2.value = index;
+          option2.innerText = point.name;
+          point2Select.appendChild(option2);
         });
+      }
 
-        function updatePointSelects() {
-            const point1Select = document.getElementById('point1Select');
-            const point2Select = document.getElementById('point2Select');
+      function displayDistance(index1, index2) {
+        const point1 = points[index1];
+        const point2 = points[index2];
 
-            point1Select.innerHTML = '';
-            point2Select.innerHTML = '';
+        const dx = point2.x - point1.x;
+        const dy = point2.y - point1.y;
 
-            points.forEach((point, index) => {
-                const option1 = document.createElement('option');
-                option1.value = index;
-                option1.innerText = point.name;
-                point1Select.appendChild(option1);
+        const pixelDistance = Math.sqrt(dx * dx + dy * dy);
+        const meterDistance = pixelDistance / 83.5;
 
-                const option2 = document.createElement('option');
-                option2.value = index;
-                option2.innerText = point.name;
-                point2Select.appendChild(option2);
-            });
-        }
+        document.getElementById(
+          "distanceDisplay"
+        ).innerText = `Distance between ${point1.name} and ${
+          point2.name
+        }: ${meterDistance.toFixed(2)} meters`;
+      }
 
-        function displayDistance(index1, index2) {
-            const point1 = points[index1];
-            const point2 = points[index2];
+      function exportToCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Index,X,Y,Name\n";
+        points.forEach((point, index) => {
+          csvContent += `${index + 1},${Math.round(point.x)},${Math.round(
+            point.y
+          )},${point.name}\n`;
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "points.csv");
+        document.body.appendChild(link);
+        link.click();
+      }
 
-            const dx = point2.x - point1.x;
-            const dy = point2.y - point1.y;
-
-            const pixelDistance = Math.sqrt(dx * dx + dy * dy);
-            const meterDistance = pixelDistance / 83.5;
-
-            document.getElementById('distanceDisplay').innerText =
-                `Distance between ${point1.name} and ${point2.name}: ${meterDistance.toFixed(2)} meters`;
-        }
-
-        function exportToCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Index,X,Y,Name\n";
-            points.forEach((point, index) => {
-                csvContent += `${index + 1},${Math.round(point.x)},${Math.round(point.y)},${point.name}\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "points.csv");
-            document.body.appendChild(link);
-            link.click();
-        }
-
-        // Initialize mode indicator
-        updateModeIndicator();
+      // Initialize mode indicator
+      updateModeIndicator();
     </script>
-</body>
+  </body>
 </html>
