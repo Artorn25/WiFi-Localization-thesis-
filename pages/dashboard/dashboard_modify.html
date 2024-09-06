@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firebase Console Display</title>
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="/src/output.css" />
+</head>
+
+<body>
+    <!-- <h1>Firebase Console Display</h1> -->
+    <div id="time" class="p-4 bg-blue-100 shadow-lg rounded-md mx-4 my-4">
+        <h3 class="text-xl font-semibold mb-2 text-center text-blue-800">
+            Datetime
+        </h3>
+        <div class="flex justify-evenly">
+            <p id="start" class="text-gray-700"></p>
+            <p id="end" class="text-gray-700"></p>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap justify-around lg:flex-nowrap">
+        <div id="distance-log" class="p-4 bg-green-100 shadow-lg rounded-md mx-4 my-4 w-full lg:w-1/3">
+            <h2 class="text-2xl font-bold mb-4 text-green-800">
+                Log Distance Path Model
+            </h2>
+            <div class="flex justify-between">
+                <div class="">
+                    <h3 class="text-xl font-semibold text-green-700">Router 1</h3>
+                    <p id="router-1-ssid-log" class="text-gray-700"></p>
+                    <p id="router-1-rssi-log" class="text-gray-700"></p>
+                    <p id="router-1-distance-log" class="text-gray-700"></p>
+                </div>
+                <div class="">
+                    <h3 class="text-xl font-semibold text-green-700">Router 2</h3>
+                    <p id="router-2-ssid-log" class="text-gray-700"></p>
+                    <p id="router-2-rssi-log" class="text-gray-700"></p>
+                    <p id="router-2-distance-log" class="text-gray-700"></p>
+                </div>
+                <div class="">
+                    <h3 class="text-xl font-semibold text-green-700">Router 3</h3>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-2 text-green-700 mt-4">Distance</h3>
+            <p id="distance-a-b-log" class="text-gray-700"></p>
+            <p id="distance-c-b-log" class="text-gray-700"></p>
+            <p id="distance-a-c-log" class="text-gray-700"></p>
+        </div>
+
+        <div id="distance-itu" class="p-4 bg-yellow-100 shadow-lg rounded-md mx-4 my-4 w-full lg:w-1/3">
+            <h2 class="text-2xl font-bold mb-4 text-yellow-800">
+                ITU Indoor Propagation Model
+            </h2>
+            <div class="flex justify-between">
+                <div class="">
+                    <h3 class="text-xl font-semibold text-yellow-700">Router 1</h3>
+                    <p id="router-1-ssid-ITU" class="text-gray-700"></p>
+                    <p id="router-1-rssi-ITU" class="text-gray-700"></p>
+                    <p id="router-1-distance-ITU" class="text-gray-700"></p>
+                </div>
+                <div class="">
+                    <h3 class="text-xl font-semibold text-yellow-700">Router 2</h3>
+                    <p id="router-2-ssid-ITU" class="text-gray-700"></p>
+                    <p id="router-2-rssi-ITU" class="text-gray-700"></p>
+                    <p id="router-2-distance-ITU" class="text-gray-700"></p>
+                </div>
+                <div class="">
+                    <h3 class="text-xl font-semibold text-yellow-700">Router 3</h3>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-2 text-yellow-700 mt-4">
+                Distance
+            </h3>
+            <p id="distance-a-b-ITU" class="text-gray-700"></p>
+            <p id="distance-c-b-ITU" class="text-gray-700"></p>
+            <p id="distance-a-c-ITU" class="text-gray-700"></p>
+        </div>
+
+        <div id="distance-fspl" class="p-4 bg-red-100 shadow-lg rounded-md mx-4 my-4 w-full lg:w-1/3">
+            <h2 class="text-2xl font-bold mb-4 text-red-800">
+                Free-space Path Loss
+            </h2>
+            <div class="flex justify-between">
+                <div class="">
+                    <h3 class="text-xl font-semibold text-red-700">Router 1</h3>
+                    <p id="router-1-ssid-FSPL" class="text-gray-700"></p>
+                    <p id="router-1-rssi-FSPL" class="text-gray-700"></p>
+                    <p id="router-1-distance-FSPL" class="text-gray-700"></p>
+                </div>
+                <div class="">
+                    <h3 class="text-xl font-semibold text-red-700">Router 2</h3>
+                    <p id="router-2-ssid-FSPL" class="text-gray-700"></p>
+                    <p id="router-2-rssi-FSPL" class="text-gray-700"></p>
+                    <p id="router-2-distance-FSPL" class="text-gray-700"></p>
+                </div>
+                <div class="">
+                    <h3 class="text-xl font-semibold text-red-700">Router 3</h3>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold mb-2 text-red-700 mt-4">Distance</h3>
+            <p id="distance-a-b-FSPL" class="text-gray-700"></p>
+            <p id="distance-c-b-FSPL" class="text-gray-700"></p>
+            <p id="distance-a-c-FSPL" class="text-gray-700"></p>
+        </div>
+    </div>
+
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g",
+            authDomain: "esp8266-t1-37f02.firebaseapp.com",
+            databaseURL:
+                "https://esp8266-t1-37f02-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "esp8266-t1-37f02",
+            storageBucket: "esp8266-t1-37f02.appspot.com",
+            messagingSenderId: "201166852539",
+            appId: "1:201166852539:web:42c3ad90a0611b17d5b49e",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        // Reference to your Firebase Realtime Database
+        var database = firebase.database();
+
+        // Function to retrieve and display data
+        function fetchData() {
+            var dataRef = database.ref("Data");
+
+            // Listen for changes in "Datetime.end"
+            dataRef.child("Datetime/end").on("value", function (snapshot) {
+                var end = snapshot.val();
+                console.log("New 'end' value:", end);
+
+                // เมื่อค่า 'end' เปลี่ยน ให้ดึงข้อมูลใหม่ทั้งหมดและอัปเดตหน้าจอ
+                dataRef.once("value", function (snapshot) {
+                    var data = snapshot.val();
+                    updateDOM(data);
+                });
+            });
+
+            // ฟังก์ชันสำหรับอัปเดต DOM
+            function updateDOM(data) {
+                // ตรวจสอบค่าและจัดการ null/undefined
+                var start =
+                    data.Datetime && data.Datetime.start ? data.Datetime.start : "N/A";
+                var end =
+                    data.Datetime && data.Datetime.end ? data.Datetime.end : "N/A";
+
+                var ssid_1 =
+                    data.Router1 && data.Router1.ssid ? data.Router1.ssid : "N/A";
+                var rssi_1 =
+                    data.Router1 && data.Router1.rssi ? data.Router1.rssi : "N/A";
+                var distance_1_log =
+                    data.Router1 && data.Router1.Log
+                        ? data.Router1.Log.distance_1
+                        : "N/A";
+
+                var ssid_2 =
+                    data.Router2 && data.Router2.ssid ? data.Router2.ssid : "N/A";
+                var rssi_2 =
+                    data.Router2 && data.Router2.rssi ? data.Router2.rssi : "N/A";
+                var distance_2_log =
+                    data.Router2 && data.Router2.Log
+                        ? data.Router2.Log.distance_2
+                        : "N/A";
+
+                var distancea_b_log =
+                    data.DistanceA_B && data.DistanceA_B.distanceA_B_log
+                        ? data.DistanceA_B.distanceA_B_log
+                        : "N/A";
+
+                var distance_1_ITU =
+                    data.Router1 && data.Router1.ITU
+                        ? data.Router1.ITU.distance_1
+                        : "N/A";
+                var distance_2_ITU =
+                    data.Router2 && data.Router2.ITU
+                        ? data.Router2.ITU.distance_2
+                        : "N/A";
+                var distancea_b_ITU =
+                    data.DistanceA_B && data.DistanceA_B.distanceA_B_ITU
+                        ? data.DistanceA_B.distanceA_B_ITU
+                        : "N/A";
+
+                // อัปเดตข้อมูลใน HTML
+                document.getElementById("start").innerText = "Start: " + start;
+                document.getElementById("end").innerText = "End: " + end;
+
+                // Log Distance Path Loss Model
+                document.getElementById("router-1-ssid-log").innerText =
+                    "SSID: " + ssid_1;
+                document.getElementById("router-1-rssi-log").innerText =
+                    "RSSI: " + rssi_1 + " dBm";
+                document.getElementById("router-1-distance-log").innerText =
+                    "Distance: " + distance_1_log + " m";
+                document.getElementById("router-2-ssid-log").innerText =
+                    "SSID: " + ssid_2;
+                document.getElementById("router-2-rssi-log").innerText =
+                    "RSSI: " + rssi_2 + " dBm";
+                document.getElementById("router-2-distance-log").innerText =
+                    "Distance: " + distance_2_log + " m";
+                document.getElementById("distance-a-b-log").innerText =
+                    "Distance A between Distance B using log: " +
+                    distancea_b_log +
+                    " m";
+
+                // ITU Indoor Propagation Model
+                document.getElementById("router-1-ssid-ITU").innerText =
+                    "SSID: " + ssid_1;
+                document.getElementById("router-1-rssi-ITU").innerText =
+                    "RSSI: " + rssi_1 + " dBm";
+                document.getElementById("router-1-distance-ITU").innerText =
+                    "Distance: " + distance_1_ITU + " m";
+                document.getElementById("router-2-ssid-ITU").innerText =
+                    "SSID: " + ssid_2;
+                document.getElementById("router-2-rssi-ITU").innerText =
+                    "RSSI: " + rssi_2 + " dBm";
+                document.getElementById("router-2-distance-ITU").innerText =
+                    "Distance: " + distance_2_ITU + " m";
+                document.getElementById("distance-a-b-ITU").innerText =
+                    "Distance A between Distance B using ITU: " +
+                    distancea_b_ITU +
+                    " m";
+            }
+        }
+
+        // Fetch data on page load
+        window.onload = fetchData;
+    </script>
+</body>
+
+</html>
