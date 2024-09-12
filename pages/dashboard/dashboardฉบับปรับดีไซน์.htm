@@ -116,6 +116,15 @@
     </div>
 
     <script>
+    // Add this to your existing JavaScript
+        const connectionRef = database.ref(".info/connected");
+        connectionRef.on("value", (snap) => {
+            const status = snap.val() ? "Connected" : "Disconnected";
+            document.getElementById("connection-status").textContent = `Status: ${status}`;
+            document.getElementById("connection-status").className = snap.val() ? "text-green-500" : "text-red-500";
+        });
+
+
         // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g",
@@ -269,6 +278,30 @@
                 });
             }
         }
+        function exportData(data, fileType) {
+            let content = '';
+            if (fileType === 'json') {
+              content = JSON.stringify(data, null, 2);
+            } else if (fileType === 'csv') {
+              // Convert data to CSV format
+              // This is a simplified version and might need adjustment based on your data structure
+              const headers = Object.keys(data).join(',');
+              const values = Object.values(data).join(',');
+              content = `${headers}\n${values}`;
+            }
+            
+            const blob = new Blob([content], { type: 'text/' + fileType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `data.${fileType}`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+       
+          // Add event listeners to export buttons
+          document.getElementById('exportJSON').addEventListener('click', () => exportData(data, 'json'));
+          document.getElementById('exportCSV').addEventListener('click', () => exportData(data, 'csv'));
 
         window.onload = fetchData;
     </script>
