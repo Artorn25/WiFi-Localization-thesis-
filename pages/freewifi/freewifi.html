@@ -4,8 +4,141 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free WiFi Options</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="freewifi.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #f36f21;
+            --secondary-color: #ffd700;
+            --text-color: #333;
+            --background-color: #f0f0f0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+        }
+        
+        h1::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 4px;
+            background-color: var(--primary-color);
+            margin: 15px auto 0;
+        }
+        
+        .wifi-options {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .wifi-option {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 180px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .wifi-option:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(243, 111, 33, 0.2);
+        }
+        
+        .wifi-option a {
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        
+        .wifi-option img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary-color);
+            padding: 5px;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .wifi-option:hover img {
+            border-color: var(--secondary-color);
+        }
+        
+        .wifi-option h2 {
+            margin-top: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--primary-color);
+            transition: color 0.3s ease;
+        }
+        
+        .wifi-option:hover h2 {
+            color: var(--secondary-color);
+        }
+        
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(243, 111, 33, 0.3);
+        }
+        
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+        }
+        
+        @media (max-width: 600px) {
+            .wifi-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .wifi-option {
+                width: 80%;
+                max-width: 250px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -32,6 +165,5 @@
         </div>
         <a href="/index.html" class="back-button">Back to Home</a>
     </div>
-    <script src="freewifi.js"></script>
 </body>
 </html>
