@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Combined Firebase Console Display</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Combined Firebase Console Display</h1>
+        
+        <div id="time" class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Datetime</h3>
+            <div class="flex justify-between">
+                <p id="start" class="text-gray-600"></p>
+                <p id="end" class="text-gray-600"></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div id="distance-log" class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-green-600">Log Distance Path Model</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-500">Router 1</h3>
+                        <p id="router-1-ssid-log" class="text-gray-600"></p>
+                        <p id="router-1-rssi-log" class="text-gray-600"></p>
+                        <p id="router-1-distance-log" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-500">Router 2</h3>
+                        <p id="router-2-ssid-log" class="text-gray-600"></p>
+                        <p id="router-2-rssi-log" class="text-gray-600"></p>
+                        <p id="router-2-distance-log" class="text-gray-600"></p>
+                    </div>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-green-500">Distance</h3>
+                <p id="distance-a-b-log" class="text-gray-600"></p>
+            </div>
+
+            <div id="distance-itu" class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600">ITU Indoor Propagation Model</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-500">Router 1</h3>
+                        <p id="router-1-ssid-ITU" class="text-gray-600"></p>
+                        <p id="router-1-rssi-ITU" class="text-gray-600"></p>
+                        <p id="router-1-distance-ITU" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-blue-500">Router 2</h3>
+                        <p id="router-2-ssid-ITU" class="text-gray-600"></p>
+                        <p id="router-2-rssi-ITU" class="text-gray-600"></p>
+                        <p id="router-2-distance-ITU" class="text-gray-600"></p>
+                    </div>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-blue-500">Distance</h3>
+                <p id="distance-a-b-ITU" class="text-gray-600"></p>
+            </div>
+
+            <div id="distance-fspl" class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-purple-600">Free-space Path Loss</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-purple-500">Router 1</h3>
+                        <p id="router-1-ssid-FSPL" class="text-gray-600"></p>
+                        <p id="router-1-rssi-FSPL" class="text-gray-600"></p>
+                        <p id="router-1-distance-FSPL" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-purple-500">Router 2</h3>
+                        <p id="router-2-ssid-FSPL" class="text-gray-600"></p>
+                        <p id="router-2-rssi-FSPL" class="text-gray-600"></p>
+                        <p id="router-2-distance-FSPL" class="text-gray-600"></p>
+                    </div>
+                </div>
+                <h3 class="text-lg font-semibold mb-2 text-purple-500">Distance</h3>
+                <p id="distance-a-b-FSPL" class="text-gray-600"></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-blue-600">Distance Comparison Chart</h2>
+                <canvas id="distanceChart"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-green-600">RSSI Comparison Chart</h2>
+                <canvas id="rssiChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-purple-600">Detailed Data Table</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-2 px-4 border-b">Model</th>
+                            <th class="py-2 px-4 border-b">Router</th>
+                            <th class="py-2 px-4 border-b">SSID</th>
+                            <th class="py-2 px-4 border-b">RSSI (dBm)</th>
+                            <th class="py-2 px-4 border-b">Distance (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- Data will be inserted here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g",
+            authDomain: "esp8266-t1-37f02.firebaseapp.com",
+            databaseURL: "https://esp8266-t1-37f02-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "esp8266-t1-37f02",
+            storageBucket: "esp8266-t1-37f02.appspot.com",
+            messagingSenderId: "201166852539",
+            appId: "1:201166852539:web:42c3ad90a0611b17d5b49e",
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        function fetchData() {
+            var dataRef = database.ref("Data");
+
+            dataRef.child("Datetime/end").on("value", function (snapshot) {
+                var end = snapshot.val();
+                console.log("New 'end' value:", end);
+
+                dataRef.once("value", function (snapshot) {
+                    var data = snapshot.val();
+                    updateDOM(data);
+                    updateCharts(data);
+                    updateDataTable(data);
+                });
+            });
+
+            function updateDOM(data) {
+                function updateElement(id, text) {
+                    const element = document.getElementById(id);
+                    if (element) element.textContent = text;
+                }
+
+                updateElement("start", "Start: " + (data.Datetime?.start || "N/A"));
+                updateElement("end", "End: " + (data.Datetime?.end || "N/A"));
+
+                // Log Distance Path Loss Model
+                updateElement("router-1-ssid-log", "SSID: " + (data.Router1?.ssid || "N/A"));
+                updateElement("router-1-rssi-log", "RSSI: " + (data.Router1?.rssi || "N/A") + " dBm");
+                updateElement("router-1-distance-log", "Distance: " + (data.Router1?.Log?.distance_1 || "N/A") + " m");
+                updateElement("router-2-ssid-log", "SSID: " + (data.Router2?.ssid || "N/A"));
+                updateElement("router-2-rssi-log", "RSSI: " + (data.Router2?.rssi || "N/A") + " dBm");
+                updateElement("router-2-distance-log", "Distance: " + (data.Router2?.Log?.distance_2 || "N/A") + " m");
+                updateElement("distance-a-b-log", "Distance A between Distance B: " + (data.DistanceA_B?.distanceA_B_log || "N/A") + " m");
+
+                // ITU Indoor Propagation Model
+                updateElement("router-1-ssid-ITU", "SSID: " + (data.Router1?.ssid || "N/A"));
+                updateElement("router-1-rssi-ITU", "RSSI: " + (data.Router1?.rssi || "N/A") + " dBm");
+                updateElement("router-1-distance-ITU", "Distance: " + (data.Router1?.ITU?.distance_1 || "N/A") + " m");
+                updateElement("router-2-ssid-ITU", "SSID: " + (data.Router2?.ssid || "N/A"));
+                updateElement("router-2-rssi-ITU", "RSSI: " + (data.Router2?.rssi || "N/A") + " dBm");
+                updateElement("router-2-distance-ITU", "Distance: " + (data.Router2?.ITU?.distance_2 || "N/A") + " m");
+                updateElement("distance-a-b-ITU", "Distance A between Distance B: " + (data.DistanceA_B?.distanceA_B_ITU || "N/A") + " m");
+
+                // Free-space Path Loss (FSPL)
+                updateElement("router-1-ssid-FSPL", "SSID: " + (data.Router1?.ssid || "N/A"));
+                updateElement("router-1-rssi-FSPL", "RSSI: " + (data.Router1?.rssi || "N/A") + " dBm");
+                updateElement("router-1-distance-FSPL", "Distance: " + (data.Router1?.FSPL?.distance_1 || "N/A") + " m");
+                updateElement("router-2-ssid-FSPL", "SSID: " + (data.Router2?.ssid || "N/A"));
+                updateElement("router-2-rssi-FSPL", "RSSI: " + (data.Router2?.rssi || "N/A") + " dBm");
+                updateElement("router-2-distance-FSPL", "Distance: " + (data.Router2?.FSPL?.distance_2 || "N/A") + " m");
+                updateElement("distance-a-b-FSPL", "Distance A between Distance B: " + (data.DistanceA_B?.distanceA_B_FSPL || "N/A") + " m");
+            }
+
+            function updateCharts(data) {
+                // Update Distance Comparison Chart
+                const distanceChart = new Chart(document.getElementById('distanceChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Log Model', 'ITU Model', 'FSPL Model'],
+                        datasets: [
+                            {
+                                label: 'Router 1',
+                                data: [
+                                    data.Router1?.Log?.distance_1 || 0,
+                                    data.Router1?.ITU?.distance_1 || 0,
+                                    data.Router1?.FSPL?.distance_1 || 0
+                                ],
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                            },
+                            {
+                                label: 'Router 2',
+                                data: [
+                                    data.Router2?.Log?.distance_2 || 0,
+                                    data.Router2?.ITU?.distance_2 || 0,
+                                    data.Router2?.FSPL?.distance_2 || 0
+                                ],
+                                backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Distance (m)'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Update RSSI Comparison Chart
+                const rssiChart = new Chart(document.getElementById('rssiChart'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Router 1', 'Router 2'],
+                        datasets: [{
+                            label: 'RSSI (dBm)',
+                            data: [data.Router1?.rssi || 0, data.Router2?.rssi || 0],
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'RSSI (dBm)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateDataTable(data) {
+                const tableBody = document.getElementById('dataTableBody');
+                tableBody.innerHTML = ''; // Clear existing data
+
+                const models = ['Log', 'ITU', 'FSPL'];
+                const routers = ['Router1', 'Router2'];
+
+                models.forEach(model => {
+                    routers.forEach(router => {
+                        const row = tableBody.insertRow();
+                        row.insertCell(0).textContent = model;
+                        row.insertCell(1).textContent = router;
+                        row.insertCell(2).textContent = data[router]?.ssid || 'N/A';
+                        row.insertCell(3).textContent = data[router]?.rssi || 'N/A';
+                        row.insertCell(4).textContent = data[router]?.[model]?.[`distance_${router.slice(-1)}`] || 'N/A';
+                    });
+                });
+            }
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>

@@ -3,15 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BU WiFi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="bu_wifi.css">
+    <title>BU WiFi - Connect with Ease</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7b54b1;
+            --secondary-color: #9a7cd0;
+            --text-color: #333;
+            --background-color: #f4f0ff;
+            --card-background: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .content {
+            background-color: var(--card-background);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(123, 84, 177, 0.15);
+            transition: all 0.3s ease;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(123, 84, 177, 0.2);
+        }
+
+        .content p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            filter: grayscale(30%);
+        }
+
+        .image-grid img:hover {
+            transform: scale(1.05) rotate(1deg);
+            box-shadow: 0 8px 20px rgba(123, 84, 177, 0.3);
+            filter: grayscale(0%);
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2rem;
+            border: 2px solid var(--primary-color);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .back-button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.4s;
+            z-index: -1;
+        }
+
+        .back-button:hover:before {
+            left: 100%;
+        }
+
+        .back-button:hover {
+            background-color: transparent;
+            color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(123, 84, 177, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 900px;
+            max-height: 80%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            animation: zoomIn 0.6s;
+        }
+
+        @keyframes zoomIn {
+            from {transform: scale(0.1)}
+            to {transform: scale(1)}
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transform: rotate(90deg);
+        }
+
+        .navigation {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -50px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: rgba(123, 84, 177, 0.8);
+        }
+
+        .next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+        .prev:hover, .next:hover {
+            background-color: rgba(123, 84, 177, 1);
+            width: 80px;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        @keyframes fadeInDown {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .wifi-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {transform: scale(1);}
+            50% {transform: scale(1.2);}
+            100% {transform: scale(1);}
+        }
+
+        @media (max-width: 768px) {
+            .image-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>BU WiFi</h1>
         <div class="content">
-            <p>Welcome to BU WiFi. Connect here for campus-wide internet access.</p>
+            <p>Welcome to BU WiFi. Connect here for seamless, high-speed internet access across the entire campus. Enjoy browsing, streaming, and collaborating with ease!</p>
             <div class="image-grid">
                 <img src="\templates\image\wifib1.jpg" alt="BU WiFi Image 1" onclick="openModal(this)">
                 <img src="\templates\image\wifib2.jpg" alt="BU WiFi Image 2" onclick="openModal(this)">
@@ -24,7 +270,7 @@
                 <img src="\templates\image\wifib9.jpg" alt="BU WiFi Image 9" onclick="openModal(this)">
             </div>
         </div>
-        <a href="\test\freewifi\freewifi.html" class="back-button">Back to WiFi Options</a>
+        <a href="/freewifi.html" class="back-button">Back to WiFi Options</a>
     </div>
 
     <!-- Modal -->
@@ -37,6 +283,85 @@
         </div>
     </div>
 
-    <script src="bu_wifi.js"></script>
+    <div class="wifi-icon">📶</div>
+
+    <script>
+        let currentImageIndex = 0;
+        const images = document.querySelectorAll('.image-grid img');
+
+        function openModal(img) {
+            const modal = document.getElementById("imageModal");
+            const modalImg = document.getElementById("modalImage");
+            modal.style.display = "block";
+            modalImg.src = img.src;
+            currentImageIndex = Array.from(images).indexOf(img);
+            setTimeout(() => modal.style.opacity = "1", 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("imageModal");
+            modal.style.opacity = "0";
+            setTimeout(() => modal.style.display = "none", 300);
+        }
+
+        function changeImage(step) {
+            currentImageIndex += step;
+            if (currentImageIndex >= images.length) {
+                currentImageIndex = 0;
+            } else if (currentImageIndex < 0) {
+                currentImageIndex = images.length - 1;
+            }
+            const modalImg = document.getElementById("modalImage");
+            modalImg.src = images[currentImageIndex].src;
+            modalImg.style.animation = 'none';
+            modalImg.offsetHeight; /* trigger reflow */
+            modalImg.style.animation = null;
+        }
+
+        // Close the modal when clicking outside the image
+        window.onclick = function(event) {
+            const modal = document.getElementById("imageModal");
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Lazy loading images
+        document.addEventListener("DOMContentLoaded", function() {
+            let lazyImages = [].slice.call(document.querySelectorAll("img"));
+            let active = false;
+
+            const lazyLoad = function() {
+                if (active === false) {
+                    active = true;
+
+                    setTimeout(function() {
+                        lazyImages.forEach(function(lazyImage) {
+                            if ((lazyImage.getBoundingClientRect().top <= window.innerHeight && lazyImage.getBoundingClientRect().bottom >= 0) && getComputedStyle(lazyImage).display !== "none") {
+                                lazyImage.src = lazyImage.dataset.src;
+                                lazyImage.classList.remove("lazy");
+
+                                lazyImages = lazyImages.filter(function(image) {
+                                    return image !== lazyImage;
+                                });
+
+                                if (lazyImages.length === 0) {
+                                    document.removeEventListener("scroll", lazyLoad);
+                                    window.removeEventListener("resize", lazyLoad);
+                                    window.removeEventListener("orientationchange", lazyLoad);
+                                }
+                            }
+                        });
+
+                        active = false;
+                    }, 200);
+                }
+            };
+
+            document.addEventListener("scroll", lazyLoad);
+            window.addEventListener("resize", lazyLoad);
+            window.addEventListener("orientationchange", lazyLoad);
+        });
+    </script>
 </body>
 </html>

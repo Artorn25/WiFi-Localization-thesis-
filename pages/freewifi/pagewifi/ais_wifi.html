@@ -3,15 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIS WiFi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="ais_wifi.css">
+    <title>AIS WiFi - Connect Easily</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #c4d404;
+            --secondary-color: #a6b503;
+            --background-color: #f8f9f0;
+            --text-color: #333333;
+            --accent-color: #ff6b6b;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            box-sizing: border-box;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 4px;
+            background-color: var(--accent-color);
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        .content {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .tab-button {
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: all 0.5s;
+        }
+
+        .tab-button:hover::before {
+            left: 100%;
+        }
+
+        .tab-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .tab-button.active {
+            background-color: var(--secondary-color);
+        }
+
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            justify-items: center;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-grid img:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:hover {
+            background-color: #ff4f4f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 900px;
+            max-height: 80%;
+            object-fit: contain;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--accent-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .navigation {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            margin-top: -50px;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: 0.6s ease;
+            border-radius: 0 3px 3px 0;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .next {
+            right: 0;
+            border-radius: 3px 0 0 3px;
+        }
+
+        .prev:hover, .next:hover {
+            background-color: rgba(196, 212, 4, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .tab-button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .image-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+
+            .image-grid img {
+                height: 150px;
+            }
+        }
+
+        .wifi-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .scroll-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-to-top:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>AIS WiFi</h1>
         <div class="content">
-            <p>Connect to AIS WiFi for high-speed internet access. Choose your device type below:</p>
+            <svg class="wifi-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12" y2="20"></line>
+            </svg>
+            <p>Connect to AIS WiFi for blazing-fast internet access. Choose your device type below to get started:</p>
             <div class="tabs">
                 <button class="tab-button active" onclick="openTab(event, 'android')">Android</button>
                 <button class="tab-button" onclick="openTab(event, 'ios')">iOS</button>
@@ -19,23 +369,23 @@
             <div id="android" class="tab-content active">
                 <h2>Android Instructions</h2>
                 <div class="image-grid">
-                    <img src="\templates\image\wifia5.jpg" alt="AIS Android WiFi 1" onclick="openModal(this)">
-                    <img src="\templates\image\wifia6.jpg" alt="AIS Android WiFi 2" onclick="openModal(this)">
-                    <img src="\templates\image\wifia7.jpg" alt="AIS Android WiFi 3" onclick="openModal(this)">
-                    <img src="\templates\image\wifia8.jpg" alt="AIS Android WiFi 4" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS Android WiFi 1" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS Android WiFi 2" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS Android WiFi 3" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS Android WiFi 4" onclick="openModal(this)">
                 </div>
             </div>
             <div id="ios" class="tab-content">
                 <h2>iOS Instructions</h2>
                 <div class="image-grid">
-                    <img src="\templates\image\wifia1.jpg" alt="AIS iOS WiFi 1" onclick="openModal(this)">
-                    <img src="\templates\image\wifia2.jpg" alt="AIS iOS WiFi 2" onclick="openModal(this)">
-                    <img src="\templates\image\wifia3.jpg" alt="AIS iOS WiFi 3" onclick="openModal(this)">
-                    <img src="\templates\image\wifia4.jpg" alt="AIS iOS WiFi 4" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS iOS WiFi 1" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS iOS WiFi 2" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS iOS WiFi 3" onclick="openModal(this)">
+                    <img src="/api/placeholder/200/200" alt="AIS iOS WiFi 4" onclick="openModal(this)">
                 </div>
             </div>
         </div>
-        <a href="\test\freewifi\freewifi.html" class="back-button">Back to WiFi Options</a>
+        <a href="/test/freewifi/freewifi.html" class="back-button">Back to WiFi Options</a>
     </div>
 
     <!-- Modal -->
@@ -48,6 +398,47 @@
         </div>
     </div>
 
-    <script src="ais_wifi.js"></script>
+    <div class="scroll-to-top" onclick="scrollToTop()">↑</div>
+
+    <script>
+        function closeModal() {
+            var modal = document.getElementById("imageModal");
+            modal.classList.remove("show");
+            setTimeout(() => modal.style.display = "none", 300);
+        }
+
+        function changeImage(n) {
+            currentImageIndex += n;
+            if (currentImageIndex >= images.length) {
+                currentImageIndex = 0;
+            } else if (currentImageIndex < 0) {
+                currentImageIndex = images.length - 1;
+            }
+            document.getElementById("modalImage").src = images[currentImageIndex].src;
+        }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        window.onscroll = function() {
+            var scrollTopBtn = document.querySelector('.scroll-to-top');
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            gsap.from("h1", {duration: 1, y: -50, opacity: 0, ease: "power3.out"});
+            gsap.from(".content", {duration: 1, y: 50, opacity: 0, ease: "power3.out", delay: 0.5});
+            gsap.from(".tab-button", {duration: 0.5, scale: 0.5, opacity: 0, ease: "back.out(1.7)", stagger: 0.2, delay: 1});
+            gsap.from(".image-grid img", {duration: 0.5, scale: 0.8, opacity: 0, ease: "power1.out", stagger: 0.1, delay: 1.5});
+        });
+    </script>
 </body>
 </html>
