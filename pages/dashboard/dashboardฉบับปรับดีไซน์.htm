@@ -115,7 +115,13 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+        import {
+            getDatabase,
+            ref,
+            onValue,
+        } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
     // Add this to your existing JavaScript
         const connectionRef = database.ref(".info/connected");
         connectionRef.on("value", (snap) => {
@@ -129,19 +135,20 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g",
             authDomain: "esp8266-t1-37f02.firebaseapp.com",
-            databaseURL: "https://esp8266-t1-37f02-default-rtdb.asia-southeast1.firebasedatabase.app",
+            databaseURL:
+              "https://esp8266-t1-37f02-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "esp8266-t1-37f02",
             storageBucket: "esp8266-t1-37f02.appspot.com",
             messagingSenderId: "201166852539",
             appId: "1:201166852539:web:42c3ad90a0611b17d5b49e",
-        };
+          };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        var database = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app); // Initialize database with the app
 
-        function fetchData() {
-            var dataRef = database.ref("Data");
+        // Reference to the 'users' node
+        const dbRef = ref(database, "Data");
 
             dataRef.child("Datetime/end").on("value", function (snapshot) {
                 var end = snapshot.val();
@@ -160,27 +167,184 @@
                     const element = document.getElementById(id);
                     if (element) element.textContent = text;
                 }
+                function updateCharts(data) {
+                    // Update Distance Comparison Chart
+                    const distanceChart = new Chart(document.getElementById('distanceChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Log Model', 'ITU Model', 'FSPL Model'],
+                            datasets: [
+                                {
+                                    label: 'Router 1',
+                                    data: [
+                                        data.Router1?.Log?.distance_1 || 0,
+                                        data.Router1?.ITU?.distance_1 || 0,
+                                        data.Router1?.FSPL?.distance_1 || 0
+                                    ],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                                },
+                                {
+                                    label: 'Router 2',
+                                    data: [
+                                        data.Router2?.Log?.distance_2 || 0,
+                                        data.Router2?.ITU?.distance_2 || 0,
+                                        data.Router2?.FSPL?.distance_2 || 0
+                                    ],
+                                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Distance (m)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+    
+                    // Update RSSI Comparison Chart
+                    const rssiChart = new Chart(document.getElementById('rssiChart'), {
+                        type: 'line',
+                        data: {
+                            labels: ['Router 1', 'Router 2'],
+                            datasets: [{
+                                label: 'RSSI (dBm)',
+                                data: [data.Router1?.rssi || 0, data.Router2?.rssi || 0],
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'RSSI (dBm)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+    
+                function updateDataTable(data) {
+                    const tableBody = document.getElementById('dataTableBody');
+                    tableBody.innerHTML = ''; // Clear existing data
+    
+                    const models = ['Log', 'ITU', 'FSPL'];
+                    const routers = ['Router1', 'Router2'];
+    
+                    models.forEach(model => {
+                        routers.forEach(router => {
+                            const row = tableBody.insertRow();
+                            row.insertCell(0).textContent = model;
+                            row.insertCell(1).textContent = router;
+                            row.insertCell(2).textContent = data[router]?.ssid || 'N/A';
+                            row.insertCell(3).textContent = data[router]?.rssi || 'N/A';
+                            row.insertCell(4).textContent = data[router]?.[model]?.[`distance_${router.slice(-1)}`] || 'N/A';
+                        });
+                    });
+                }
+            }
+            function exportData(data, fileType) {
+                let content = '';
+                if (fileType === 'json') {
+                  content = JSON.stringify(data, null, 2);
+                } else if (fileType === 'csv') {
+                  // Convert data to CSV format
+                  // This is a simplified version and might need adjustment based on your data structure
+                  const headers = Object.keys(data).join(',');
+                  const values = Object.values(data).join(',');
+                  content = `${headers}\n${values}`;
+                }
+                
+                const blob = new Blob([content], { type: 'text/' + fileType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `data.${fileType}`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }
+              onValue(
+      dbRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          console.log(data); // Output updated data to the console
 
-                updateElement("start", "Start: " + (data.Datetime?.start || "N/A"));
-                updateElement("end", "End: " + (data.Datetime?.end || "N/A"));
+          var start = data?.Datetime?.start ?? "Not available",
+            end = data?.Datetime?.end ?? "Not available",
+            ssid_1 = data?.Router1?.ssid ?? "Not available",
+            rssi_1 = data?.Router1?.rssi ?? "Not available",
+            ssid_2 = data?.Router2?.ssid ?? "Not available",
+            rssi_2 = data?.Router2?.rssi ?? "Not available",
+            distance_1_Log = data?.Router1?.Log?.distance ?? "Not available",
+            distance_2_Log = data?.Router2?.Log?.distance ?? "Not available",
+            distanceA_B_Log =
+              data?.DistanceA_B?.distanceA_B_Log ?? "Not available",
+            distance_1_ITU = data?.Router1?.ITU?.distance ?? "Not available",
+            distance_2_ITU = data?.Router2?.ITU?.distance ?? "Not available",
+            distanceA_B_ITU =
+              data?.DistanceA_B?.distanceA_B_ITU ?? "Not available";
+
+          // Displaying the separated data in the console
+          console.log("Start Time:", start);
+          console.log("End Time:", end);
+          console.log("Router1 SSID:", ssid_1);
+          console.log("Router1 RSSI:", rssi_1);
+          console.log("Router2 SSID:", ssid_2);
+          console.log("Router2 RSSI:", rssi_2);
+          console.log("Distance Log (Router1):", distance_1_Log);
+          console.log("Distance Log (Router2):", distance_2_Log);
+          console.log("Distance A-B Log:", distanceA_B_Log);
+          console.log("Distance ITU (Router1):", distance_1_ITU);
+          console.log("Distance ITU (Router2):", distance_2_ITU);
+          console.log("Distance A-B ITU:", distanceA_B_ITU);
+
+          // Display the updated data in the div (optional)
+          //         document.getElementById("dataDisplay").innerText = `
+          //   Start Time: ${start}
+          //   End Time: ${end}
+          //   Router1 SSID: ${ssid_1}
+          //   Router1 RSSI: ${rssi_1}
+          //   Router2 SSID: ${ssid_2}
+          //   Router2 RSSI: ${rssi_2}
+          //   Distance Log (Router1): ${distance_1_Log}
+          //   Distance Log (Router2): ${distance_2_Log}
+          //   Distance A-B Log: ${distanceA_B_Log}
+          //   Distance ITU (Router1): ${distance_1_ITU}
+          //   Distance ITU (Router2): ${distance_2_ITU}
+          //   Distance A-B ITU: ${distanceA_B_ITU}
+          // `;
+
+                document.getElementById("start").innerText = "Start: " + start;
+                document.getElementById("end").innerText = "End: " + end;
 
                 // Log Distance Path Loss Model
-                updateElement("router-1-ssid-log", "SSID: " + (data.Router1?.ssid || "N/A"));
-                updateElement("router-1-rssi-log", "RSSI: " + (data.Router1?.rssi || "N/A") + " dBm");
-                updateElement("router-1-distance-log", "Distance: " + (data.Router1?.Log?.distance_1 || "N/A") + " m");
-                updateElement("router-2-ssid-log", "SSID: " + (data.Router2?.ssid || "N/A"));
-                updateElement("router-2-rssi-log", "RSSI: " + (data.Router2?.rssi || "N/A") + " dBm");
-                updateElement("router-2-distance-log", "Distance: " + (data.Router2?.Log?.distance_2 || "N/A") + " m");
-                updateElement("distance-a-b-log", "Distance A between Distance B: " + (data.DistanceA_B?.distanceA_B_log || "N/A") + " m");
+                document.getElementById("router-1-ssid-log").innerText = "SSID: " + ssid_1;
+                document.getElementById("router-1-rssi-log").innerText = "RSSI: " + rssi_1 + " dBm";
+                document.getElementById("router-1-distance-log").innerText = "Distance: " + distance_1_Log + " m";    
+                document.getElementById("router-2-ssid-log").innerText = "SSID: " + ssid_2;
+                document.getElementById("router-2-rssi-log").innerText = "RSSI: " + rssi_2 + " dBm";
+                document.getElementById("router-2-distance-log").innerText = "Distance: " + distance_2_Log + " m";
+                document.getElementById("distance-a-b-log").innerText = "Distance A between Distance B using log: " + distanceA_B_Log + " m";
 
                 // ITU Indoor Propagation Model
-                updateElement("router-1-ssid-ITU", "SSID: " + (data.Router1?.ssid || "N/A"));
-                updateElement("router-1-rssi-ITU", "RSSI: " + (data.Router1?.rssi || "N/A") + " dBm");
-                updateElement("router-1-distance-ITU", "Distance: " + (data.Router1?.ITU?.distance_1 || "N/A") + " m");
-                updateElement("router-2-ssid-ITU", "SSID: " + (data.Router2?.ssid || "N/A"));
-                updateElement("router-2-rssi-ITU", "RSSI: " + (data.Router2?.rssi || "N/A") + " dBm");
-                updateElement("router-2-distance-ITU", "Distance: " + (data.Router2?.ITU?.distance_2 || "N/A") + " m");
-                updateElement("distance-a-b-ITU", "Distance A between Distance B: " + (data.DistanceA_B?.distanceA_B_ITU || "N/A") + " m");
+                document.getElementById("router-1-ssid-ITU").innerText = "SSID: " + ssid_1;
+                document.getElementById("router-1-rssi-ITU").innerText = "RSSI: " + rssi_1 + " dBm";
+                document.getElementById("router-1-distance-ITU").innerText = "Distance: " + distance_1_ITU + " m";
+                document.getElementById("router-2-ssid-ITU").innerText = "SSID: " + ssid_2;
+                document.getElementById("router-2-rssi-ITU").innerText = "RSSI: " + rssi_2 + " dBm";
+                document.getElementById("router-2-distance-ITU").innerText = "Distance: " + distance_2_ITU + " m";
+                document.getElementById("distance-a-b-ITU").innerText = "Distance A between Distance B using ITU: " + distanceA_B_ITU + " m";
 
                 // Free-space Path Loss (FSPL)
                 updateElement("router-1-ssid-FSPL", "SSID: " + (data.Router1?.ssid || "N/A"));
@@ -190,114 +354,18 @@
                 updateElement("router-2-rssi-FSPL", "RSSI: " + (data.Router2?.rssi || "N/A") + " dBm");
                 updateElement("router-2-distance-FSPL", "Distance: " + (data.Router2?.FSPL?.distance_2 || "N/A") + " m");
                 updateElement("distance-a-b-FSPL", "Distance A between Distance B: " + (data.DistanceA_B?.distanceA_B_FSPL || "N/A") + " m");
+            } else {
+                console.log("No data available");
+                document.getElementById("dataDisplay").innerText =
+                  "No data available";
+              }
+            },
+            (error) => {
+              console.error("Error reading data: ", error);
+              document.getElementById("dataDisplay").innerText =
+                "Error reading data";
             }
-
-            function updateCharts(data) {
-                // Update Distance Comparison Chart
-                const distanceChart = new Chart(document.getElementById('distanceChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['Log Model', 'ITU Model', 'FSPL Model'],
-                        datasets: [
-                            {
-                                label: 'Router 1',
-                                data: [
-                                    data.Router1?.Log?.distance_1 || 0,
-                                    data.Router1?.ITU?.distance_1 || 0,
-                                    data.Router1?.FSPL?.distance_1 || 0
-                                ],
-                                backgroundColor: 'rgba(54, 162, 235, 0.5)'
-                            },
-                            {
-                                label: 'Router 2',
-                                data: [
-                                    data.Router2?.Log?.distance_2 || 0,
-                                    data.Router2?.ITU?.distance_2 || 0,
-                                    data.Router2?.FSPL?.distance_2 || 0
-                                ],
-                                backgroundColor: 'rgba(255, 99, 132, 0.5)'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Distance (m)'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Update RSSI Comparison Chart
-                const rssiChart = new Chart(document.getElementById('rssiChart'), {
-                    type: 'line',
-                    data: {
-                        labels: ['Router 1', 'Router 2'],
-                        datasets: [{
-                            label: 'RSSI (dBm)',
-                            data: [data.Router1?.rssi || 0, data.Router2?.rssi || 0],
-                            borderColor: 'rgb(75, 192, 192)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'RSSI (dBm)'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            function updateDataTable(data) {
-                const tableBody = document.getElementById('dataTableBody');
-                tableBody.innerHTML = ''; // Clear existing data
-
-                const models = ['Log', 'ITU', 'FSPL'];
-                const routers = ['Router1', 'Router2'];
-
-                models.forEach(model => {
-                    routers.forEach(router => {
-                        const row = tableBody.insertRow();
-                        row.insertCell(0).textContent = model;
-                        row.insertCell(1).textContent = router;
-                        row.insertCell(2).textContent = data[router]?.ssid || 'N/A';
-                        row.insertCell(3).textContent = data[router]?.rssi || 'N/A';
-                        row.insertCell(4).textContent = data[router]?.[model]?.[`distance_${router.slice(-1)}`] || 'N/A';
-                    });
-                });
-            }
-        }
-        function exportData(data, fileType) {
-            let content = '';
-            if (fileType === 'json') {
-              content = JSON.stringify(data, null, 2);
-            } else if (fileType === 'csv') {
-              // Convert data to CSV format
-              // This is a simplified version and might need adjustment based on your data structure
-              const headers = Object.keys(data).join(',');
-              const values = Object.values(data).join(',');
-              content = `${headers}\n${values}`;
-            }
-            
-            const blob = new Blob([content], { type: 'text/' + fileType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `data.${fileType}`;
-            a.click();
-            URL.revokeObjectURL(url);
-          }
+          );
        
           // Add event listeners to export buttons
           document.getElementById('exportJSON').addEventListener('click', () => exportData(data, 'json'));
