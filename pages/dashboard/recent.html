@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth focus:scroll-auto">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/src/output.css" />
+</head>
+
+<body>
+  <header class="bg-blue-800 text-white p-4 text-center shadow-lg">
+    <h1 class="text-5xl font-bold">Dashboard</h1>
+</header>
+
+  <div id="time" class="p-4 bg-blue-100 shadow-lg rounded-md mx-4 my-4">
+    <h3 class="text-xl font-semibold mb-2 text-center text-blue-800">
+      Datetime
+    </h3>
+    <div class="flex justify-evenly">
+      <p id="start" class="text-gray-700"></p>
+      <p id="end" class="text-gray-700"></p>
+    </div>
+  </div>
+  <!-- <div id="dataDisplay">Loading data...</div> -->
+
+  <div class="flex flex-wrap justify-around lg:flex-nowrap">
+    <div id="distance" class="p-4 bg-green-100 shadow-lg rounded-md border border-green-300 mx-4 my-4 w-full lg:w-1/3 hover:bg-green-600 ">
+      <h2 class="text-2xl font-bold mb-4 text-green-800 text-center">
+        Log Distance Path Model
+      </h2>
+      <div class="flex justify-between">
+        <div class="">
+          <h3 class="text-xl font-semibold text-green-700">Router 1</h3>
+          <p id="router-1-ssid-log" class="text-gray-700"></p>
+          <p id="router-1-rssi-log" class="text-gray-700"></p>
+          <p id="router-1-distance-log" class="text-gray-700"></p>
+        </div>
+        <div class="">
+          <h3 class="text-xl font-semibold text-green-700">Router 2</h3>
+          <p id="router-2-ssid-log" class="text-gray-700"></p>
+          <p id="router-2-rssi-log" class="text-gray-700"></p>
+          <p id="router-2-distance-log" class="text-gray-700"></p>
+        </div>
+        <div class="">
+          <h3 class="text-xl font-semibold text-green-700">Router 3</h3>
+        </div>
+      </div>
+      <h3 class="text-xl font-semibold mb-2 text-green-700 mt-4">Distance</h3>
+      <p id="distance-a-b-log" class="text-gray-700"></p>
+      <p id="distance-c-b" class="text-gray-700"></p>
+      <p id="distance-a-c" class="text-gray-700"></p>
+    </div>
+
+    <div id="distance" class="p-4 bg-yellow-100 shadow-lg rounded-md border border-yellow-300 mx-4 my-4 w-full lg:w-1/3">
+      <h2 class="text-2xl font-bold mb-4 text-yellow-800 text-center">
+        ITU Indoor Propagation Model
+      </h2>
+      <div class="flex justify-between">
+        <div class="">
+          <h3 class="text-xl font-semibold text-yellow-700">Router 1</h3>
+          <p id="router-1-ssid-ITU" class="text-gray-700"></p>
+          <p id="router-1-rssi-ITU" class="text-gray-700"></p>
+          <p id="router-1-distance-ITU" class="text-gray-700"></p>
+        </div>
+        <div class="">
+          <h3 class="text-xl font-semibold text-yellow-700">Router 2</h3>
+          <p id="router-2-ssid-ITU" class="text-gray-700"></p>
+          <p id="router-2-rssi-ITU" class="text-gray-700"></p>
+          <p id="router-2-distance-ITU" class="text-gray-700"></p>
+        </div>
+        <div class="">
+          <h3 class="text-xl font-semibold text-yellow-700">Router 3</h3>
+        </div>
+      </div>
+      <h3 class="text-xl font-semibold mb-2 text-yellow-700 mt-4">
+        Distance
+      </h3>
+      <p id="distance-a-b-ITU" class="text-gray-700"></p>
+      <p id="distance-c-b" class="text-gray-700"></p>
+      <p id="distance-a-c" class="text-gray-700"></p>
+    </div>
+
+    <div id="distance" class="p-4 bg-red-100 shadow-lg rounded-md border border-red-300 mx-4 my-4 w-full lg:w-1/3">
+      <h2 class="text-2xl font-bold mb-4 text-red-800 text-center">
+        Free-space Path Loss
+      </h2>
+      <div class="flex justify-between">
+        <div class="">
+          <h3 class="text-xl font-semibold text-red-700">Router 1</h3>
+          <p id="router-1-ssid-FSPL" class="text-gray-700"></p>
+          <p id="router-1-rssi-FSPL" class="text-gray-700"></p>
+          <p id="router-1-distance-FSPL" class="text-gray-700"></p>
+        </div>
+        <div class="">
+          <h3 class="text-xl font-semibold text-red-700">Router 2</h3>
+          <p id="router-2-ssid-FSPL" class="text-gray-700"></p>
+          <p id="router-2-rssi-FSPL" class="text-gray-700"></p>
+          <p id="router-2-distance-FSPL" class="text-gray-700"></p>
+        </div>
+        <div class="">
+          <h3 class="text-xl font-semibold text-red-700">Router 3</h3>
+        </div>
+      </div>
+      <h3 class="text-xl font-semibold mb-2 text-red-700 mt-4">Distance</h3>
+      <p id="distance-a-b-FSPL" class="text-gray-700"></p>
+      <p id="distance-c-b" class="text-gray-700"></p>
+      <p id="distance-a-c" class="text-gray-700"></p>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      onValue,
+    } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g",
+      authDomain: "esp8266-t1-37f02.firebaseapp.com",
+      databaseURL:
+        "https://esp8266-t1-37f02-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "esp8266-t1-37f02",
+      storageBucket: "esp8266-t1-37f02.appspot.com",
+      messagingSenderId: "201166852539",
+      appId: "1:201166852539:web:42c3ad90a0611b17d5b49e",
+    };
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app); // Initialize database with the app
+
+    // Reference to the 'users' node
+    const dbRef = ref(database, "Data");
+
+    onValue(
+      dbRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          console.log(data); // Output updated data to the console
+
+          var start = data?.Datetime?.start ?? "Not available",
+            end = data?.Datetime?.end ?? "Not available",
+            ssid_1 = data?.Router1?.ssid ?? "Not available",
+            rssi_1 = data?.Router1?.rssi ?? "Not available",
+            ssid_2 = data?.Router2?.ssid ?? "Not available",
+            rssi_2 = data?.Router2?.rssi ?? "Not available",
+            distance_1_Log = data?.Router1?.Log?.distance ?? "Not available",
+            distance_2_Log = data?.Router2?.Log?.distance ?? "Not available",
+            distanceA_B_Log =
+              data?.DistanceA_B?.distanceA_B_Log ?? "Not available",
+            distance_1_ITU = data?.Router1?.ITU?.distance ?? "Not available",
+            distance_2_ITU = data?.Router2?.ITU?.distance ?? "Not available",
+            distanceA_B_ITU =
+              data?.DistanceA_B?.distanceA_B_ITU ?? "Not available";
+
+          // Displaying the separated data in the console
+          console.log("Start Time:", start);
+          console.log("End Time:", end);
+          console.log("Router1 SSID:", ssid_1);
+          console.log("Router1 RSSI:", rssi_1);
+          console.log("Router2 SSID:", ssid_2);
+          console.log("Router2 RSSI:", rssi_2);
+          console.log("Distance Log (Router1):", distance_1_Log);
+          console.log("Distance Log (Router2):", distance_2_Log);
+          console.log("Distance A-B Log:", distanceA_B_Log);
+          console.log("Distance ITU (Router1):", distance_1_ITU);
+          console.log("Distance ITU (Router2):", distance_2_ITU);
+          console.log("Distance A-B ITU:", distanceA_B_ITU);
+
+          // Display the updated data in the div (optional)
+          //         document.getElementById("dataDisplay").innerText = `
+          //   Start Time: ${start}
+          //   End Time: ${end}
+          //   Router1 SSID: ${ssid_1}
+          //   Router1 RSSI: ${rssi_1}
+          //   Router2 SSID: ${ssid_2}
+          //   Router2 RSSI: ${rssi_2}
+          //   Distance Log (Router1): ${distance_1_Log}
+          //   Distance Log (Router2): ${distance_2_Log}
+          //   Distance A-B Log: ${distanceA_B_Log}
+          //   Distance ITU (Router1): ${distance_1_ITU}
+          //   Distance ITU (Router2): ${distance_2_ITU}
+          //   Distance A-B ITU: ${distanceA_B_ITU}
+          // `;
+          document.getElementById("start").innerText = "Start: " + start;
+          document.getElementById("end").innerText = "End: " + end;
+
+          document.getElementById("router-1-ssid-log").innerText = "SSID: " + ssid_1;
+          document.getElementById("router-1-rssi-log").innerText = "RSSI: " + rssi_1 + " dBm";
+          document.getElementById("router-1-distance-log").innerText = "Distance: " + distance_1_Log + " m";
+
+          document.getElementById("router-2-ssid-log").innerText = "SSID: " + ssid_2;
+          document.getElementById("router-2-rssi-log").innerText = "RSSI: " + rssi_2 + " dBm";
+          document.getElementById("router-2-distance-log").innerText = "Distance: " + distance_2_Log + " m";
+          document.getElementById("distance-a-b-log").innerText = "Distance A between Distance B using log: " + distanceA_B_Log + " m";
+
+          document.getElementById("router-1-ssid-ITU").innerText = "SSID: " + ssid_1;
+          document.getElementById("router-1-rssi-ITU").innerText = "RSSI: " + rssi_1 + " dBm";
+          document.getElementById("router-1-distance-ITU").innerText = "Distance: " + distance_1_ITU + " m";
+
+          document.getElementById("router-2-ssid-ITU").innerText = "SSID: " + ssid_2;
+          document.getElementById("router-2-rssi-ITU").innerText = "RSSI: " + rssi_2 + " dBm";
+          document.getElementById("router-2-distance-ITU").innerText = "Distance: " + distance_2_ITU + " m";
+          document.getElementById("distance-a-b-ITU").innerText = "Distance A between Distance B using ITU: " + distanceA_B_ITU + " m";
+        } else {
+          console.log("No data available");
+          document.getElementById("dataDisplay").innerText =
+            "No data available";
+        }
+      },
+      (error) => {
+        console.error("Error reading data: ", error);
+        document.getElementById("dataDisplay").innerText =
+          "Error reading data";
+      }
+    );
+  </script>
+</body>
+
+</html>
