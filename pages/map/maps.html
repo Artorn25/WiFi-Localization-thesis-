@@ -178,7 +178,7 @@
         //   updateMapSelect();
         //   currentMap = img;
         //   resetCanvas();
-        console.log("Image is : " , img);
+        console.log("Image is : ", img);
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -218,7 +218,7 @@
           const selectedMap = event.target.value;
           if (selectedMap && maps[selectedMap]) {
             currentMap = maps[selectedMap];
-            // resetCanvas();
+            resetCanvas();
           }
         });
 
@@ -261,73 +261,82 @@
         const pointName =
           document.getElementById("pointName").value ||
           `Point ${points.length + 1}`;
-        console.log(
-          `Pixel at (${x}, ${y}) - RGBA(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`
-        );
+        // console.log(
+        //   `Pixel at (${x}, ${y}) - RGBA(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`
+        // );
       });
-      
+
       canvas.addEventListener("click", function (event) {
-  if (img != null) {
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+        if (img != null) {
+          
+          if (!drawMode) {
+            console.log(points);
+            const rect = canvas.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
 
-    if (!drawMode) {
-      const imageData = ctx.getImageData(x, y, 1, 1);
-      const pixelData = imageData.data;
-      const pointName =
-        document.getElementById("pointName").value || `Point ${points.length + 1}`;
+            const imageData = ctx.getImageData(x, y, 1, 1);
+            const pixelData = imageData.data;
+            const pointName =
+              document.getElementById("pointName").value ||
+              `Point ${points.length + 1}`;
 
-      console.log(
-        `Pixel at (${x}, ${y}) - RGBA(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`
-      );
+            console.log(
+              `Pixel at (${x}, ${y}) - RGBA(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`
+            );
 
-      drawPoint(x, y);
-      points.push({
-        x,
-        y,
-        name: pointName,
+            drawPoint(x, y);
+            points.push({
+              x,
+              y,
+              name: pointName,
+            });
+            if (points.length >= 2) {
+              const distance = calculateDistance(
+                points[points.length - 2],
+                points[points.length - 1]
+              );
+              points[points.length - 1].distance = distance;
+              drawDistanceLabel(x, y, distance);
+            }
+            document.getElementById("pointName").value = "";
+            updatePointSelects();
+          } else if (drawMode) {
+            console.log(points);
+
+            const rect = canvas.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+
+            const imageData = ctx.getImageData(x, y, 1, 1);
+            const pixelData = imageData.data;
+            const pointName =
+              document.getElementById("pointName").value ||
+              `Point ${points.length + 1}`;
+
+            markerCoordinates.push({
+              x,
+              y,
+            });
+            points.push({
+              x,
+              y,
+              name: pointName,
+            });
+            if (points.length >= 2) {
+              const distance = calculateDistance(
+                points[points.length - 2],
+                points[points.length - 1]
+              );
+              points[points.length - 1].distance = distance;
+              drawDistanceLabel(x, y, distance);
+              drawMarkers();
+              document.getElementById("pointName").value = "";
+              updatePointSelects();
+            }
+          }
+        }
       });
-      if (points.length >= 2) {
-        const distance = calculateDistance(
-          points[points.length - 2],
-          points[points.length - 1]
-        );
-        points[points.length - 1].distance = distance;
-        drawDistanceLabel(x, y, distance);
-      }
-      document.getElementById("pointName").value = "";
-      updatePointSelects();
-    } else if (drawMode) {
-      const imageData = ctx.getImageData(x, y, 1, 1);
-      const pixelData = imageData.data;
-      const pointName =
-        document.getElementById("pointName").value || `Point ${points.length + 1}`;
-
-      markerCoordinates.push({
-        x,
-        y,
-      });
-      points.push({
-        x,
-        y,
-        name: pointName,
-      });
-      if (points.length >= 2) {
-        const distance = calculateDistance(
-          points[points.length - 2],
-          points[points.length - 1]
-        );
-        points[points.length - 1].distance = distance;
-        drawDistanceLabel(x, y, distance);
-        drawMarkers();
-        document.getElementById("pointName").value = "";
-        updatePointSelects();
-      }
-    }
-  }
-});
-
 
       function calculateDistance(point1, point2) {
         const dx = point2.x - point1.x;
@@ -344,14 +353,15 @@
       document
         .getElementById("resetPoints")
         .addEventListener("click", function () {
-          points = [];
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        if (drawMode) {
-          drawMarkers();
-        }
-        document.getElementById("distanceDisplay").innerText = "";
-        updatePointSelects();
+          resetPoints();
+          //   points = [];
+          // ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          // if (drawMode) {
+          //   drawMarkers();
+          // }
+          // document.getElementById("distanceDisplay").innerText = "";
+          // updatePointSelects();
         });
 
       document
@@ -373,7 +383,6 @@
           drawMode = !drawMode;
           updateModeIndicator();
           resetPoints();
-
         });
 
       function updateModeIndicator() {
@@ -386,9 +395,9 @@
         points = [];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        if (drawMode) {
-          drawMarkers();
-        }
+        // if (drawMode) {
+        //   drawMarkers();
+        // }
         document.getElementById("distanceDisplay").innerText = "";
         updatePointSelects();
       }
