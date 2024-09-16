@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BU WiFi - Connect with Ease</title>
+    <title>BU WiFi - High-Speed Campus Connectivity</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,6 +12,7 @@
             --text-color: #333;
             --background-color: #f4f0ff;
             --card-background: #ffffff;
+            --highlight-color: #ff6b6b;
         }
 
         body {
@@ -30,15 +31,65 @@
             padding: 2rem;
         }
 
-        h1 {
-            color: var(--primary-color);
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
             text-align: center;
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.1) 10px,
+                rgba(255,255,255,0.1) 20px
+            );
+            animation: moveBg 20s linear infinite;
+        }
+
+        @keyframes moveBg {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50%, 50%);
+            }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 2px;
-            animation: fadeInDown 1s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wifi-speed {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--highlight-color);
+            position: relative;
+            z-index: 1;
         }
 
         .content {
@@ -47,7 +98,9 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(123, 84, 177, 0.15);
             transition: all 0.3s ease;
-            animation: fadeIn 1s ease-out;
+            margin-top: -50px;
+            position: relative;
+            z-index: 2;
         }
 
         .content:hover {
@@ -60,6 +113,27 @@
             line-height: 1.8;
             margin-bottom: 2rem;
             color: var(--text-color);
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 1rem;
+            width: 30%;
+            min-width: 200px;
+            margin-bottom: 1rem;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
         }
 
         .image-grid {
@@ -169,7 +243,7 @@
 
         .close:hover,
         .close:focus {
-            color: var(--secondary-color);
+            color: var(--highlight-color);
             text-decoration: none;
             transform: rotate(90deg);
         }
@@ -209,16 +283,6 @@
             width: 80px;
         }
 
-        @keyframes fadeIn {
-            from {opacity: 0; transform: translateY(20px);}
-            to {opacity: 1; transform: translateY(0);}
-        }
-
-        @keyframes fadeInDown {
-            from {opacity: 0; transform: translateY(-20px);}
-            to {opacity: 1; transform: translateY(0);}
-        }
-
         .wifi-icon {
             position: fixed;
             bottom: 20px;
@@ -234,9 +298,46 @@
             100% {transform: scale(1);}
         }
 
+        .speed-test {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .speed-test h3 {
+            margin-bottom: 1rem;
+        }
+
+        .speed-test button {
+            background-color: var(--highlight-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .speed-test button:hover {
+            background-color: #ff8787;
+            transform: scale(1.05);
+        }
+
+        #speed-result {
+            margin-top: 1rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
         @media (max-width: 768px) {
             .image-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            .feature {
+                width: 45%;
             }
         }
 
@@ -250,14 +351,41 @@
             .content {
                 padding: 1.5rem;
             }
+            .feature {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <header>
         <h1>BU WiFi</h1>
+        <p class="subtitle">Experience Lightning-Fast Campus Connectivity</p>
+        <p class="wifi-speed">Up to 1 Gbps Speed</p>
+    </header>
+
+    <div class="container">
         <div class="content">
-            <p>Welcome to BU WiFi. Connect here for seamless, high-speed internet access across the entire campus. Enjoy browsing, streaming, and collaborating with ease!</p>
+            <p>Welcome to BU WiFi, your gateway to seamless, high-speed internet access across the entire campus. Enjoy browsing, streaming, and collaborating with unparalleled ease and speed!</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🚀</div>
+                    <h3>High-Speed</h3>
+                    <p>Lightning-fast connectivity up to 1 Gbps</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure</h3>
+                    <p>Enterprise-level security protocols</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📡</div>
+                    <h3>Campus-Wide</h3>
+                    <p>Seamless coverage across all buildings</p>
+                </div>
+            </div>
+
             <div class="image-grid">
                 <img src="\templates\image\wifib1.jpg" alt="BU WiFi Image 1" onclick="openModal(this)">
                 <img src="\templates\image\wifib2.jpg" alt="BU WiFi Image 2" onclick="openModal(this)">
@@ -268,6 +396,12 @@
                 <img src="\templates\image\wifib7.jpg" alt="BU WiFi Image 7" onclick="openModal(this)">
                 <img src="\templates\image\wifib8.jpg" alt="BU WiFi Image 8" onclick="openModal(this)">
                 <img src="\templates\image\wifib9.jpg" alt="BU WiFi Image 9" onclick="openModal(this)">
+            </div>
+
+            <div class="speed-test">
+                <h3>Test Your WiFi Speed</h3>
+                <button onclick="testSpeed()">Start Speed Test</button>
+                <div id="speed-result"></div>
             </div>
         </div>
         <a href="/freewifi.html" class="back-button">Back to WiFi Options</a>
@@ -362,6 +496,41 @@
             window.addEventListener("resize", lazyLoad);
             window.addEventListener("orientationchange", lazyLoad);
         });
+
+        // Speed test simulation
+        function testSpeed() {
+            const speedResult = document.getElementById('speed-result');
+            speedResult.textContent = 'Testing...';
+            
+            // Simulate a speed test (this is just for demonstration)
+            setTimeout(() => {
+                const speed = Math.floor(Math.random() * 500) + 500; // Random speed between 500-1000 Mbps
+                speedResult.textContent = `Your current WiFi speed: ${speed} Mbps`;
+                
+                // Add a visual indicator
+                if (speed < 600) {
+                    speedResult.style.color = '#ff6b6b';
+                } else if (speed < 800) {
+                    speedResult.style.color = '#feca57';
+                } else {
+                    speedResult.style.color = '#48dbfb';
+                }
+            }, 3000);
+        }
+
+        // Animate WiFi speed on page load
+        window.onload = function() {
+            const speedElement = document.querySelector('.wifi-speed');
+            let speed = 0;
+            const interval = setInterval(() => {
+                speed += 50;
+                if (speed <= 1000) {
+                    speedElement.textContent = `Up to ${speed} Mbps Speed`;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 50);
+        }
     </script>
 </body>
 </html>
