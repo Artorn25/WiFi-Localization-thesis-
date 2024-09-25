@@ -130,7 +130,7 @@
             <select id="map-select">
               <option value="">Select Map</option>
             </select>
-            <button id="delete-map">Delete Map</button>
+            <!-- <button id="delete-map">Delete Map</button> -->
             <input type="file" id="map-upload" accept="image/*" />
             <label for="map-upload" class="upload-label">Upload Map</label>
             <input type="text" id="pointName" placeholder="Enter point name" />
@@ -155,10 +155,11 @@
       let drawMode = true;
       let maps = {};
       let currentMap = null;
+      let isDragging = false;
       let markerCoordinates = [
-        { x: 190, y: 286 },
-        { x: 747, y: 288 },
-        { x: 1345, y: 287 },
+        // { x: 190, y: 286 },
+        // { x: 747, y: 288 },
+        // { x: 1345, y: 287 },
       ];
 
       function resetCanvas() {
@@ -238,6 +239,42 @@
         ctx.stroke();
       }
 
+      let draggingMarkerIndex = null;
+
+canvas.addEventListener("mousedown", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  markerCoordinates.forEach((marker, index) => {
+    if (
+      Math.sqrt((mouseX - marker.x) ** 2 + (mouseY - marker.y) ** 2) < 10
+    ) {
+      draggingMarkerIndex = index;
+      isDragging = true;
+    }
+  });
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  if (isDragging && draggingMarkerIndex !== null) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    markerCoordinates[draggingMarkerIndex].x = mouseX;
+    markerCoordinates[draggingMarkerIndex].y = mouseY;
+
+    resetCanvas();
+    drawMarkers();
+  }
+});
+
+canvas.addEventListener("mouseup", () => {
+  isDragging = false;
+  draggingMarkerIndex = null;
+});
+
       function drawPoint(x, y, name) {
         ctx.fillStyle = "red";
         ctx.beginPath();
@@ -251,6 +288,8 @@
           y - 5
         );
       }
+
+      
       canvas.addEventListener("mousemove", function (event) {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -268,7 +307,7 @@
 
       canvas.addEventListener("click", function (event) {
         if (img != null) {
-          
+          console.log("have image");
           if (!drawMode) {
             console.log(points);
             const rect = canvas.getBoundingClientRect();
@@ -302,37 +341,44 @@
             document.getElementById("pointName").value = "";
             updatePointSelects();
           } else if (drawMode) {
-            console.log(points);
+            console.log("Draw mode",points);
 
             const rect = canvas.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
             const imageData = ctx.getImageData(x, y, 1, 1);
             const pixelData = imageData.data;
             const pointName =
               document.getElementById("pointName").value ||
               `Point ${points.length + 1}`;
-
+            console.log("01");
             markerCoordinates.push({
               x,
               y,
             });
+            console.log("02");
+            drawMarkers();
             points.push({
               x,
               y,
               name: pointName,
             });
-            if (points.length >= 2) {
-              const distance = calculateDistance(
+            console.log("03");
+            
+            const distance = calculateDistance(
                 points[points.length - 2],
                 points[points.length - 1]
-              );
-              points[points.length - 1].distance = distance;
-              drawDistanceLabel(x, y, distance);
-              drawMarkers();
-              document.getElementById("pointName").value = "";
-              updatePointSelects();
+            );
+            points[points.length - 1].distance = distance;
+              
+            drawDistanceLabel(x, y, distance);
+              
+            document.getElementById("pointName").value = "";
+            updatePointSelects();
+            if (points.length >= 0) {
+              console.log("04 ");
+
             }
           }
         }
@@ -392,7 +438,8 @@
           : "Mode: Adding Points";
       }
       function resetPoints() {
-        points = [];
+        if (!drawMode){
+          points = [];
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         // if (drawMode) {
@@ -400,6 +447,17 @@
         // }
         document.getElementById("distanceDisplay").innerText = "";
         updatePointSelects();
+        } else {
+          markerCoordinates = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // if (drawMode) {
+        //   drawMarkers();
+        // }
+        document.getElementById("distanceDisplay").innerText = "";
+        updatePointSelects();
+        }
+        
       }
 
       document
@@ -464,6 +522,10 @@
         link.setAttribute("download", "points.csv");
         document.body.appendChild(link);
         link.click();
+      }
+
+      function loadDataCSV() {
+        
       }
 
       // Initialize mode indicator
