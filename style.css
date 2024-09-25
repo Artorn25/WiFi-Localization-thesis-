@@ -15,6 +15,7 @@ html {
     background-color: var(--light-color);
     color: var(--dark-color);
     box-sizing: border-box;
+    
 }
 
 .container {
@@ -52,11 +53,13 @@ nav {
 .search-bar input {
     max-width: 300px;
     border-color: orange;
+    font-size: 12px;
 }
 
 .search-bar button {
     margin-left: 10px;
     background-color: var(--primary-color);
+    font-size: 10px;
     color: var(--white-color);
     cursor: pointer;
     border: none;
