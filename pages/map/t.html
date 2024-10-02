@@ -57,7 +57,6 @@
         </div>
     </div>
     <script type="module">
-        // Firebase configuration and imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
@@ -235,30 +234,30 @@
         }
 
         function deletePoint() {
-    const selectedIndex = document.getElementById("pointSelect").value;
-    if (!selectedIndex) {
-        alert("Please select a point to delete.");
-        return;
-    }
+            const selectedIndex = document.getElementById("pointSelect").value;
+            if (!selectedIndex) {
+                alert("Please select a point to delete.");
+                return;
+            }
 
-    // ลบเฉพาะจุดที่เลือก
-    points.splice(selectedIndex, 1);  // ลบจุดออกจาก array
+            // ลบเฉพาะจุดที่เลือก
+            points.splice(selectedIndex, 1);  // ลบจุดออกจาก array
 
-    // เคลียร์เฉพาะจุดนั้น แล้ววาดจุดที่เหลือใหม่
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            // เคลียร์เฉพาะจุดนั้น แล้ววาดจุดที่เหลือใหม่
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // วาดจุดที่เหลือใหม่
-    points.forEach(point => {
-        drawPoint(point.x, point.y, point.name, point.color);
-        if (point.distance > 0) {
-            drawCircle(point.x, point.y, point.distance);  // วาดวงกลมที่ยังมีค่า distance
+            // วาดจุดที่เหลือใหม่
+            points.forEach(point => {
+                drawPoint(point.x, point.y, point.name, point.color);
+                if (point.distance > 0) {
+                    drawCircle(point.x, point.y, point.distance);  // วาดวงกลมที่ยังมีค่า distance
+                }
+            });
+
+            updatePointSelects();  // อัปเดต dropdown ของจุด
+            console.log("Points after deletion:", points);
         }
-    });
-
-    updatePointSelects();  // อัปเดต dropdown ของจุด
-    console.log("Points after deletion:", points);
-}
 
         function editPointName() {
             const selectedIndex = document.getElementById("editPointSelect").value;
@@ -323,72 +322,114 @@
         }
 
         function checkAndDisplayPointData(point) {
-    if (point.name === "TP-Link_2536_1") {
-        fetchPointData(point.name).then(data => {
-            onValue(
-                dbRef,
-                (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        var RSSI = data?.Router1?.rssi ?? "Not available",
-                            Distance = data?.Router1?.Log?.distance ?? "Not available";
+            if (point.name === "TP-Link_2536_1") {
+                fetchPointData(point.name).then(data => {
+                    onValue(
+                        dbRef,
+                        (snapshot) => {
+                            if (snapshot.exists()) {
+                                const data = snapshot.val();
+                                var RSSI = data?.Router1?.rssi ?? "Not available",
+                                    Distance = data?.Router1?.Log?.distance ?? "Not available";
 
-                        // อัปเดตข้อมูลระยะทางและ RSSI
-                        const foundPoint = points.find(p => p.name === point.name);
-                        if (foundPoint) {
-                            foundPoint.distance = Distance;
-                            foundPoint.rssi = RSSI;
-                        }
+                                // อัปเดตข้อมูลระยะทางและ RSSI
+                                const foundPoint = points.find(p => p.name === point.name);
+                                if (foundPoint) {
+                                    foundPoint.distance = Distance;
+                                    foundPoint.rssi = RSSI;
+                                }
 
-                        // เงื่อนไข: ถ้าเป็นโหมด Drawing Markers จะวาดวงกลม
-                        if (drawMode) {
-                            console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
-                            drawCircle(point.x, point.y, Distance);
+                                // เงื่อนไข: ถ้าเป็นโหมด Drawing Markers จะวาดวงกลม
+                                if (drawMode) {
+                                    console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
+                                    drawCircle(point.x, point.y, Distance);
+                                }
+                            } else {
+                                console.log("No data available");
+                            }
+                        },
+                        (error) => {
+                            console.error("Error reading data: ", error);
                         }
-                    } else {
-                        console.log("No data available");
-                    }
-                },
-                (error) => {
-                    console.error("Error reading data: ", error);
-                }
-            );
-        });
-    } else if (point.name === "TP-Link_2536_2") {
-        fetchPointData(point.name).then(data => {
-            onValue(
-                dbRef,
-                (snapshot) => {
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        var RSSI = data?.Router2?.rssi ?? "Not available",
-                            Distance = data?.Router2?.Log?.distance ?? "Not available";
+                    );
+                });
+            } else if (point.name === "TP-Link_2536_2") {
+                fetchPointData(point.name).then(data => {
+                    onValue(
+                        dbRef,
+                        (snapshot) => {
+                            if (snapshot.exists()) {
+                                const data = snapshot.val();
+                                var RSSI = data?.Router2?.rssi ?? "Not available",
+                                    Distance = data?.Router2?.Log?.distance ?? "Not available";
 
-                        // อัปเดตข้อมูลระยะทางและ RSSI
-                        const foundPoint = points.find(p => p.name === point.name);
-                        if (foundPoint) {
-                            foundPoint.distance = Distance;
-                            foundPoint.rssi = RSSI;
-                        }
+                                // อัปเดตข้อมูลระยะทางและ RSSI
+                                const foundPoint = points.find(p => p.name === point.name);
+                                if (foundPoint) {
+                                    foundPoint.distance = Distance;
+                                    foundPoint.rssi = RSSI;
+                                }
 
-                        // เงื่อนไข: ถ้าเป็นโหมด Drawing Markers จะวาดวงกลม
-                        if (drawMode) {
-                            console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
-                            drawCircle(point.x, point.y, Distance);
+                                // เงื่อนไข: ถ้าเป็นโหมด Drawing Markers จะวาดวงกลม
+                                if (drawMode) {
+                                    console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
+                                    drawCircle(point.x, point.y, Distance);
+                                }
+                            } else {
+                                console.log("No data available");
+                            }
+                        },
+                        (error) => {
+                            console.error("Error reading data: ", error);
                         }
-                    } else {
-                        console.log("No data available");
-                    }
-                },
-                (error) => {
-                    console.error("Error reading data: ", error);
-                }
-            );
-        });
-    } else {
-        console.log(`Point ${point.name} does not match any TP-Link routers`);
-    }
-}
+                    );
+                });
+            } else {
+                console.log(`Point ${point.name} does not match any TP-Link routers`);
+            }
+        }
+        // fetch real time ขนาดวง
+        // function checkAndDisplayPointData(point) {
+        //     if (point.name === "TP-Link_2536_1" || point.name === "TP-Link_2536_2") {
+        //         // ชื่อ reference ใน Firebase ที่เกี่ยวข้อง
+        //         const routerKey = point.name === "TP-Link_2536_1" ? "Router1" : "Router2";
+
+        //         onValue(dbRef, (snapshot) => {
+        //             if (snapshot.exists()) {
+        //                 const data = snapshot.val();
+        //                 const RSSI = data[routerKey]?.rssi ?? "Not available";
+        //                 const Distance = data[routerKey]?.Log?.distance ?? "Not available";
+
+        //                 // อัปเดตข้อมูลระยะทางและ RSSI
+        //                 const foundPoint = points.find(p => p.name === point.name);
+        //                 if (foundPoint) {
+        //                     foundPoint.distance = Distance;
+        //                     foundPoint.rssi = RSSI;
+        //                 }
+
+        //                 // วาดวงกลมใหม่ตามค่า Distance ที่เปลี่ยนไป
+        //                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+        //                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        //                 // วาดจุดใหม่ทั้งหมด รวมถึงวงกลมที่อัปเดต
+        //                 points.forEach(point => {
+        //                     drawPoint(point.x, point.y, point.name, point.color);
+        //                     if (point.distance > 0) {
+        //                         drawCircle(point.x, point.y, point.distance);  // วาดวงกลมที่มีค่า distance
+        //                     }
+        //                 });
+
+        //                 console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
+        //             } else {
+        //                 console.log("No data available");
+        //             }
+        //         }, (error) => {
+        //             console.error("Error reading data: ", error);
+        //         });
+        //     } else {
+        //         console.log(`Point ${point.name} does not match any TP-Link routers`);
+        //     }
+        // }
 
         document.getElementById("resetPoints").addEventListener("click", resetCanvas);
         document.getElementById("logPoints").addEventListener("click", logPoints);
@@ -398,7 +439,6 @@
         document.getElementById("editPoint").addEventListener("click", editPointName);
         updateModeIndicator();
     </script>
-
 </body>
 
 </html>
