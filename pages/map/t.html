@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <div class="main-content">
+    <!-- <div class="main-content">
         <nav>
             <div class="container">
                 <div class="nav-content">
@@ -55,7 +55,56 @@
         <div id="tooltip"
             style="position: absolute; display: none; background-color: white; border: 1px solid black; padding: 5px; border-radius: 5px; pointer-events: none;">
         </div>
+    </div> -->
+    <div class="main-content">
+        <nav>
+            <div class="container">
+                <div class="nav-content">
+                    <h1>Campus Maps</h1>
+                    <div class="nav-links">
+                        <a href="/index.html">Home</a>
+                        <a href="maps.html" class="active">Maps</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    
+        <div id="map-container">
+            <div class="container">
+                <canvas id="myCanvas" width="1423px" height="653px"></canvas>
+                <div id="map-controls">
+                    <div class="controls-group">
+                        <select id="map-select">
+                            <option value="">Select Map</option>
+                        </select>
+                        <button id="delete-map">Delete Map</button>
+                        <label for="map-upload" class="upload-label">Upload Map</label>
+                        <input type="file" id="map-upload" accept="image/*" />
+                        <input type="text" id="pointName" placeholder="Enter point name" />
+                        <button id="logPoints">Log Points</button>
+                        <button id="resetPoints">Reset</button>
+                        <button id="toggleMode">Toggle Mode</button>
+                        <button id="deletePoint">Delete Point</button>
+                    </div>
+                    <div class="controls-group">
+                        <select id="pointSelect"></select>
+                        <select id="point1Select"></select>
+                        <select id="point2Select"></select>
+                        <button id="showDistance">Show Distance</button>
+                        <select id="editPointSelect"></select>
+                        <input type="text" id="newPointName" placeholder="Enter new point name" />
+                        <button id="editPoint">Edit Point Name</button>
+                    </div>
+                </div>
+                <div id="modeIndicator"></div>
+                <div id="distanceDisplay"></div>
+            </div>
+        </div>
+        <div id="tooltip"
+            style="position: absolute; display: none; background-color: white; border: 1px solid black; padding: 5px; border-radius: 5px; pointer-events: none;">
+        </div>
     </div>
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
         import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
@@ -322,114 +371,46 @@
         }
 
         function checkAndDisplayPointData(point) {
-            if (point.name === "TP-Link_2536_1") {
-                fetchPointData(point.name).then(data => {
-                    onValue(
-                        dbRef,
-                        (snapshot) => {
-                            if (snapshot.exists()) {
-                                const data = snapshot.val();
-                                var RSSI = data?.Router1?.rssi ?? "Not available",
-                                    Distance = data?.Router1?.Log?.distance ?? "Not available";
+            if (point.name === "TP-Link_2536_1" || point.name === "TP-Link_2536_2") {
+                // ชื่อ reference ใน Firebase ที่เกี่ยวข้อง
+                const routerKey = point.name === "TP-Link_2536_1" ? "Router1" : "Router2";
 
-                                // อัปเดตข้อมูลระยะทางและ RSSI
-                                const foundPoint = points.find(p => p.name === point.name);
-                                if (foundPoint) {
-                                    foundPoint.distance = Distance;
-                                    foundPoint.rssi = RSSI;
-                                }
+                onValue(dbRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        const RSSI = data[routerKey]?.rssi ?? "Not available";
+                        const Distance = data[routerKey]?.Log?.distance ?? "Not available";
 
-                                // เงื่อนไข: ถ้าเป็นโหมด Drawing Markers จะวาดวงกลม
-                                if (drawMode) {
-                                    console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
-                                    drawCircle(point.x, point.y, Distance);
-                                }
-                            } else {
-                                console.log("No data available");
-                            }
-                        },
-                        (error) => {
-                            console.error("Error reading data: ", error);
+                        // อัปเดตข้อมูลระยะทางและ RSSI
+                        const foundPoint = points.find(p => p.name === point.name);
+                        if (foundPoint) {
+                            foundPoint.distance = Distance;
+                            foundPoint.rssi = RSSI;
                         }
-                    );
-                });
-            } else if (point.name === "TP-Link_2536_2") {
-                fetchPointData(point.name).then(data => {
-                    onValue(
-                        dbRef,
-                        (snapshot) => {
-                            if (snapshot.exists()) {
-                                const data = snapshot.val();
-                                var RSSI = data?.Router2?.rssi ?? "Not available",
-                                    Distance = data?.Router2?.Log?.distance ?? "Not available";
 
-                                // อัปเดตข้อมูลระยะทางและ RSSI
-                                const foundPoint = points.find(p => p.name === point.name);
-                                if (foundPoint) {
-                                    foundPoint.distance = Distance;
-                                    foundPoint.rssi = RSSI;
-                                }
+                        // วาดวงกลมใหม่ตามค่า Distance ที่เปลี่ยนไป
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                                // เงื่อนไข: ถ้าเป็นโหมด Drawing Markers จะวาดวงกลม
-                                if (drawMode) {
-                                    console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
-                                    drawCircle(point.x, point.y, Distance);
-                                }
-                            } else {
-                                console.log("No data available");
+                        // วาดจุดใหม่ทั้งหมด รวมถึงวงกลมที่อัปเดต
+                        points.forEach(point => {
+                            drawPoint(point.x, point.y, point.name, point.color);
+                            if (point.distance > 0) {
+                                drawCircle(point.x, point.y, point.distance);  // วาดวงกลมที่มีค่า distance
                             }
-                        },
-                        (error) => {
-                            console.error("Error reading data: ", error);
-                        }
-                    );
+                        });
+
+                        console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
+                    } else {
+                        console.log("No data available");
+                    }
+                }, (error) => {
+                    console.error("Error reading data: ", error);
                 });
             } else {
                 console.log(`Point ${point.name} does not match any TP-Link routers`);
             }
         }
-        // fetch real time ขนาดวง
-        // function checkAndDisplayPointData(point) {
-        //     if (point.name === "TP-Link_2536_1" || point.name === "TP-Link_2536_2") {
-        //         // ชื่อ reference ใน Firebase ที่เกี่ยวข้อง
-        //         const routerKey = point.name === "TP-Link_2536_1" ? "Router1" : "Router2";
-
-        //         onValue(dbRef, (snapshot) => {
-        //             if (snapshot.exists()) {
-        //                 const data = snapshot.val();
-        //                 const RSSI = data[routerKey]?.rssi ?? "Not available";
-        //                 const Distance = data[routerKey]?.Log?.distance ?? "Not available";
-
-        //                 // อัปเดตข้อมูลระยะทางและ RSSI
-        //                 const foundPoint = points.find(p => p.name === point.name);
-        //                 if (foundPoint) {
-        //                     foundPoint.distance = Distance;
-        //                     foundPoint.rssi = RSSI;
-        //                 }
-
-        //                 // วาดวงกลมใหม่ตามค่า Distance ที่เปลี่ยนไป
-        //                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-        //                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        //                 // วาดจุดใหม่ทั้งหมด รวมถึงวงกลมที่อัปเดต
-        //                 points.forEach(point => {
-        //                     drawPoint(point.x, point.y, point.name, point.color);
-        //                     if (point.distance > 0) {
-        //                         drawCircle(point.x, point.y, point.distance);  // วาดวงกลมที่มีค่า distance
-        //                     }
-        //                 });
-
-        //                 console.log(`RSSI: ${RSSI} dBm\nDistance: ${Distance.toFixed(5)} m`);
-        //             } else {
-        //                 console.log("No data available");
-        //             }
-        //         }, (error) => {
-        //             console.error("Error reading data: ", error);
-        //         });
-        //     } else {
-        //         console.log(`Point ${point.name} does not match any TP-Link routers`);
-        //     }
-        // }
 
         document.getElementById("resetPoints").addEventListener("click", resetCanvas);
         document.getElementById("logPoints").addEventListener("click", logPoints);
