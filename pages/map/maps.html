@@ -128,7 +128,9 @@
           <canvas id="myCanvas" width="1423px" height="653px"></canvas>
           <div id="map-controls">
             <select id="map-select">
-              <option value="">Select Map</option>
+              <option value="main" id="main">Main</option>
+              <option value="room" id="room">Room</option>
+
             </select>
             <!-- <button id="delete-map">Delete Map</button> -->
             <input type="file" id="map-upload" accept="image/*" />
@@ -141,7 +143,11 @@
             <select id="point2Select"></select>
             <button id="showDistance">Show Distance</button>
             <select id="editPointSelect"></select>
-            <input type="text" id="newPointName" placeholder="Enter new point name" />
+            <input
+              type="text"
+              id="newPointName"
+              placeholder="Enter new point name"
+            />
             <button id="editPoint">Edit Point Name</button>
           </div>
           <div id="modeIndicator"></div>
@@ -176,7 +182,6 @@
         }
       }
       const img = new Image();
-      img.src = "./2.jpg";
       img.onload = function () {
         //   maps[file.name] = img;
         //   updateMapSelect();
@@ -206,8 +211,8 @@
         });
 
       function updateMapSelect() {
-        const mapSelect = document.getElementById("map-select");
-        mapSelect.innerHTML = '<option value="">Select Map</option>';
+        const mapSelect = document.getElementById("Select map");
+        // mapSelect.innerHTML = '<option value=""  id="room">Room</option>';
         for (let mapName in maps) {
           const option = document.createElement("option");
           option.value = mapName;
@@ -215,6 +220,7 @@
           mapSelect.appendChild(option);
         }
       }
+      
 
       document
         .getElementById("map-select")
@@ -224,59 +230,141 @@
             currentMap = maps[selectedMap];
             resetCanvas();
           }
+
+          const selectedOption = event.target.value;
+          const selectedValue = event.target.value;
+          console.log(selectedValue)
+
+      // Perform actions based on the selected value
+      if (selectedValue === "room") {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+              img.src = "./2.jpg";
+        };
+        img.src = "./2.jpg"
+        console.log('Room selected');
+        // You can add any action you want here for "Room" option
+      } else if (selectedValue === 'main') {
+        console.log('Main selected');
+        // You can add any action you want here for "Main" option
+      }
         });
 
-      function drawMarkers() {
-        ctx.save();
-        ctx.fillStyle = "blue";
-        markerCoordinates.forEach((marker) => {
-          drawMarker(marker.x, marker.y);
-        });
-        ctx.restore();
-      }
+        let draggingMarkerIndex = null;
 
-      function drawMarker(x, y) {
-        ctx.beginPath();
-        ctx.arc(x, y, 10, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      let draggingMarkerIndex = null;
-
-canvas.addEventListener("mousedown", (e) => {
+// เปลี่ยนเคอร์เซอร์เป็น pointer เมื่อเมาส์อยู่บนจุด
+canvas.addEventListener("mousemove", (event) => {
   const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
 
+  let isOnMarker = false;
+
+  // ตรวจสอบว่ามีการ hover อยู่บน marker หรือไม่
   markerCoordinates.forEach((marker, index) => {
-    if (
-      Math.sqrt((mouseX - marker.x) ** 2 + (mouseY - marker.y) ** 2) < 10
-    ) {
+    if (Math.abs(marker.x - x) < 10 && Math.abs(marker.y - y) < 10) {
+      canvas.style.cursor = "pointer";
+      isOnMarker = true;
+    }
+  });
+
+  if (!isOnMarker) {
+    canvas.style.cursor = "default";
+  }
+
+  // ลาก marker
+  if (draggingMarkerIndex !== null) {
+    // อัปเดตพิกัด x, y ใน markerCoordinates ตาม index ที่ลากอยู่
+    markerCoordinates[draggingMarkerIndex].x = x;
+    markerCoordinates[draggingMarkerIndex].y = y;
+    
+    // รีเฟรช canvas และวาดใหม่
+    resetCanvas();
+    drawMarkers(); // วาด marker ใหม่ทั้งหมด
+  }
+});
+
+// คลิกเมาส์เพื่อเริ่มการลาก marker
+canvas.addEventListener("mousedown", (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  // ตรวจสอบว่าคลิกบน marker ใด
+  markerCoordinates.forEach((marker, index) => {
+    if (Math.abs(marker.x - x) < 10 && Math.abs(marker.y - y) < 10) {
       draggingMarkerIndex = index;
-      isDragging = true;
     }
   });
 });
 
-canvas.addEventListener("mousemove", (e) => {
-  if (isDragging && draggingMarkerIndex !== null) {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    markerCoordinates[draggingMarkerIndex].x = mouseX;
-    markerCoordinates[draggingMarkerIndex].y = mouseY;
-
-    resetCanvas();
-    drawMarkers();
-  }
-});
-
+// ปล่อยเมาส์เพื่อหยุดการลาก
 canvas.addEventListener("mouseup", () => {
-  isDragging = false;
   draggingMarkerIndex = null;
 });
+
+// ฟังก์ชัน resetCanvas ที่จะลบจุดเก่าและวาดใหม่
+function resetCanvas() {
+  if (currentMap) {
+    canvas.width = currentMap.width;
+    canvas.height = currentMap.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // ลบข้อมูลเดิมบน canvas
+    ctx.drawImage(currentMap, 0, 0, canvas.width, canvas.height); // วาดแผนที่ใหม่
+  }
+}
+
+// ฟังก์ชัน drawMarkers ที่จะวาด marker ใหม่ทั้งหมด
+function drawMarkers() {
+  ctx.save();
+  ctx.fillStyle = "blue";
+  markerCoordinates.forEach((marker) => {
+    drawMarker(marker.x, marker.y);
+  });
+  ctx.restore();
+}
+
+// ฟังก์ชัน drawMarker สำหรับวาด marker เดี่ยว
+function drawMarker(x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, 10, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.stroke();
+}
+
+      // canvas.addEventListener("mousedown", (e) => {
+      //   const rect = canvas.getBoundingClientRect();
+      //   const mouseX = e.clientX - rect.left;
+      //   const mouseY = e.clientY - rect.top;
+
+      //   markerCoordinates.forEach((marker, index) => {
+      //     if (
+      //       Math.sqrt((mouseX - marker.x) ** 2 + (mouseY - marker.y) ** 2) < 10
+      //     ) {
+      //       draggingMarkerIndex = index;
+      //       isDragging = true;
+      //     }
+      //   });
+      // });
+
+      // canvas.addEventListener("mousemove", (e) => {
+      //   if (isDragging && draggingMarkerIndex !== null) {
+      //     const rect = canvas.getBoundingClientRect();
+      //     const mouseX = e.clientX - rect.left;
+      //     const mouseY = e.clientY - rect.top;
+
+      //     markerCoordinates[draggingMarkerIndex].x = mouseX;
+      //     markerCoordinates[draggingMarkerIndex].y = mouseY;
+
+      //     resetCanvas();
+      //     drawMarkers();
+      //   }
+      // });
+
+      // canvas.addEventListener("mouseup", () => {
+      //   isDragging = false;
+      //   draggingMarkerIndex = null;
+      // });
 
       function drawPoint(x, y, name) {
         ctx.fillStyle = "red";
@@ -292,7 +380,6 @@ canvas.addEventListener("mouseup", () => {
         );
       }
 
-      
       canvas.addEventListener("mousemove", function (event) {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -313,8 +400,8 @@ canvas.addEventListener("mouseup", () => {
           if (!drawMode) {
             console.log(points);
             const rect = canvas.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
             const imageData = ctx.getImageData(x, y, 1, 1);
             const pixelData = imageData.data;
@@ -343,7 +430,7 @@ canvas.addEventListener("mouseup", () => {
             document.getElementById("pointName").value = "";
             updatePointSelects();
           } else if (drawMode) {
-            console.log("Draw mode",points);
+            console.log("Draw mode", points);
 
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
@@ -361,36 +448,34 @@ canvas.addEventListener("mouseup", () => {
             });
             drawMarkers();
             updatePointSelects();
-            drawRadius(x, y, 50); 
+            drawRadius(x, y, 50);
 
             points.push({
               x,
               y,
               name: pointName,
-            });        
-    
+            });
+
             const distance = calculateDistance(
-                points[points.length - 2],
-                points[points.length - 1]
+              points[points.length - 2],
+              points[points.length - 1]
             );
             drawDistanceLabel(x, y, distance);
 
             points[points.length - 1].distance = distance;
 
-              
             document.getElementById("pointName").value = "";
-            
           }
         }
       });
 
       function drawRadius(x, y, radius) {
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.strokeStyle = 'blue'; // สีของรัศมี
-            ctx.lineWidth = 2; // ความกว้างของเส้น
-            ctx.stroke();
-        }
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "blue"; // สีของรัศมี
+        ctx.lineWidth = 2; // ความกว้างของเส้น
+        ctx.stroke();
+      }
 
       function calculateDistance(point1, point2) {
         const dx = point2.x - point1.x;
@@ -446,26 +531,25 @@ canvas.addEventListener("mouseup", () => {
           : "Mode: Adding Points";
       }
       function resetPoints() {
-        if (!drawMode){
+        if (!drawMode) {
           points = [];
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // if (drawMode) {
-        //   drawMarkers();
-        // }
-        document.getElementById("distanceDisplay").innerText = "";
-        updatePointSelects();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          // if (drawMode) {
+          //   drawMarkers();
+          // }
+          document.getElementById("distanceDisplay").innerText = "";
+          updatePointSelects();
         } else {
           markerCoordinates = [];
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // if (drawMode) {
-        //   drawMarkers();
-        // }
-        document.getElementById("distanceDisplay").innerText = "";
-        updatePointSelects();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          // if (drawMode) {
+          //   drawMarkers();
+          // }
+          document.getElementById("distanceDisplay").innerText = "";
+          updatePointSelects();
         }
-        
       }
 
       document
@@ -524,7 +608,8 @@ canvas.addEventListener("mouseup", () => {
             point.y
           )},${point.name}\n`;
         });
-        const encodedUri = encodeURI(csvContent);m
+        const encodedUri = encodeURI(csvContent);
+        m;
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", "points.csv");
@@ -532,68 +617,79 @@ canvas.addEventListener("mouseup", () => {
         link.click();
       }
 
-      function loadDataCSV() {
-        
-      }
+      function loadDataCSV() {}
 
       // ฟังก์ชันแก้ไขชื่อจุด
       function editPointName() {
-            const selectedIndex = document.getElementById("editPointSelect").value;
-            const newPointName = document.getElementById("newPointName").value;
+        const selectedIndex = document.getElementById("editPointSelect").value;
+        const newPointName = document.getElementById("newPointName").value;
 
-            if (!selectedIndex) {
-                alert("Please select a point to edit.");
-                return;
-            }
-
-            if (!newPointName) {
-                alert("Please enter a new name for the point.");
-                return;
-            }
-
-            if (points.some(point => point.name === newPointName)) {
-                alert("Point name must be unique.");
-                return;
-            }
-
-            // อัปเดตชื่อจุดใน array
-            points[selectedIndex].name = newPointName;
-
-            // รีเซ็ต canvas เพื่อแสดงชื่อจุดใหม่
-            resetCanvas();
-            updatePointSelects();
-            document.getElementById("newPointName").value = "";
-            console.log("Points after editing:", points);
+        if (!selectedIndex) {
+          alert("Please select a point to edit.");
+          return;
         }
 
-        // ฟังก์ชันสำหรับแสดงข้อมูลเมื่อ cursor ไปโดนจุด
-        function showTooltip(event) {
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-
-            const hoveredPoint = points.find(point => Math.abs(point.x - x) < 5 && Math.abs(point.y - y) < 5);
-
-            if (hoveredPoint) {
-                const tooltip = document.getElementById("tooltip");
-                tooltip.style.left = `${event.clientX + 10}px`;
-                tooltip.style.top = `${event.clientY + 10}px`;
-                tooltip.innerHTML = `Name: ${hoveredPoint.name}<br>X: ${Math.round(hoveredPoint.x)}<br>Y: ${Math.round(hoveredPoint.y)}`;
-                tooltip.style.display = "block";
-            } else {
-                document.getElementById("tooltip").style.display = "none";
-            }
+        if (!newPointName) {
+          alert("Please enter a new name for the point.");
+          return;
         }
 
-        // เพิ่ม event listener
-        canvas.addEventListener("mousemove", showTooltip);
-        document.getElementById("resetPoints").addEventListener("click", resetPoints);
-        document.getElementById("logPoints").addEventListener("click", logPoints);
-        document.getElementById("toggleMode").addEventListener("click", toggleMode);
-        document.getElementById("showDistance").addEventListener("click", showDistance);
-        document.getElementById("deletePoint").addEventListener("click", deletePoint);
-        document.getElementById("editPoint").addEventListener("click", editPointName);
-        
+        if (points.some((point) => point.name === newPointName)) {
+          alert("Point name must be unique.");
+          return;
+        }
+
+        // อัปเดตชื่อจุดใน array
+        points[selectedIndex].name = newPointName;
+
+        // รีเซ็ต canvas เพื่อแสดงชื่อจุดใหม่
+        resetCanvas();
+        updatePointSelects();
+        document.getElementById("newPointName").value = "";
+        console.log("Points after editing:", points);
+      }
+
+      // ฟังก์ชันสำหรับแสดงข้อมูลเมื่อ cursor ไปโดนจุด
+      function showTooltip(event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        const hoveredPoint = points.find(
+          (point) => Math.abs(point.x - x) < 5 && Math.abs(point.y - y) < 5
+        );
+
+        if (hoveredPoint) {
+          const tooltip = document.getElementById("tooltip");
+          tooltip.style.left = `${event.clientX + 10}px`;
+          tooltip.style.top = `${event.clientY + 10}px`;
+          tooltip.innerHTML = `Name: ${hoveredPoint.name}<br>X: ${Math.round(
+            hoveredPoint.x
+          )}<br>Y: ${Math.round(hoveredPoint.y)}`;
+          tooltip.style.display = "block";
+        } else {
+          document.getElementById("tooltip").style.display = "none";
+        }
+      }
+
+      // เพิ่ม event listener
+      canvas.addEventListener("mousemove", showTooltip);
+      document
+        .getElementById("resetPoints")
+        .addEventListener("click", resetPoints);
+      document.getElementById("logPoints").addEventListener("click", logPoints);
+      document
+        .getElementById("toggleMode")
+        .addEventListener("click", toggleMode);
+      document
+        .getElementById("showDistance")
+        .addEventListener("click", showDistance);
+      document
+        .getElementById("deletePoint")
+        .addEventListener("click", deletePoint);
+      document
+        .getElementById("editPoint")
+        .addEventListener("click", editPointName);
 
       // Initialize mode indicator
       updateModeIndicator();
