@@ -85,9 +85,9 @@
                         <button id="resetPoints">Reset</button>
                         <button id="toggleMode">Toggle Mode</button>
                         <button id="deletePoint">Delete Point</button>
+                        <select id="pointSelect"></select>
                     </div>
                     <div class="controls-group">
-                        <select id="pointSelect"></select>
                         <select id="point1Select"></select>
                         <select id="point2Select"></select>
                         <button id="showDistance">Show Distance</button>
@@ -339,7 +339,7 @@
 
         function updateModeIndicator() {
             const modeIndicator = document.getElementById("modeIndicator");
-            modeIndicator.textContent = drawMode ? "Mode: Drawing Markers" : "Mode: Adding Points";
+            modeIndicator.textContent = drawMode ? "Mode: Adding Routers" : "Mode: Adding Points";
         }
 
         function updatePointSelects() {
