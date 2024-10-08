@@ -209,3 +209,19 @@ input[type="text"] {
   margin-top: 1rem;
   font-style: italic;
 }
+
+#map-sample-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-sample {
+  width: 150px; /* ขนาดที่ต้องการ */
+  margin: 10px;
+  cursor: pointer; /* เปลี่ยนเป็น pointer เมื่อ hover */
+  border: 1px solid #ccc;
+}
+
+.map-sample:hover {
+  border-color: #000; /* เปลี่ยนสีเมื่อ hover */
+}
