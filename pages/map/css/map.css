@@ -1,227 +1,222 @@
-/* body {
-  font-family: "Roboto", sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f5f5f5;
-  color: #333;
+/* Modern color palette */
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --accent-color: #e74c3c;
+  --background-color: #f7f9fc;
+  --card-background: #ffffff;
+  --text-color: #2c3e50;
+  --border-color: #e0e6ed;
 }
-.container {
-  text-align: center;
-}
-nav {
-  background-color: #2196f3;
-  color: white;
-  padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.nav-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  margin-left: 20px;
-  transition: opacity 0.3s;
-}
-.nav-links a:hover {
-  opacity: 0.8;
-}
-#map-container {
-  margin-top: 2rem;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-#campus-map {
-  max-width: 100%;
-  overflow: auto;
-}
-canvas {
-  border: 1px solid #e0e0e0;
-  max-width: 100%;
-  border-radius: 4px;
-}
-
-#map-controls {
-  text-align: center;
-  margin-top: 1rem;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-button,
-select,
-.upload-label {
-  padding: 8px 16px;
-  cursor: pointer;
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-button:hover,
-.upload-label:hover {
-  background-color: #1976d2;
-}
-select {
-  background-color: white;
-  color: #333;
-}
-#map-upload {
-  display: none;
-}
-.upload-label {
-  display: inline-block;
-}
-input[type="text"] {
-  padding: 8px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 14px;
-}
-#distanceDisplay {
-  margin-top: 1rem;
-  font-weight: bold;
-}
-#modeIndicator {
-  margin-top: 1rem;
-  font-style: italic;
-} */
-
 
 body {
-  font-family: "Roboto", sans-serif;
+  font-family: 'Poppins', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
 }
 
 .container {
-  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
+/* Navbar styling */
 nav {
-  background-color: #2196f3;
-  color: white;
-  padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-background);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .nav-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 1rem 0;
+}
+
+.nav-content h1 {
+  color: var(--primary-color);
+  font-size: 1.8rem;
+  margin: 0;
 }
 
 .nav-links a {
-  color: white;
+  color: var(--text-color);
   text-decoration: none;
-  margin-left: 20px;
-  transition: opacity 0.3s;
-}
-
-.nav-links a:hover {
-  opacity: 0.8;
-}
-
-#map-container {
-  margin-top: 2rem;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
-canvas {
-  border: 1px solid #e0e0e0;
-  max-width: 100%;
+  margin-left: 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
 }
 
+.nav-links a:hover {
+  color: var(--primary-color);
+}
+
+.nav-links a.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Map container styling */
+#map-container {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+canvas {
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+/* Controls styling */
 #map-controls {
-  text-align: center;
-  margin-top: 1rem;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  margin-top: 1.5rem;
 }
 
 .controls-group {
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
   justify-content: center;
-  gap: 10px;
 }
 
 button,
-select,
 .upload-label {
-  padding: 8px 16px;
-  cursor: pointer;
-  background-color: #2196f3;
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background-color 0.3s;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.upload-btn-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.upload-btn-wrapper input[type=file] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.btn-upload {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-upload:hover {
+  background-color: darken(var(--primary-color), 10%);
+  transform: translateY(-2px);
+}
+
+/* อัปเดตสไตล์ทั่วไปของปุ่ม */
+button,
+.btn-upload {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+button:hover,
+.btn-upload:hover {
+  background-color: darken(var(--primary-color), 10%);
+  transform: translateY(-2px);
 }
 
 button:hover,
 .upload-label:hover {
-  background-color: #1976d2;
+  background-color: darken(var(--primary-color), 10%);
+  transform: translateY(-2px);
 }
 
-select {
-  background-color: white;
-  color: #333;
-}
-
-#map-upload {
-  display: none;
-}
-
-.upload-label {
-  display: inline-block;
-}
-
+select,
 input[type="text"] {
-  padding: 8px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 0.8rem 1.2rem;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
-#distanceDisplay {
-  margin-top: 1rem;
-  font-weight: bold;
+select:focus,
+input[type="text"]:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
-#modeIndicator {
-  margin-top: 1rem;
-  font-style: italic;
+/* Special buttons */
+#delete-map {
+  background-color: var(--accent-color);
 }
 
+#logPoints {
+  background-color: var(--secondary-color);
+}
+
+/* Tooltip styling */
+.tooltip {
+  background-color: var(--card-background);
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* Sample maps styling */
 #map-sample-container {
-  display: flex;
-  flex-direction: column;
+  margin-top: 2rem;
+}
+
+#map-sample-container h3 {
+  color: var(--text-color);
+  margin-bottom: 1rem;
 }
 
 .map-sample {
-  width: 150px; /* ขนาดที่ต้องการ */
-  margin: 10px;
-  cursor: pointer; /* เปลี่ยนเป็น pointer เมื่อ hover */
-  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .map-sample:hover {
-  border-color: #000; /* เปลี่ยนสีเมื่อ hover */
+  transform: scale(1.05);
 }
