@@ -130,6 +130,7 @@
             <select id="map-select">
               <option value="main" id="main">Main</option>
               <option value="room" id="room">Room</option>
+              <option value="room2" id="room2">Room2</option>
 
             </select>
             <!-- <button id="delete-map">Delete Map</button> -->
@@ -160,6 +161,8 @@
       const canvas = document.getElementById("myCanvas");
       const ctx = canvas.getContext("2d");
 
+      let room1 = false;
+      let room2 = false;
       let points = [];
       let drawMode = true;
       let maps = {};
@@ -170,6 +173,10 @@
         // { x: 747, y: 288 },
         // { x: 1345, y: 287 },
       ];
+
+      let points2 = [];
+      let markerCoordinates2 = []
+
 
       function resetCanvas() {
         if (currentMap) {
@@ -234,20 +241,26 @@
           const selectedOption = event.target.value;
           const selectedValue = event.target.value;
           console.log(selectedValue)
+          const reader = new FileReader();
 
-      // Perform actions based on the selected value
       if (selectedValue === "room") {
-        const reader = new FileReader();
-
+        room1 = true;
+        room2 = false;
         reader.onload = function (e) {
               img.src = "./2.jpg";
         };
-        img.src = "./2.jpg"
+        img.src = "./2.jpg";
         console.log('Room selected');
-        // You can add any action you want here for "Room" option
       } else if (selectedValue === 'main') {
         console.log('Main selected');
-        // You can add any action you want here for "Main" option
+      } else if (selectedValue === "room2") {
+        console.log("room2");
+        room1 = false;
+        room2 = true;
+        reader.onload = function (e) {
+              img.src = "./3.jpg";
+        };
+        img.src = "./3.jpg";
       }
         });
 
@@ -316,12 +329,22 @@ function resetCanvas() {
 
 // ฟังก์ชัน drawMarkers ที่จะวาด marker ใหม่ทั้งหมด
 function drawMarkers() {
-  ctx.save();
-  ctx.fillStyle = "blue";
-  markerCoordinates.forEach((marker) => {
-    drawMarker(marker.x, marker.y);
-  });
-  ctx.restore();
+  if (room1 == true) {
+    ctx.save();
+    ctx.fillStyle = "blue";
+    markerCoordinates.forEach((marker) => {
+      drawMarker(marker.x, marker.y);
+    });
+    ctx.restore();
+  } else if (room2 == true) {
+    ctx.save();
+    ctx.fillStyle = "blue";
+    markerCoordinates2.forEach((marker) => {
+      drawMarker(marker.x, marker.y);
+    });
+    ctx.restore();
+  }
+  
 }
 
 // ฟังก์ชัน drawMarker สำหรับวาด marker เดี่ยว
@@ -397,6 +420,7 @@ function drawMarker(x, y) {
 
       canvas.addEventListener("click", function (event) {
         if (img != null) {
+          if (room1 == true) {
           if (!drawMode) {
             console.log(points);
             const rect = canvas.getBoundingClientRect();
@@ -466,7 +490,77 @@ function drawMarker(x, y) {
 
             document.getElementById("pointName").value = "";
           }
+        }else if(room2 == true) {
+          if (!drawMode) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const imageData = ctx.getImageData(x, y, 1, 1);
+            const pixelData = imageData.data;
+            const pointName =
+              document.getElementById("pointName").value ||
+              `Point ${points2.length + 1}`;
+
+            console.log(
+              `Pixel at (${x}, ${y}) - RGBA(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3]})`
+            );
+
+            drawPoint(x, y);
+            points2.push({
+              x,
+              y,
+              name: pointName,
+            });
+            if (points2.length >= 2) {
+              const distance = calculateDistance(
+                points2[points.length - 2],
+                points2[points.length - 1]
+              );
+              points2[points2.length - 1].distance = distance;
+              drawDistanceLabel(x, y, distance);
+            }
+            document.getElementById("pointName").value = "";
+            updatePointSelects();
+          } else if (drawMode) {
+            console.log("Draw mode", points2);
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const imageData = ctx.getImageData(x, y, 1, 1);
+            const pixelData = imageData.data;
+            const pointName =
+              document.getElementById("pointName").value ||
+              `Point ${points2.length + 1}`;
+            console.log("01");
+            markerCoordinates2.push({
+              x,
+              y,
+            });
+            drawMarkers();
+            updatePointSelects();
+            drawRadius(x, y, 50);
+
+            points2.push({
+              x,
+              y,
+              name: pointName,
+            });
+
+            const distance = calculateDistance(
+              points2[points.length - 2],
+              points2[points.length - 1]
+            );
+            drawDistanceLabel(x, y, distance);
+
+            points[points2.length - 1].distance = distance;
+
+            document.getElementById("pointName").value = "";
+          }
         }
+      }
       });
 
       function drawRadius(x, y, radius) {
@@ -506,14 +600,25 @@ function drawMarker(x, y) {
       document
         .getElementById("logPoints")
         .addEventListener("click", function () {
-          points.forEach((point, index) => {
+          if (room1 == true) {
+            points.forEach((point, index) => {
             console.log(
               `Point ${index + 1}: (${Math.round(point.x)}, ${Math.round(
                 point.y
               )}) - Name: ${point.name}`
             );
           });
+          } else if (room2 == true) {
+            points.forEach((point2, index) => {
+            console.log(
+              `Point ${index + 1}: (${Math.round(point2.x)}, ${Math.round(
+                point2.y
+              )}) - Name: ${point2.name}`
+            );
+          });
+          }
           exportToCSV();
+
         });
 
       document
@@ -531,25 +636,36 @@ function drawMarker(x, y) {
           : "Mode: Adding Points";
       }
       function resetPoints() {
-        if (!drawMode) {
-          points = [];
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          // if (drawMode) {
-          //   drawMarkers();
-          // }
-          document.getElementById("distanceDisplay").innerText = "";
-          updatePointSelects();
+        if (room1 == true) {
+          if (!drawMode) {
+            points = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            document.getElementById("distanceDisplay").innerText = "";
+            updatePointSelects();
         } else {
           markerCoordinates = [];
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          // if (drawMode) {
-          //   drawMarkers();
-          // }
           document.getElementById("distanceDisplay").innerText = "";
           updatePointSelects();
         }
+        }else if (room2 == true) {
+          if (!drawMode) {
+          points2 = [];
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          document.getElementById("distanceDisplay").innerText = "";
+          updatePointSelects();
+        } else {
+          markerCoordinates2 = [];
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          document.getElementById("distanceDisplay").innerText = "";
+          updatePointSelects();
+        }
+        }
+        
       }
 
       document
