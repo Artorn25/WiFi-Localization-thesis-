@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Style */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            background-color: #ffffff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            display: block;
+            color: #000;
+            padding: 15px 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .sidebar a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .sidebar a.active {
+            background-color: #e0e0e0;
+            font-weight: bold;
+        }
+
+        /* Main Content Style */
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+            display: none; /* All sections hidden by default */
+        }
+
+        .active-content {
+            display: block !important; /* Show the active section */
+        }
+
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-header {
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .setting-section {
+            margin-bottom: 30px;
+        }
+
+        .setting-label {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .setting-input, .setting-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .setting-checkbox {
+            margin-right: 10px;
+        }
+
+        .setting-button {
+            padding: 12px 20px;
+            background-color: #065fd4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            float: right;
+        }
+
+        .setting-button:hover {
+            background-color: #054db3;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="#" class="active" onclick="showSection('account-info')">Account Information</a>
+        <a href="#" onclick="showSection('language-settings')">Language Settings</a>
+        <a href="#" onclick="showSection('notification-settings')">Notification Settings</a>
+        <a href="#" onclick="showSection('recommendation-settings')">Recommendation Settings</a>
+        <a href="#" onclick="showSection('privacy-security')">Privacy & Security</a>
+        <a href="#" onclick="showSection('theme-settings')">Theme Settings</a>
+    </div>
+
+    <!-- Main Content Sections -->
+
+    <!-- Account Information -->
+    <div class="main-content active-content" id="account-info">
+        <div class="settings-container">
+            <div class="settings-header">Account Information</div>
+            <div class="setting-section">
+                <label for="username" class="setting-label">Username:</label>
+                <input type="text" id="username" class="setting-input" placeholder="Enter your username">
+
+                <label for="email" class="setting-label">Email:</label>
+                <input type="email" id="email" class="setting-input" placeholder="Enter your email">
+
+                <label for="password" class="setting-label">Change Password:</label>
+                <input type="password" id="password" class="setting-input" placeholder="New password">
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Settings -->
+    <div class="main-content" id="language-settings">
+        <div class="settings-container">
+            <div class="settings-header">Language Settings</div>
+            <div class="setting-section">
+                <label for="language" class="setting-label">Choose Language:</label>
+                <select id="language" class="setting-select">
+                    <option value="en">English</option>
+                    <option value="th">Thai</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="main-content" id="notification-settings">
+        <div class="settings-container">
+            <div class="settings-header">Notification Settings</div>
+            <div class="setting-section">
+                <label class="setting-label">
+                    <input type="checkbox" class="setting-checkbox" id="emailNotification">
+                    Receive email notifications for updates
+                </label>
+                <label class="setting-label">
+                    <input type="checkbox" class="setting-checkbox" id="courseNotification">
+                    Notify me about new courses
+                </label>
+                <label class="setting-label">
+                    <input type="checkbox" class="setting-checkbox" id="scholarshipNotification">
+                    Notify me about scholarships
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendation Settings -->
+    <div class="main-content" id="recommendation-settings">
+        <div class="settings-container">
+            <div class="settings-header">Recommendation Settings</div>
+            <div class="setting-section">
+                <label for="interest" class="setting-label">Areas of Interest:</label>
+                <input type="text" id="interest" class="setting-input" placeholder="e.g., Computer Science, Business">
+
+                <label for="budget" class="setting-label">Budget:</label>
+                <input type="text" id="budget" class="setting-input" placeholder="Enter your budget">
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy & Security -->
+    <div class="main-content" id="privacy-security">
+        <div class="settings-container">
+            <div class="settings-header">Privacy & Security</div>
+            <div class="setting-section">
+                <label class="setting-label">
+                    <input type="checkbox" class="setting-checkbox" id="dataTracking">
+                    Allow data tracking for personalized ads
+                </label>
+                <label class="setting-label">
+                    <input type="checkbox" class="setting-checkbox" id="shareData">
+                    Allow sharing of my data with third parties
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Settings -->
+    <div class="main-content" id="theme-settings">
+        <div class="settings-container">
+            <div class="settings-header">Theme Settings</div>
+            <div class="setting-section">
+                <label for="theme" class="setting-label">Theme:</label>
+                <select id="theme" class="setting-select">
+                    <option value="light">Light Mode</option>
+                    <option value="dark">Dark Mode</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to show the active section
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.main-content');
+            sections.forEach(section => {
+                section.classList.remove('active-content');
+            });
+            document.getElementById(sectionId).classList.add('active-content');
+
+            // Remove active class from all links
+            const links = document.querySelectorAll('.sidebar a');
+            links.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Add active class to the clicked link
+            event.target.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
