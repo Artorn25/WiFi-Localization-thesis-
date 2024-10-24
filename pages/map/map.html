@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Campus Maps</title>
     <link rel="stylesheet" href="/pages/map/css/map.css" />
+    <!-- SweetAlert2 Library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -24,39 +26,6 @@
     <div id="map-container">
         <div class="container">
             <canvas id="myCanvas" width="1423px" height="653px"></canvas>
-            <!-- <div id="map-controls">
-                <div class="controls-group">
-                    <p for="mapName">Map Name:</p>
-                    <select id="map-select">
-                        <option value="">Select Map</option>
-                    </select>
-                    <input type="text" id="mapName" placeholder="Enter map name">
-                    <button id="updateMapName">Update Map Name</button>
-                    <button id="delete-map">🗑️ Delete Map</button>
-                    <div class="upload-btn-wrapper">
-                        <button class="btn-upload">
-                            📤 Upload Map
-                            <input type="file" id="map-upload" accept="image/*" />
-                        </button>
-                    </div>
-                    <input type="text" id="pointName" placeholder="Enter point name" />
-                    <button id="logPoints">📍 Add Point</button>
-                    <button id="resetPoints">🔄 Reset</button>
-                    <button id="ToggleMode">🔄 Toggle Mode</button>
-                </div>
-                <div class="controls-group">
-                    <select id="pointSelect"></select>
-                    <button id="DeletePoint">🗑️ Delete Point</button>
-                    <select id="point1Select"></select>
-                    <select id="point2Select"></select>
-                    <button id="ShowDistance">📏 Show Distance</button>
-                    <select id="editPointSelect"></select>
-                    <input type="text" id="newPointName" placeholder="Enter new point name" />
-                    <button id="editPoint">✏️ Update Point Name</button>
-                </div>
-            </div>
-            <div id="modeIndicator"></div>
-            <div id="distanceDisplay"></div> -->
             <div id="map-controls">
                 <div class="controls-group">
                     <label for="mapName">Map Name:</label>
@@ -148,13 +117,21 @@
         const CheckCondition = {
             Equal: function (condition, massageAlert) {
                 if (condition === "" || condition === null) {
-                    alert(massageAlert);
+                    Swal.fire({
+                        title: "Warning",
+                        text: massageAlert,
+                        icon: "warning"
+                    });
                     return;
                 }
             },
             NotEqual: function (condition, massageAlert) {
                 if (!condition) {
-                    alert(massageAlert);
+                    Swal.fire({
+                        title: "Warning",
+                        text: massageAlert,
+                        icon: "warning"
+                    });
                     return;
                 }
             }
@@ -222,9 +199,26 @@
         }
 
         // Edit name map
-        function EditMapName(mapSrc) {
-            const mapName = prompt("Please enter a name for this map:", `New Map ${maps.length + 1}`);
+        async function EditMapName(mapSrc) {
+            const { value: mapName } = await Swal.fire({
+                title: "Enter a name for this map",
+                input: "text",
+                inputLabel: "Map Name",
+                inputValue: `Map ${maps.length + 1}`,
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return "You need to write something!";
+                    }
+                }
+            });
+
             if (mapName) {
+                Swal.fire({
+                    title: "Map uploaded successfully",
+                    text: `Map name: ${mapName}`,
+                    icon: "success"
+                });
                 maps.push({ src: mapSrc, name: mapName });
                 UpdateMapSelect();
                 document.getElementById("map-select").value = maps.length - 1;
@@ -269,31 +263,60 @@
         document.getElementById("delete-map").addEventListener("click", () => {
             const mapSelect = document.getElementById("map-select"),
                 selectedIndex = mapSelect.value;
-
+            if (maps.length === 0) {
+                Swal.fire({
+                    title: "No maps available",
+                    text: "There are no maps to delete.",
+                    icon: "warning",
+                    confirmButtonText: "OK"
+                });
+                return; 
+            }
             CheckCondition.Equal(selectedIndex, "Please select a map to delete.");
 
             if (selectedIndex !== null && selectedIndex >= 0) {
-                maps.splice(selectedIndex, 1);
-                UpdateMapSelect();
+                Swal.fire({
+                    title: `Are you sure you want to delete map ${parseInt(selectedIndex) + 1}?`,
+                    icon: "question",
+                    confirmButtonText: "Delete",
+                    cancelButtonText: "Cancel",
+                    showCancelButton: true,
+                    showCloseButton: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // ถ้ายืนยันการลบ
+                        Swal.fire({
+                            title: "Map deleted",
+                            icon: "success"
+                        });
+                        maps.splice(selectedIndex, 1);
+                        UpdateMapSelect();
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                points = [];
-                markerCoordinates = [];
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        points = [];
+                        markerCoordinates = [];
 
-                if (maps.length > 0) {
-                    mapSelect.value = 0;
-                    LoadMap(maps[0].src);  // แก้ไขตรงนี้เพื่อโหลดแผนที่หลังจากการลบ
-                } else {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                }
-                console.log(`Map ${parseInt(selectedIndex) + 1} deleted`);
+                        if (maps.length > 0) {
+                            mapSelect.value = 0;
+                            LoadMap(maps[0].src);  // แก้ไขตรงนี้เพื่อโหลดแผนที่หลังจากการลบ
+                        } else {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        }
+                        console.log(`Map ${parseInt(selectedIndex) + 1} deleted`);
+                    }
+                });
             }
         });
+
 
         canvas.addEventListener("click", event => {
             const pointName = document.getElementById("pointName").value;
             if (maps.length === 0) {
-                alert("Please upload or select a map before adding points.");
+                Swal.fire({
+                    title: "Info",
+                    text: "Please upload or select a map before adding points.",
+                    icon: "question"
+                });
                 return;
             }
 
@@ -365,13 +388,21 @@
 
         function ValidatePoint(pointName) {
             if (!pointName) {
-                alert("Please enter a name for the point.");
+                Swal.fire({
+                    title: "Warning",
+                    text: "Please enter a name for the point.",
+                    icon: "warning"
+                });
                 return false;
             }
 
             for (const mapIndex in pointsPerMap) {
                 if (pointsPerMap[mapIndex].some(point => point.name === pointName)) {
-                    alert("Point name must be unique across all maps.");
+                    Swal.fire({
+                        title: "Error",
+                        text: "Point name must be unique across all maps.",
+                        icon: "error"
+                    });
                     return false;
                 }
             }
@@ -418,7 +449,11 @@
             const index2 = document.getElementById("point2Select").value;
 
             if (index1 === index2) {
-                alert("Cannot measure distance between the same point.");
+                Swal.fire({
+                    title: "Error",
+                    text: "Cannot measure distance between the same point.",
+                    icon: "error"
+                });
                 return;
             }
 
@@ -433,14 +468,22 @@
             const selectedPointName = pointSelect.value;
 
             if (!selectedPointName) {
-                alert("Please select a point to delete.");
+                Swal.fire({
+                    title: "Info",
+                    text: "Please select a point to delete.",
+                    icon: "question"
+                });
                 return;
             }
 
             const mapIndex = document.getElementById("map-select").value;
 
             if (!pointsPerMap[mapIndex]) {
-                alert("No points available for the selected map.");
+                Swal.fire({
+                    title: "Info",
+                    text: "No points available for the selected map.",
+                    icon: "question"
+                });
                 return;
             }
 
@@ -501,37 +544,6 @@
             });
         }
 
-        // function CheckAndDisplayPointData(point) {
-        //     if (point.name === "TP-Link_2536_1" || point.name === "TP-Link_2536_2") {
-        //         const routerKey = point.name === "TP-Link_2536_1" ? "Router1" : "Router2";
-
-        //         // Query ข้อมูลจาก Firebase โดยใช้ routerKey
-        //         get(ref(db, `Data/${routerKey}`)).then(snapshot => {
-        //             if (snapshot.exists()) {
-        //                 const data = snapshot.val();
-        //                 if (data.rssi && data.Log && data.Log.distance) {
-        //                     point.rssi = data.rssi;
-        //                     point.distance = data.Log.distance;
-
-        //                     console.log(`Data for ${point.name} found: RSSI = ${point.rssi}, Distance = ${point.distance}`);
-
-        //                     // อัพเดทค่าใน pointsPerMap ด้วยค่าใหม่ของ point.distance
-        //                     updatePointDistance(point.name, point.rssi, point.distance);
-
-        //                     // Refresh the map to display updated information
-        //                     RefreshMap();
-        //                 } else {
-        //                     console.log(`Data found but missing rssi or distance for ${point.name}`);
-        //                 }
-        //             } else {
-        //                 console.log(`No data found for ${point.name}`);
-        //             }
-        //         }).catch(error => {
-        //             console.error("Error fetching data:", error);
-        //         });
-        //     }
-        // }
-
         function CheckAndDisplayPointData(point) {
             if (point.name === "TP-Link_2536_1" || point.name === "TP-Link_2536_2") {
                 const routerKey = point.name === "TP-Link_2536_1" ? "Router1" : "Router2";
@@ -546,7 +558,6 @@
 
                             console.log(`Data for ${point.name} found: RSSI = ${point.rssi}, Distance = ${point.distance}`);
 
-                            // อัพเดทค่าใน pointsPerMap ด้วยค่าใหม่ของ point.distance
                             updatePointDistance(point.name, point.rssi, point.distance);
 
                             // Refresh the map to display updated information
@@ -616,22 +627,35 @@
         document.getElementById("ShowDistance").addEventListener("click", ShowDistance);
         document.getElementById("DeletePoint").addEventListener("click", DeletePoint);
         // Event listener สำหรับการแก้ไขชื่อจุด
-        document.getElementById("editPoint").addEventListener("click", () => {
+
+        document.getElementById("editPoint").addEventListener("click", async () => {
             const selectedPointName = document.getElementById("editPointSelect").value;
             const newPointName = document.getElementById("newPointName").value;
             const mapIndex = document.getElementById("map-select").value;
 
+            // ตรวจสอบการเลือกจุด
             CheckCondition.NotEqual(selectedPointName, "Please select a point to edit.");
 
+            // ตรวจสอบการป้อนชื่อใหม่
             CheckCondition.NotEqual(newPointName, "Please enter a new name for the point.");
 
             // ตรวจสอบไม่ให้ชื่อใหม่ซ้ำกับชื่อจุดอื่น
-            if (!ValidatePoint(newPointName)) return;
+            if (!ValidatePoint(newPointName)) {
+                Swal.fire({
+                    title: "Error",
+                    text: "The new point name already exists.",
+                    icon: "error"
+                });
+                return;
+            }
 
             // แก้ไขชื่อจุดใน pointsPerMap
             const point = pointsPerMap[mapIndex].find(p => p.name === selectedPointName);
             if (point) {
                 point.name = newPointName;
+            } else {
+                console.error(`Point with name "${selectedPointName}" not found.`);
+                return;
             }
 
             // แก้ไขชื่อจุดใน markerCoordinatesPerMap (ถ้ามี)
@@ -642,10 +666,10 @@
                 }
             }
 
-            // รีวาด canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            points.forEach(point => {
+
+            pointsPerMap[mapIndex].forEach(point => {
                 DrawPoint(point.x, point.y, point.name, point.color);
                 if (point.distance > 0) DrawCircle(point.x, point.y, point.distance);
             });
@@ -653,10 +677,15 @@
             // อัปเดตการเลือกจุดใหม่
             UpdatePointSelects();
 
-            alert(`Point name changed to: ${newPointName}`);
+            Swal.fire({
+                title: "Success",
+                text: `Point name changed to: ${newPointName}`,
+                icon: "success"
+            });
+
+            // ล้างค่าช่องป้อนชื่อใหม่
             document.getElementById("newPointName").value = "";
         });
-
         UpdateModeIndicator();
 
     </script>
