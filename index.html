@@ -27,9 +27,9 @@
     </div>
 
     <main class="main-content">
-        <nav class="navbartop ">
+        <!-- <nav class="navbartop ">
             <div class="container d-flex justify-content-between">
-                <!-- <div class="nav-content"> -->
+                 <div class="nav-content">
                     <div class="logo">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                             class="bi bi-cloud-sun" viewBox="0 0 16 16">
@@ -47,33 +47,54 @@
                         <a href="#home">Home</a>
                         <a href="#feedback">Feedback</a>
                     </div>
-                    <button class="togglebtn" id="toggle-sidebar" aria-controls="sidebar"
-                        aria-expanded="false">☰</button>
-                <!-- </div> -->
             </div>
-        </nav>
+        </nav> -->
+
+        <nav class="navbartop navbar-expand-lg bg-body-tertiary">
+            <div class="container d-flex justify-content-between">
+            <button class="togglebtn" id="toggle-sidebar" aria-controls="sidebar"
+                aria-expanded="false">☰</button>
+              <!-- <a class="navbar-brand" href="#">Navbar</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button> -->
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <a class="nav-link active text-secondary" aria-current="page" href="#">Home</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link text-secondary" href="#">Feedback</a>
+                  </li>
+                </ul>
+                <form class="search-bar" role="search">
+                    <input type="text" aria-label="Search" placeholder="Search for maps">
+                    <button  type="submit">Search</button>
+                </form>
+              </div>
+            </div>
+          </nav>
 
         <header>
             <h1>Project Map WiFi</h1>
             <p class="subtitle">Connect to <span>the world</span> instantly.</p>
             <button class="cta-button">Get Started</button>
         </header>
-
         <div class="container">
             <section class="features">
                 <div class="feature-grid">
                     <div class="feature-card revealed">
-                        <img src="img/feature1.jpg" alt="Feature 1">
+                        <img src="/templates/image/maps-icon.gif" alt="Feature 1">
                         <h3>Real-time Mapping</h3>
                         <p>Stay connected with up-to-date maps and data.</p>
                     </div>
                     <div class="feature-card revealed">
-                        <img src="img/feature2.jpg" alt="Feature 2">
+                        <img src="/templates/image/wifi-icon.gif" alt="Feature 2">
                         <h3>High-Speed WiFi</h3>
                         <p>Enjoy blazing-fast internet on the go.</p>
                     </div>
                     <div class="feature-card revealed">
-                        <img src="img/feature3.jpg" alt="Feature 3">
+                        <img src="/templates/image/locate-icon.gif" alt="Feature 3">
                         <h3>Easy Setup</h3>
                         <p>Get started with just a few clicks.</p>
                     </div>
