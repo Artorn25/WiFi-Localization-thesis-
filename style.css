@@ -84,17 +84,18 @@ nav {
     }
 }
 
+
 .sidebar {
     width: 250px;
     position: fixed;
     top: 0;
     bottom: 0;
-    left: 0;
+    right: 0; /* เปลี่ยนจาก left: 0 เป็น right: 0 */
     background-color: rgba(51, 51, 51, 0.95);
     color: var(--white-color);
     padding-top: 20px;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-    transform: translateX(-100%);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); /* เปลี่ยนทิศทางเงาให้ไปทางซ้าย */
+    transform: translateX(100%); /* เปลี่ยนจาก -100% เป็น 100% */
     transition: transform var(--transition-duration) ease-in-out;
     z-index: 1000;
     ul {
@@ -107,16 +108,29 @@ nav {
         transition: background-color var(--transition-duration) ease;
     }
     ul li:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(235, 13, 13, 0.1);
     }
     .close-btn {
         position: absolute;
-        top: 10px;
+        top: 20px;
         right: 20px;
-        font-size: 24px;
+        font-size: 30px;
+        background-color: gray;
+        border-radius: 8px;
         cursor: pointer;
         color: var(--white-color);
+        width: 40px; /* เพิ่มขนาดเพื่อให้มีที่สำหรับการจัดกึ่งกลาง */
+        height: 40px;
+        display: flex; /* ใช้ Flexbox เพื่อจัดให้อยู่กลาง */
+        justify-content: center; /* จัดให้เนื้อหาอยู่ตรงกลางแนวนอน */
+        align-items: center; /* จัดให้เนื้อหาอยู่ตรงกลางแนวตั้ง */
     }
+
+    .close-btn:hover {
+        background-color: rgb(203, 200, 200);
+        color: var(--light-color);
+    }
+    
     ul li a {
         color: var(--white-color);
         text-decoration: none;
@@ -125,13 +139,10 @@ nav {
     }
 }
 
-.sidebartext {
-    z-index: 1001;
+.sidebar.open {
+    transform: translateX(0); /* เลื่อน sidebar ออกมา */
 }
 
-.sidebar.open {
-    transform: translateX(0);
-}
 
 header {
     text-align: center;
@@ -171,12 +182,52 @@ header {
     }
 }
 
-.togglebtn:hover {
-    background-color: orange;
-
+.nav-item:hover{
+    background-color: #bcc1c7;
     border-radius: 5px;
-    border-color: #feb47b;
+    font-weight: 700;
 }
+
+.togglebtn {
+    display: flex; /* ใช้ Flexbox เพื่อจัดให้อยู่ตรงกลาง */
+    justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+    align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+    width: 50px; /* ขนาดปุ่ม */
+    height: 50px; /* ขนาดปุ่ม */
+    background-color: #f8f9fa; /* สีพื้นหลัง */
+    border: none; /* ไม่มีเส้นขอบ */
+}
+
+.navbar-toggler-icon {
+    display: flex; /* ใช้ Flexbox */
+    justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+    align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+    height: 100%; /* ให้ span มีความสูงเต็มปุ่ม */
+    
+    img {
+        width: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
+        height: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
+        /* หรือใช้ max-width และ max-height */
+        max-width: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
+        max-height: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
+        animation: bounce 1s infinite;
+    }
+}
+
+.togglebtn:hover {
+    background-color: rgb(114, 114, 113);
+    border-radius: none;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px); /* ยกภาพขึ้น */
+    }
+}
+
 
 .feature-grid {
     display: grid;

@@ -136,6 +136,7 @@
                 }
             }
         }
+        
         // Add function to update map name
         document.getElementById("updateMapName").addEventListener("click", () => {
             const mapSelect = document.getElementById("map-select");
@@ -145,15 +146,22 @@
             CheckCondition.Equal(selectedIndex, "Please select a map to update.")
 
             if (!newMapName && newMapName !== "") {
-                alert("Please enter a new name for the map.");
+                Swal.fire({
+                    title: "Warning",
+                    text: "Please enter a new name for the map.",
+                    icon: "warning"
+                });
                 return;
             }
-
             maps[selectedIndex] = { ...maps[selectedIndex], name: newMapName };
 
             // Refresh dropdown options
             UpdateMapSelect();
-
+            Swal.fire({
+                title: "Success",
+                text: `Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`,
+                icon: "success"
+            });
             // Re-select the updated map
             mapSelect.value = selectedIndex;
             console.log(`Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`);
@@ -307,7 +315,6 @@
                 });
             }
         });
-
 
         canvas.addEventListener("click", event => {
             const pointName = document.getElementById("pointName").value;
@@ -560,7 +567,6 @@
 
                             updatePointDistance(point.name, point.rssi, point.distance);
 
-                            // Refresh the map to display updated information
                             RefreshMap();
                         } else {
                             console.log(`Data found but missing rssi or distance for ${point.name}`);
@@ -580,7 +586,7 @@
                 pointsPerMap[selectedIndex].forEach(point => {
                     if (point.name === pointName) {
                         point.rssi = rssi;
-                        point.distance = distance;  // อัพเดทค่า distance ให้กับ point ที่ต้องการ
+                        point.distance = distance;  
                     }
                 });
             }
@@ -589,7 +595,6 @@
         function RefreshMap() {
             const selectedIndex = document.getElementById("map-select").value;
             if (selectedIndex && maps[selectedIndex]) {
-                // ล้างแผนที่เดิม
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
@@ -626,17 +631,14 @@
         document.getElementById("ToggleMode").addEventListener("click", ToggleMode);
         document.getElementById("ShowDistance").addEventListener("click", ShowDistance);
         document.getElementById("DeletePoint").addEventListener("click", DeletePoint);
-        // Event listener สำหรับการแก้ไขชื่อจุด
 
         document.getElementById("editPoint").addEventListener("click", async () => {
             const selectedPointName = document.getElementById("editPointSelect").value;
             const newPointName = document.getElementById("newPointName").value;
             const mapIndex = document.getElementById("map-select").value;
 
-            // ตรวจสอบการเลือกจุด
             CheckCondition.NotEqual(selectedPointName, "Please select a point to edit.");
 
-            // ตรวจสอบการป้อนชื่อใหม่
             CheckCondition.NotEqual(newPointName, "Please enter a new name for the point.");
 
             // ตรวจสอบไม่ให้ชื่อใหม่ซ้ำกับชื่อจุดอื่น
@@ -683,7 +685,6 @@
                 icon: "success"
             });
 
-            // ล้างค่าช่องป้อนชื่อใหม่
             document.getElementById("newPointName").value = "";
         });
         UpdateModeIndicator();
