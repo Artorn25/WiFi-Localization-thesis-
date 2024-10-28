@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Fi Routers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        header {
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #ff7f00; /* Orange color */
+        }
+
+        section.wifi-list {
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        #search {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        ul#wifiList {
+            list-style: none;
+        }
+
+        ul#wifiList li {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        ul#wifiList li .signal {
+            font-weight: bold;
+            color: green; /* Default color */
+        }
+
+        .signal.weak {
+            color: red;
+        }
+
+        .signal.moderate {
+            color: orange;
+        }
+
+        button#refreshBtn {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #ff7f00;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button#refreshBtn:hover {
+            background-color: #e67300;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Available Wi-Fi Routers</h1>
+    </header>
+
+    <section class="wifi-list">
+        <input type="text" id="search" placeholder="Search Wi-Fi..." onkeyup="searchWifi()">
+        <ul id="wifiList">
+            <!-- รายชื่อ Wi-Fi จะถูกแสดงที่นี่ -->
+        </ul>
+    </section>
+
+    <button id="refreshBtn" onclick="refreshWifi()">Refresh</button>
+
+    <script>
+        // ตัวอย่างข้อมูล Wi-Fi routers (สามารถเชื่อมต่อกับ API จริงได้)
+        const wifiData = [
+            { name: "Home WiFi", signalStrength: 85 },
+            { name: "Office WiFi", signalStrength: 60 },
+            { name: "Cafe WiFi", signalStrength: 30 },
+            { name: "Library WiFi", signalStrength: 55 },
+            { name: "Guest WiFi", signalStrength: 40 }
+        ];
+
+        // ฟังก์ชันสำหรับแสดง Wi-Fi routers
+        function displayWifiList(wifiList) {
+            const wifiListElement = document.getElementById('wifiList');
+            wifiListElement.innerHTML = ''; // เคลียร์รายการเดิม
+            wifiList.forEach(wifi => {
+                const listItem = document.createElement('li');
+                const signalClass = getSignalClass(wifi.signalStrength);
+                listItem.innerHTML = `
+                    <span>${wifi.name}</span>
+                    <span class="signal ${signalClass}">${wifi.signalStrength}%</span>
+                `;
+                wifiListElement.appendChild(listItem);
+            });
+        }
+
+        // ฟังก์ชันสำหรับกำหนดสีตามความแรงของสัญญาณ
+        function getSignalClass(signalStrength) {
+            if (signalStrength >= 80) {
+                return 'strong';
+            } else if (signalStrength >= 50) {
+                return 'moderate';
+            } else {
+                return 'weak';
+            }
+        }
+
+        // ฟังก์ชันรีเฟรชรายการ Wi-Fi
+        function refreshWifi() {
+            alert('Refreshing Wi-Fi list...');
+            displayWifiList(wifiData); // เรียกข้อมูล Wi-Fi ซ้ำ (อาจเปลี่ยนข้อมูลใหม่จาก API จริงได้)
+        }
+
+        // ฟังก์ชันค้นหา Wi-Fi
+        function searchWifi() {
+            const searchValue = document.getElementById('search').value.toLowerCase();
+            const filteredWifi = wifiData.filter(wifi => wifi.name.toLowerCase().includes(searchValue));
+            displayWifiList(filteredWifi);
+        }
+
+        // เริ่มต้นแสดงรายการ Wi-Fi
+        window.onload = function() {
+            displayWifiList(wifiData);
+        };
+    </script>
+</body>
+</html>
