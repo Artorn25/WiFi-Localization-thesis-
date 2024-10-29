@@ -45,7 +45,7 @@
 
                     <input type="text" id="pointName" placeholder="Enter point name">
                     <button id="resetPoints">🔄 Reset</button>
-                    <button id="ToggleMode">🔄 Toggle Mode</button>
+                    <!-- <button id="ToggleMode">🔄 Toggle Mode</button> -->
                 </div>
 
                 <div class="controls-group">
@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-            <div id="modeIndicator"></div>
+            <!-- <div id="modeIndicator"></div> -->
             <div id="distanceDisplay"></div>
 
         </div>
@@ -85,7 +85,7 @@
         </div>
     </div>
 
-    <script type="module">
+    <!-- <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
         import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
@@ -136,7 +136,7 @@
                 }
             }
         }
-        
+
         // Add function to update map name
         document.getElementById("updateMapName").addEventListener("click", () => {
             const mapSelect = document.getElementById("map-select");
@@ -278,7 +278,7 @@
                     icon: "warning",
                     confirmButtonText: "OK"
                 });
-                return; 
+                return;
             }
             CheckCondition.Equal(selectedIndex, "Please select a map to delete.");
 
@@ -446,10 +446,10 @@
             UpdatePointSelects();
         }
 
-        function ToggleMode() {
-            drawMode = !drawMode;
-            UpdateModeIndicator();
-        }
+        // function ToggleMode() {
+        //     drawMode = !drawMode;
+        //     UpdateModeIndicator();
+        // }
 
         function ShowDistance() {
             const index1 = document.getElementById("point1Select").value;
@@ -516,10 +516,10 @@
             console.log("Points after deletion:", points);
         }
 
-        function UpdateModeIndicator() {
-            const modeIndicator = document.getElementById("modeIndicator");
-            modeIndicator.textContent = drawMode ? "Mode: Adding Routers" : "Mode: Adding Points";
-        }
+        // function UpdateModeIndicator() {
+        //     const modeIndicator = document.getElementById("modeIndicator");
+        //     modeIndicator.textContent = drawMode ? "Mode: Adding Routers" : "Mode: Adding Points";
+        // }
 
         function UpdatePointSelects() {
             const pointSelect = document.getElementById("pointSelect");
@@ -586,7 +586,7 @@
                 pointsPerMap[selectedIndex].forEach(point => {
                     if (point.name === pointName) {
                         point.rssi = rssi;
-                        point.distance = distance;  
+                        point.distance = distance;
                     }
                 });
             }
@@ -601,14 +601,16 @@
                 // โหลดจุดจาก pointsPerMap
                 points = pointsPerMap[selectedIndex] || [];
                 markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
-                console.log()
-                points.forEach(point => {
-                    DrawPoint(point.x, point.y, point.name, point.color);
-                    console.log(`Drawing point at (${point.x}, ${point.y}) with color: ${point.color}`);
 
-                    // ตรวจสอบว่า point.distance ถูกอัพเดทแล้วหรือไม่
+                points.forEach((point, index) => {
+                    DrawPoint(point.x, point.y, point.name, point.color);
                     if (point.distance > 0) {
-                        DrawCircle(point.x, point.y, point.distance);  // วาดวงกลมที่มีระยะทาง
+                        DrawCircle(point.x, point.y, point.distance);
+                    }
+
+                    // ตรวจสอบการตัดกันของวงกลมแต่ละคู่
+                    for (let i = index + 1; i < points.length; i++) {
+                        CheckCircleIntersection(point, points[i]);
                     }
                 });
 
@@ -626,9 +628,94 @@
             }
         }
 
+        function CheckCircleIntersection(point1, point2) {
+            
+            // d = √(x1 - x2)^2 + (y1 - y2)^2  
+    const d = Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+    const r1 = point1.distance * 90;
+    const r2 = point2.distance * 90;
+
+    // ตรวจสอบว่ามีการตัดกันหรือไม่ d > r1 + r2 
+    if (d > r1 + r2) {
+        console.log(`Circles of ${point1.name} and ${point2.name} are close but do not intersect.`);
+        
+        // คำนวณจุดที่ใกล้กันที่สุดบนขอบของวงกลมทั้งสอง
+        const ratio1 = r1 / d;
+        const ratio2 = r2 / d;
+
+        const nearestPoint1 = {
+            x: point1.x + (point2.x - point1.x) * ratio1,
+            y: point1.y + (point2.y - point1.y) * ratio1
+        };
+
+        const nearestPoint2 = {
+            x: point2.x + (point1.x - point2.x) * ratio2,
+            y: point2.y + (point1.y - point2.y) * ratio2
+        };
+
+        // วาดเส้นระหว่างจุดที่ใกล้กันที่สุดของวงกลมทั้งสอง
+        DrawLine(nearestPoint1.x, nearestPoint1.y, nearestPoint2.x, nearestPoint2.y);
+        DrawMidPoint(nearestPoint1.x, nearestPoint1.y, nearestPoint2.x, nearestPoint2.y);
+
+        console.log(`Draw line between nearest points of ${point1.name} and ${point2.name}`);
+        return [];
+    } else if (d < Math.abs(r1 - r2) || d === 0) {
+        console.log(`Circles of ${point1.name} and ${point2.name} are within each other or identical.`);
+        return [];
+    }
+
+    // หากวงกลมตัดกัน (กรณีปกติที่วงกลมสองวงตัดกัน)
+    //
+    const a = ((r1 * r1) - (r2 * r2) + (d * d)) / (2 * d);
+    const h = Math.sqrt((r1 * r1) - (a * a));
+
+    const x3 = point1.x + (a * (point2.x - point1.x)) / d;
+    const y3 = point1.y + (a * (point2.y - point1.y)) / d;
+
+    const intersectX1 = x3 + (h * (point2.y - point1.y)) / d;
+    const intersectY1 = y3 - (h * (point2.x - point1.x)) / d;
+    const intersectX2 = x3 - (h * (point2.y - point1.y)) / d;
+    const intersectY2 = y3 + (h * (point2.x - point1.x)) / d;
+
+    console.log(`Intersection points for ${point1.name} and ${point2.name}:`);
+    console.log(`Point 1: (${intersectX1}, ${intersectY1})`);
+    console.log(`Point 2: (${intersectX2}, ${intersectY2})`);
+
+    // วาดจุดตัดบน canvas
+    DrawPoint(intersectX1, intersectY1, "Intersection", "green");
+    DrawPoint(intersectX2, intersectY2, "Intersection", "green");
+
+    return [
+        { x: intersectX1, y: intersectY1 },
+        { x: intersectX2, y: intersectY2 }
+    ];
+}
+
+function DrawLine(x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';  // กำหนดสีเส้นเป็นสีแดงโปร่งแสง
+    ctx.stroke();
+    console.log(`Drew line from (${x1}, ${y1}) to (${x2}, ${y2})`);
+}
+
+function DrawMidPoint(x1, y1, x2, y2) {
+    // คำนวณจุดกึ่งกลางของเส้น
+    const xMid = (x1 + x2) / 2;
+    const yMid = (y1 + y2) / 2;
+
+    // วาดจุดกึ่งกลางบนแผนที่
+    ctx.beginPath();
+    ctx.arc(xMid, yMid, 5, 0, 2 * Math.PI);  // จุดกึ่งกลางเป็นวงกลมเล็กๆ
+    ctx.fillStyle = 'red';
+    ctx.fill();
+    console.log(`Midpoint at (${xMid}, ${yMid})`);
+}
+
         document.getElementById("resetPoints").addEventListener("click", ResetCanvas);
         // document.getElementById("logPoints").addEventListener("click", logPoints);
-        document.getElementById("ToggleMode").addEventListener("click", ToggleMode);
+        // document.getElementById("ToggleMode").addEventListener("click", ToggleMode);
         document.getElementById("ShowDistance").addEventListener("click", ShowDistance);
         document.getElementById("DeletePoint").addEventListener("click", DeletePoint);
 
@@ -687,9 +774,10 @@
 
             document.getElementById("newPointName").value = "";
         });
-        UpdateModeIndicator();
+        // UpdateModeIndicator();
 
-    </script>
+    </script> -->
+    <script type="module" src="/pages/map/js/map.js"></script>
 </body>
 
 </html>
