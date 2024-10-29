@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth focus:scroll-auto">
 
+<script>
+  // ฟังก์ชันสำหรับโหลดฟ้อนต์จาก localStorage
+  function loadFontSetting() {
+      const savedFont = localStorage.getItem('selectedFont');
+      if (savedFont) {
+          document.body.style.fontFamily = savedFont; // ตั้งฟ้อนต์ที่บันทึกไว้จาก localStorage
+      }
+  }
+  loadFontSetting(); // เรียกใช้เมื่อหน้าโหลด
+</script>
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

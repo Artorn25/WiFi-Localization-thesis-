@@ -12,6 +12,17 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
 
+    <script>
+        // ฟังก์ชันสำหรับโหลดฟ้อนต์จาก localStorage
+        function loadFontSetting() {
+            const savedFont = localStorage.getItem('selectedFont');
+            if (savedFont) {
+                document.body.style.fontFamily = savedFont; // ตั้งฟ้อนต์ที่บันทึกไว้จาก localStorage
+            }
+        }
+        loadFontSetting(); // เรียกใช้เมื่อหน้าโหลด
+    </script>
+
 </head>
 
 <body>
