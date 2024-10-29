@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,6 +93,17 @@
         }
     </style>
 </head>
+<script>
+    // ฟังก์ชันสำหรับโหลดฟ้อนต์จาก localStorage
+    function loadFontSetting() {
+        const savedFont = localStorage.getItem('selectedFont');
+        if (savedFont) {
+            document.body.style.fontFamily = savedFont; // ตั้งฟ้อนต์ที่บันทึกไว้จาก localStorage
+        }
+    }
+    loadFontSetting(); // เรียกใช้เมื่อหน้าโหลด
+</script>
+
 <body>
     <div class="glass-container w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3">
         <h1 class="text-4xl font-bold text-center text-white mb-6">Feedback</h1>

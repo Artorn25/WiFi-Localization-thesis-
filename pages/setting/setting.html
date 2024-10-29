@@ -44,173 +44,148 @@
         }
 
         /* Main Content Style */
-        .main-content {
-            margin-left: 260px;
-            padding: 40px;
-            display: none; /* All sections hidden by default */
-        }
+       /* Main Content Style */
+       .main-content {
+        margin-left: 260px;
+        padding: 40px;
+        display: none; /* All sections hidden by default */
+    }
 
-        .active-content {
-            display: block !important; /* Show the active section */
-        }
+    .active-content {
+        display: block !important; /* Show the active section */
+    }
 
-        .settings-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-        .settings-header {
-            font-size: 24px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-        }
+    .settings-header {
+        font-size: 24px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
 
-        .setting-section {
-            margin-bottom: 30px;
-        }
+    .setting-section {
+        margin-bottom: 30px;
+    }
 
-        .setting-label {
-            font-size: 16px;
-            display: block;
-            margin-bottom: 8px;
-        }
+    .setting-label {
+        font-size: 16px;
+        display: block;
+        margin-bottom: 8px;
+    }
 
-        .setting-input, .setting-select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
+    .setting-input, .setting-select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
 
-        .setting-checkbox {
-            margin-right: 10px;
-        }
+    .setting-checkbox {
+        margin-right: 10px;
+    }
 
-        .setting-button {
-            padding: 12px 20px;
-            background-color: #065fd4;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            float: right;
-        }
+    .setting-button {
+        padding: 12px 20px;
+        background-color: #065fd4;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        float: right;
+    }
 
-        .setting-button:hover {
-            background-color: #054db3;
-        }
+    .setting-button:hover {
+        background-color: #054db3;
+    }
 
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #333;
-        }
+    .section-title {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #333;
+    }
 
-    </style>
+    /* Back to Home Button Style */
+    .back-home-button {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        padding: 10px 15px;
+        background-color: #065fd4;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .back-home-button:hover {
+        background-color: #054db3;
+    }
+
+</style>
 </head>
 <body>
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <a href="#" class="active" onclick="showSection('account-info')">Account Information</a>
-        <a href="#" onclick="showSection('language-settings')">Language Settings</a>
-        <a href="#" onclick="showSection('notification-settings')">Notification Settings</a>
-        <a href="#" onclick="showSection('recommendation-settings')">Recommendation Settings</a>
-        <a href="#" onclick="showSection('privacy-security')">Privacy & Security</a>
+        <a href="#" onclick="showSection('notification-settings')" class="active">Notification Settings</a>
+        <a href="#" onclick="showSection('font-settings')">Font Size Settings</a>
         <a href="#" onclick="showSection('theme-settings')">Theme Settings</a>
     </div>
-
     <!-- Main Content Sections -->
 
-    <!-- Account Information -->
-    <div class="main-content active-content" id="account-info">
-        <div class="settings-container">
-            <div class="settings-header">Account Information</div>
-            <div class="setting-section">
-                <label for="username" class="setting-label">Username:</label>
-                <input type="text" id="username" class="setting-input" placeholder="Enter your username">
-
-                <label for="email" class="setting-label">Email:</label>
-                <input type="email" id="email" class="setting-input" placeholder="Enter your email">
-
-                <label for="password" class="setting-label">Change Password:</label>
-                <input type="password" id="password" class="setting-input" placeholder="New password">
-            </div>
-        </div>
-    </div>
-
-    <!-- Language Settings -->
-    <div class="main-content" id="language-settings">
-        <div class="settings-container">
-            <div class="settings-header">Language Settings</div>
-            <div class="setting-section">
-                <label for="language" class="setting-label">Choose Language:</label>
-                <select id="language" class="setting-select">
-                    <option value="en">English</option>
-                    <option value="th">Thai</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
     <!-- Notification Settings -->
-    <div class="main-content" id="notification-settings">
+    <div class="main-content active-content" id="notification-settings">
         <div class="settings-container">
             <div class="settings-header">Notification Settings</div>
             <div class="setting-section">
                 <label class="setting-label">
-                    <input type="checkbox" class="setting-checkbox" id="emailNotification">
-                    Receive email notifications for updates
-                </label>
-                <label class="setting-label">
-                    <input type="checkbox" class="setting-checkbox" id="courseNotification">
-                    Notify me about new courses
-                </label>
-                <label class="setting-label">
-                    <input type="checkbox" class="setting-checkbox" id="scholarshipNotification">
-                    Notify me about scholarships
+                    <input type="checkbox" class="setting-checkbox" id="locationNotification">
+                    Receive notifications when approaching places or stores
                 </label>
             </div>
         </div>
     </div>
 
-    <!-- Recommendation Settings -->
-    <div class="main-content" id="recommendation-settings">
+    <!-- Font Size Settings -->
+    <div class="main-content" id="font-settings">
         <div class="settings-container">
-            <div class="settings-header">Recommendation Settings</div>
+            <div class="settings-header">Font Settings</div>
+    
+            <!-- Font Size Setting Section -->
             <div class="setting-section">
-                <label for="interest" class="setting-label">Areas of Interest:</label>
-                <input type="text" id="interest" class="setting-input" placeholder="e.g., Computer Science, Business">
-
-                <label for="budget" class="setting-label">Budget:</label>
-                <input type="text" id="budget" class="setting-input" placeholder="Enter your budget">
+                <label for="fontSize" class="setting-label">Choose Font Size:</label>
+                <select id="fontSize" class="setting-select" onchange="changeFontSize(this.value)">
+                    <option value="14px">Small</option>
+                    <option value="16px" selected>Medium</option>
+                    <option value="18px">Large</option>
+                    <option value="20px">Extra Large</option>
+                </select>
+            </div>
+    
+            <!-- Font Family Setting Section -->
+            <div class="setting-section">
+                <label for="font-select" class="setting-label">Choose Font:</label>
+                <select id="font-select" class="setting-select" onchange="changeFont()">
+                    <option value="Arial">Arial</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="Georgia">Georgia</option>
+                </select>
             </div>
         </div>
     </div>
-
-    <!-- Privacy & Security -->
-    <div class="main-content" id="privacy-security">
-        <div class="settings-container">
-            <div class="settings-header">Privacy & Security</div>
-            <div class="setting-section">
-                <label class="setting-label">
-                    <input type="checkbox" class="setting-checkbox" id="dataTracking">
-                    Allow data tracking for personalized ads
-                </label>
-                <label class="setting-label">
-                    <input type="checkbox" class="setting-checkbox" id="shareData">
-                    Allow sharing of my data with third parties
-                </label>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Theme Settings -->
     <div class="main-content" id="theme-settings">
@@ -218,13 +193,18 @@
             <div class="settings-header">Theme Settings</div>
             <div class="setting-section">
                 <label for="theme" class="setting-label">Theme:</label>
-                <select id="theme" class="setting-select">
+                <select id="theme" class="setting-select" onchange="changeTheme(this.value)">
                     <option value="light">Light Mode</option>
                     <option value="dark">Dark Mode</option>
+                    <option value="solarized-light">Solarized Light</option>
+                    <option value="solarized-dark">Solarized Dark</option>
+                    <option value="high-contrast">High Contrast</option>
                 </select>
             </div>
         </div>
     </div>
+    <!-- Back to Home Button -->
+    <button class="back-home-button" onclick="goToHome()">Back to Home</button>
 
     <script>
         // Function to show the active section
@@ -244,6 +224,39 @@
             // Add active class to the clicked link
             event.target.classList.add('active');
         }
+
+        // Function to change font size
+        function changeFontSize(size) {
+            document.body.style.fontSize = size;
+        }
+
+        // Function to change theme
+        function changeTheme(theme) {
+            document.body.className = ''; // Reset all classes
+            document.body.classList.add(theme); // Add the chosen theme class
+        }
+
+        // Function to navigate back to the home page
+        function goToHome() {
+            window.location.href = "/TestMap/index.html"; 
+        }
+
+        // ฟังก์ชันเปลี่ยนฟ้อนต์
+        function changeFont() {
+            const font = document.getElementById('font-select').value;
+            document.body.style.fontFamily = font; // เปลี่ยนฟ้อนต์ในหน้าปัจจุบัน
+            localStorage.setItem('selectedFont', font); // บันทึกฟ้อนต์ใน localStorage
+        }
+
+        // ฟังก์ชันโหลดฟ้อนต์ที่ถูกบันทึกเมื่อเปิดหน้าเพจ
+        function loadFontSetting() {
+            const savedFont = localStorage.getItem('selectedFont');
+            if (savedFont) {
+                document.body.style.fontFamily = savedFont; // ใช้ฟ้อนต์ที่บันทึกไว้ใน localStorage
+            }
+        }
+
+        loadFontSetting(); // เรียกใช้ฟังก์ชันเมื่อโหลดหน้าเพจ
     </script>
 
 </body>

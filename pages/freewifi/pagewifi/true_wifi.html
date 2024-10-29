@@ -142,6 +142,16 @@
         }
     </style>
 </head>
+<script>
+    // ฟังก์ชันสำหรับโหลดฟ้อนต์จาก localStorage
+    function loadFontSetting() {
+        const savedFont = localStorage.getItem('selectedFont');
+        if (savedFont) {
+            document.body.style.fontFamily = savedFont; // ตั้งฟ้อนต์ที่บันทึกไว้จาก localStorage
+        }
+    }
+    loadFontSetting(); // เรียกใช้เมื่อหน้าโหลด
+</script>
 <body>
     <div class="container">
         <div class="wifi-icon"></div>
