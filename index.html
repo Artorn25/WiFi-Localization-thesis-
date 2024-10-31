@@ -32,7 +32,7 @@
         <ul>
             <li class="sidebartext"><a href="\pages\map\map.html"><i class="icon-map"></i>Maps</a></li>
             <li><a href="\pages\freewifi\freewifi.html"><i class="icon-wifi"></i>Free Wifi</a></li>
-            <li><a href="#wifi-router"><i class="icon-router"></i>Wifi Router</a></li>
+            <li><a href="/pages/wifirouter/wifirouter.html"><i class="icon-router"></i>Wifi Router</a></li>
             <li><a href="pages\dashboard\recent.html"><i class="icon-dashboard"></i>Dashboard</a></li>
             <li><a href="\pages\setting\setting.html"><i class="icon-setting"></i>Setting</a></li>
             <li><a href="\pages\feedback\feedback.html"><i class="icon-feedback"></i>Feedback</a></li>
@@ -45,44 +45,40 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active text-secondary" aria-current="page" href="\pages\map\map.html">Maps</a>
+                            <a class="nav-link active text-secondary" aria-current="page" href="/pages/map/map.html">Maps</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-secondary" href="\pages\freewifi\freewifi.html">Free Wifi</a>
+                            <a class="nav-link text-secondary" href="/pages/freewifi/freewifi.html">Free Wifi</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-secondary" href="\pages\wifirouter\wifirouter.html">Wifi Router</a>
+                            <a class="nav-link text-secondary" href="/pages/wifirouter/wifirouter.html">Wifi Router</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-secondary" href="\pages\dashboard\recent.html">Dashboard</a>
+                            <a class="nav-link text-secondary" href="/pages/dashboard/recent.html">Dashboard</a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link text-secondary" href="/pages/setting/setting.html">Setting</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-secondary" href="\pages\setting\setting.html">Setting</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-secondary" href="\pages\feedback\feedback.html">Feedback</a>
-                        </li>
+                            <a class="nav-link text-secondary" href="/pages/feedback/feedback.html">Feedback</a>
+                        </li> -->
                     </ul>
-
-                    <form class="d-flex input-group w-auto search-bar">
-                        <input type="search" class="btn-outline" placeholder="Search for maps" aria-label="Search" />
-                        <button class="btn btn-outline-warning" type="button" data-mdb-ripple-color="dark"
-                            style="padding: .45rem 1.5rem .35rem;">
+        
+                    <form class="d-flex input-group w-auto search-bar" onsubmit="searchPage(event)">
+                        <input id="searchInput" type="search" class="form-control search-input" placeholder="Search for maps" aria-label="Search" />
+                        <button class="btn btn-warning search-button" type="submit" data-mdb-ripple-color="dark">
                             Search
                         </button>
                     </form>
                 </div>
-
+        
                 <button class="navbar-toggler togglebtn ms-auto" id="toggle-sidebar" type="button" data-toggle="collapse" data-target="#navbarsExample04" aria-controls="sidebar" aria-expanded="true" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon">
-                        <img src="/templates/image/square-ellipsis.png" class="img-fluid" alt="" >
+                        <img src="/templates/image/square-ellipsis.png" class="img-fluid" alt="">
                     </span>
                 </button>
-                
-                
             </div>
         </nav>
-
         <header>
             <h1>WiFi Localization</h1>
             <p class="subtitle">Connect to <span>the world</span> instantly</p>
@@ -142,6 +138,28 @@
                 }
             });
         });
+    function searchPage(event) {
+        event.preventDefault();
+        const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+        const pages = {
+            'maps': '/pages/map/map.html',
+            'free wifi': '/pages/freewifi/freewifi.html',
+            'wifi router': '/pages/wifirouter/wifirouter.html',
+            'dashboard': '/pages/dashboard/recent.html',
+            'setting': '/pages/setting/setting.html',
+            'feedback': '/pages/feedback/feedback.html'
+        };
+        
+        // Check if the search query matches any keys in the pages object
+        for (const page in pages) {
+            if (page.includes(searchQuery)) {
+                window.location.href = pages[page];
+                return;
+            }
+        }
+
+        alert('No matching page found.');
+    }
     </script>
 </body>
 
