@@ -44,11 +44,11 @@ nav {
   }
 }
 
-/* .nav-content h1 {
+.nav-content h1 {
   color: var(--primary-color);
   font-size: 1.8rem;
   margin: 0;
-} */
+}
 
 .nav-links a {
   color: var(--text-color);

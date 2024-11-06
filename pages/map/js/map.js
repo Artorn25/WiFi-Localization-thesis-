@@ -234,7 +234,7 @@ canvas.addEventListener("click", event => {
         });
         return;
     }
-
+    console.log("Test")
     if (!ValidatePoint(pointName)) return;
 
     const rect = canvas.getBoundingClientRect(),
@@ -347,7 +347,7 @@ function AddPoint(x, y, name) {
     pointsPerMap[selectedIndex].push({ x, y, name, color, distance, rssi });
 
     console.log(`Point added: ${name} at (${x}, ${y})`);
-
+    document.getElementById("pointName").value = "";
     // ดึงข้อมูลจาก Firebase และวาดวงกลม
     CheckAndDisplayPointData({ x, y, name });
 
@@ -520,7 +520,7 @@ function DrawCircle(x, y, distance) {
     if (distance > 0) {
         console.log(`Drawing circle at (${x}, ${y}) with radius: ${distance * 90}`);
         ctx.beginPath();
-        ctx.arc(x, y, distance * 90, 0, 2 * Math.PI);  // ปรับขนาดวงกลมตามระยะทาง
+        ctx.arc(x, y, distance * 100, 0, 2 * Math.PI);  // ปรับขนาดวงกลมตามระยะทาง
         ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
         ctx.stroke();
     }
@@ -530,8 +530,8 @@ function CheckCircleIntersection(point1, point2) {
 
     // d = √(x1 - x2)^2 + (y1 - y2)^2  
     const d = Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
-    const r1 = point1.distance * 90;
-    const r2 = point2.distance * 90;
+    const r1 = point1.distance * 100;
+    const r2 = point2.distance * 100;
 
     // ตรวจสอบว่ามีการตัดกันหรือไม่ d > r1 + r2 
     if (d > r1 + r2) {
@@ -605,7 +605,7 @@ function DrawMidPoint(x1, y1, x2, y2) {
     // วาดจุดกึ่งกลางบนแผนที่
     ctx.beginPath();
     ctx.arc(xMid, yMid, 5, 0, 2 * Math.PI);  // จุดกึ่งกลางเป็นวงกลมเล็กๆ
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = 'green';
     ctx.fill();
     console.log(`Midpoint at (${xMid}, ${yMid})`);
 }
