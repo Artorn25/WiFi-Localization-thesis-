@@ -526,6 +526,7 @@ function DrawCircle(x, y, distance) {
     }
 }
 
+
 function CheckCircleIntersection(point1, point2) {
 
     // d = √(x1 - x2)^2 + (y1 - y2)^2  

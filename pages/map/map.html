@@ -1,99 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Campus Maps</title>
     <link rel="stylesheet" href="/pages/map/css/map.css" />
     <!-- SweetAlert2 Library -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
+  </head>
 
-<script>
+  <script>
     // ฟังก์ชันสำหรับโหลดฟ้อนต์จาก localStorage
     function loadFontSetting() {
-        const savedFont = localStorage.getItem('selectedFont');
-        if (savedFont) {
-            document.body.style.fontFamily = savedFont; // ตั้งฟ้อนต์ที่บันทึกไว้จาก localStorage
-        }
+      const savedFont = localStorage.getItem("selectedFont");
+      if (savedFont) {
+        document.body.style.fontFamily = savedFont; // ตั้งฟ้อนต์ที่บันทึกไว้จาก localStorage
+      }
     }
     loadFontSetting(); // เรียกใช้เมื่อหน้าโหลด
-</script>
+  </script>
 
-<body>
+  <body>
     <nav>
-        <div class="container">
-            <div class="nav-content">
-                <h1>🗺️ Campus Maps</h1>
-                <div class="nav-links">
-                    <a href="/index.html">Home</a>
-                    <a href="map.html" class="active">Maps</a>
-                </div>
-            </div>
+      <div class="container">
+        <div class="nav-content">
+          <h1>🗺️ Campus Maps</h1>
+          <div class="nav-links">
+            <a href="/index.html">Home</a>
+            <a href="map.html" class="active">Maps</a>
+          </div>
         </div>
+      </div>
     </nav>
 
     <div id="map-container">
-        <div class="container">
-            <canvas id="myCanvas" width="1423px" height="653px"></canvas>
-            <div id="map-controls">
-                <div class="controls-group">
-                    <label for="mapName">Map Name:</label>
-                    <select id="map-select">
-                        <option value="">Select Map</option>
-                    </select>
-                    <input type="text" id="mapName" placeholder="Enter map name">
-                    <button id="updateMapName">Update Map Name</button>
-                    <button id="delete-map">🗑️ Delete Map</button>
+      <div class="container">
+        <canvas id="myCanvas" width="1423px" height="653px"></canvas>
+        <div id="map-controls">
+          <div class="controls-group">
+            <label for="mapName">Map Name:</label>
+            <select id="map-select">
+              <option value="">Select Map</option>
+            </select>
+            <input type="text" id="mapName" placeholder="Enter map name" />
+            <button id="updateMapName">Update Map Name</button>
+            <button id="delete-map">🗑️ Delete Map</button>
 
-                    <div class="upload-btn-wrapper">
-                        <button class="btn-upload">
-                            📤 Upload Map
-                            <input type="file" id="map-upload" accept="image/*">
-                        </button>
-                    </div>
-
-                    <input type="text" id="pointName" placeholder="Enter point name">
-                    <button id="resetPoints">🔄 Reset</button>
-                    <!-- <button id="ToggleMode">🔄 Toggle Mode</button> -->
-                </div>
-
-                <div class="controls-group">
-                    <select id="pointSelect"></select>
-                    <button id="DeletePoint">🗑️ Delete Point</button>
-                    <select id="point1Select"></select>
-                    <select id="point2Select"></select>
-                    <button id="ShowDistance">📏 Show Distance</button>
-                    <select id="editPointSelect"></select>
-                    <input type="text" id="newPointName" placeholder="Enter new point name">
-                    <button id="editPoint">✏️ Update Point Name</button>
-                </div>
+            <div class="upload-btn-wrapper">
+              <button class="btn-upload">
+                📤 Upload Map
+                <input type="file" id="map-upload" accept="image/*" />
+              </button>
             </div>
 
-            <!-- <div id="modeIndicator"></div> -->
-            <div id="distanceDisplay"></div>
+            <input type="text" id="pointName" placeholder="Enter point name" />
+            <button id="resetPoints">🔄 Reset</button>
+            <!-- <button id="ToggleMode">🔄 Toggle Mode</button> -->
+          </div>
 
+          <div class="controls-group">
+            <select id="pointSelect"></select>
+            <button id="DeletePoint">🗑️ Delete Point</button>
+            <select id="point1Select"></select>
+            <select id="point2Select"></select>
+            <button id="ShowDistance">📏 Show Distance</button>
+            <select id="editPointSelect"></select>
+            <input
+              type="text"
+              id="newPointName"
+              placeholder="Enter new point name"
+            />
+            <button id="editPoint">✏️ Update Point Name</button>
+          </div>
         </div>
+
+        <!-- <div id="modeIndicator"></div> -->
+        <div id="distanceDisplay"></div>
+      </div>
     </div>
 
-    <div id="tooltip" style="box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 0.8rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            position: absolute; 
-            display: none; 
-            background-color: white; 
-            border: 1px solid black; 
-            pointer-events: none;">
-    </div>
+    <div
+      id="tooltip"
+      style="
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 0.8rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        position: absolute;
+        display: none;
+        background-color: white;
+        border: 1px solid black;
+        pointer-events: none;
+      "
+    ></div>
 
     <div id="map-sample-container" class="container">
-        <h3>Example Maps</h3>
-        <div class="map-samples">
-            <img src="./2.jpg" alt="Sample Map 1" class="map-sample" data-map-src="./2.jpg">
-            <img src="./3.jpg" alt="Sample Map 2" class="map-sample" data-map-src="./3.jpg">
-        </div>
+      <h3>Example Maps</h3>
+      <div class="map-samples">
+        <img
+          src="./map1.jpg"
+          alt="Sample Map 1"
+          class="map-sample"
+          data-map-src="./map1.jpg"
+        />
+        <img
+          src="./map2.jpg"
+          alt="Sample Map 2"
+          class="map-sample"
+          data-map-src="./map2.jpg"
+        />
+        <img
+          src="./map3.jpg"
+          alt="Sample Map 3"
+          class="map-sample"
+          data-map-src="./map3.jpg"
+        />
+      </div>
     </div>
 
     <!-- <script type="module">
@@ -789,6 +811,5 @@ function DrawMidPoint(x1, y1, x2, y2) {
 
     </script> -->
     <script type="module" src="/pages/map/js/map.js"></script>
-</body>
-
+  </body>
 </html>
