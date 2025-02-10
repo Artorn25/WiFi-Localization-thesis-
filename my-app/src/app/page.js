@@ -46,9 +46,9 @@ export default function Home() {
       .getElementById("searchInput")
       .value.toLowerCase();
     const pages = {
-      maps: "/maps",
-      "free wifi": "/freewifi",
-      "wifi router": "/wifirouter",
+      maps: "/map",
+      "free wifi": "/wifi",
+      "wifi router": "/wifi-router",
       dashboard: "/dashboard",
       setting: "/setting",
       feedback: "/feedback",
@@ -78,13 +78,13 @@ export default function Home() {
         </span>
         <ul>
           <li>
-            <Link href="/maps">Maps</Link>
+            <Link href="/map">Maps</Link>
           </li>
           <li>
-            <Link href="/freewifi">Free Wifi</Link>
+            <Link href="/wifi">Free Wifi</Link>
           </li>
           <li>
-            <Link href="/wifirouter">Wifi Router</Link>
+            <Link href="/wifi-router">Wifi Router</Link>
           </li>
           <li>
             <Link href="/dashboard">Dashboard</Link>
@@ -103,17 +103,17 @@ export default function Home() {
           <div className="container d-flex justify-content-between">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li>
-                <Link href="/maps" className="nav-link text-secondary">
+                <Link href="/map" className="nav-link text-secondary">
                   Maps
                 </Link>
               </li>
               <li>
-                <Link href="/freewifi" className="nav-link text-secondary">
+                <Link href="/wifi" className="nav-link text-secondary">
                   Free Wifi
                 </Link>
               </li>
               <li>
-                <Link href="/wifirouter" className="nav-link text-secondary">
+                <Link href="/wifi-router" className="nav-link text-secondary">
                   Wifi Router
                 </Link>
               </li>

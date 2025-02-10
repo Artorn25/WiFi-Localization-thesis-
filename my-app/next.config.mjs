@@ -1,4 +1,18 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+// next.config.js
+const nextConfig = {
+  images: {
+    domains: ["localhost"], // อนุญาตให้ใช้รูปภาพจาก localhost
+    // หรือใช้ remotePatterns สำหรับการกำหนดค่าแบบละเอียด
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+        pathname: "/**", // อนุญาตทุก path ภายใต้ localhost:3000
+      },
+    ],
+  },
+};
 
 export default nextConfig;

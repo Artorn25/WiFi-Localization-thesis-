@@ -50,21 +50,7 @@ img.onload = function () {
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
 
-img.src = "./map4.png";
-
-// ฟังก์ชันแปลงพิกัดจากรูปภาพไปเป็นตำแหน่งจริง
-function imageToReal(x, y) {
-  const X = x * scaleX;
-  const Y = y * scaleY;
-  return { X, Y };
-}
-
-// ฟังก์ชันแปลงพิกัดจากตำแหน่งจริงไปเป็นรูปภาพ
-function realToImage(X, Y) {
-  const x = X / scaleX;
-  const y = Y / scaleY;
-  return { x, y };
-}
+// img.src = "./map4.png";
 
 // Check condition
 const CheckCondition = {
@@ -133,18 +119,49 @@ function UpdateMapSelect() {
   });
 }
 
+// ฟังก์ชันสำหรับเลือกแผนที่จาก dropdown
+document.getElementById("map-select").addEventListener("change", (event) => {
+  const selectedIndex = event.target.value;
+  if (selectedIndex) {
+    LoadMap(maps[selectedIndex].src);
+  }
+});
+
+// ฟังก์ชันสำหรับอัปโหลดแผนที่ใหม่
+document.getElementById("map-upload").addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const mapSrc = e.target.result;
+      EditMapName(mapSrc);
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
 // Load map
 function LoadMap(mapSrc) {
   img.src = mapSrc;
   img.onload = () => {
+    // ปรับขนาด Canvas ให้ตรงกับขนาดรูปภาพ
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    // คำนวณ Scale Factor ใหม่
+    scaleX = realWidth / canvas.width;
+    scaleY = realHeight / canvas.height;
+
+    // ล้าง Canvas และวาดรูปภาพใหม่
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // เคลียร์จุดก่อนหน้า
+    // โหลดจุดและ marker จากแผนที่ที่เลือก
     const selectedIndex = document.getElementById("map-select").value;
-    points = pointsPerMap[selectedIndex] || []; // โหลดจุดจาก pointsPerMap
-    markerCoordinates = markerCoordinatesPerMap[selectedIndex] || []; // โหลด marker จาก markerCoordinatesPerMap
+    points = pointsPerMap[selectedIndex] || [];
+    markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
 
+    // วาด marker และจุดที่มีอยู่
     if (drawMode) {
       DrawMarkers();
     }
@@ -156,6 +173,9 @@ function LoadMap(mapSrc) {
         DrawCircle(point.x, point.y, point.distance);
       }
     });
+
+    console.log(`Map loaded: ${mapSrc}`);
+    console.log(`Scale X: ${scaleX}, Scale Y: ${scaleY}`);
   };
 }
 
@@ -407,24 +427,6 @@ function AddPoint(x, y, name) {
 }
 
 function ShowDistance() {
-  // const index1 = document.getElementById("point1Select").value;
-  // const index2 = document.getElementById("point2Select").value;
-
-  // if (index1 === index2) {
-  //   Swal.fire({
-  //     title: "Error",
-  //     text: "Cannot measure distance between the same point.",
-  //     icon: "error",
-  //   });
-  //   return;
-  // }
-
-  // if (index1 && index2) {
-  //   const distance = calculateDistance(points[index1], points[index2]);
-  //   document.getElementById("distanceDisplay").innerText = `Distance between ${
-  //     points[index1].name
-  //   } and ${points[index2].name}: ${distance.toFixed(2)} meters`;
-  // }
   const index1 = document.getElementById("point1Select").value;
   const index2 = document.getElementById("point2Select").value;
 
@@ -618,70 +620,128 @@ function DrawCircle(x, y, distance) {
   }
 }
 
-function CheckCircleIntersection(point1, point2) {
-  // d = √(x1 - x2)^2 + (y1 - y2)^2
-  const d = Math.sqrt(
-    Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
-  );
-  const r1 = point1.distance * 100,
-    r2 = point2.distance * 100;
+// function CheckCircleIntersection(point1, point2) {
+//   // d = √(x1 - x2)^2 + (y1 - y2)^2
+//   const d = Math.sqrt(
+//     Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
+//   );
+//   const r1 = point1.distance * 100,
+//     r2 = point2.distance * 100;
 
-  // ตรวจสอบว่ามีการตัดกันหรือไม่ d > r1 + r2
+//   // ตรวจสอบว่ามีการตัดกันหรือไม่ d > r1 + r2
+//   if (d > r1 + r2) {
+//     console.log(
+//       `Circles of ${point1.name} and ${point2.name} are close but do not intersect.`
+//     );
+//     // คำนวณจุดที่ใกล้กันที่สุดบนขอบของวงกลมทั้งสอง
+//     const ratio1 = r1 / d,
+//       ratio2 = r2 / d;
+//     const nearestPoint1 = {
+//       x: point1.x + (point2.x - point1.x) * ratio1,
+//       y: point1.y + (point2.y - point1.y) * ratio1,
+//     };
+//     const nearestPoint2 = {
+//       x: point2.x + (point1.x - point2.x) * ratio2,
+//       y: point2.y + (point1.y - point2.y) * ratio2,
+//     };
+//     DrawLine(
+//       nearestPoint1.x,
+//       nearestPoint1.y,
+//       nearestPoint2.x,
+//       nearestPoint2.y
+//     );
+//     DrawMidPoint(
+//       nearestPoint1.x,
+//       nearestPoint1.y,
+//       nearestPoint2.x,
+//       nearestPoint2.y
+//     );
+//     console.log(
+//       `Draw line between nearest points of ${point1.name} and ${point2.name}`
+//     );
+//     return [];
+//   } else if (d < Math.abs(r1 - r2) || d === 0) {
+//     console.log(
+//       `Circles of ${point1.name} and ${point2.name} are within each other or identical.`
+//     );
+//     return [];
+//   }
+
+//   // หากวงกลมตัดกัน (กรณีที่วงกลมสองวงตัดกัน)
+//   const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+//   const h = Math.sqrt(r1 * r1 - a * a);
+
+//   const x3 = point1.x + (a * (point2.x - point1.x)) / d,
+//     y3 = point1.y + (a * (point2.y - point1.y)) / d;
+//   const intersectX1 = x3 + (h * (point2.y - point1.y)) / d,
+//     intersectY1 = y3 - (h * (point2.x - point1.x)) / d;
+//   const intersectX2 = x3 - (h * (point2.y - point1.y)) / d,
+//     intersectY2 = y3 + (h * (point2.x - point1.x)) / d;
+
+//   console.log(`Intersection points for ${point1.name} and ${point2.name}:
+//                  Point 1: (${intersectX1}, ${intersectY1})
+//                  Point 2: (${intersectX2}, ${intersectY2})`);
+//   // วาดจุดตัด
+//   DrawPoint(intersectX1, intersectY1, "Intersection", "green");
+//   DrawPoint(intersectX2, intersectY2, "Intersection", "green");
+//   return [
+//     { x: intersectX1, y: intersectY1 },
+//     { x: intersectX2, y: intersectY2 },
+//   ];
+// }
+function CheckCircleIntersection(point1, point2) {
+  // คำนวณระยะห่างระหว่างจุดศูนย์กลางของวงกลมทั้งสอง
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
+  const d = Math.sqrt(dx * dx + dy * dy);
+
+  // รัศมีของวงกลมทั้งสอง (แปลงเป็นพิกัด Canvas)
+  const r1 = point1.distance / scaleX;
+  const r2 = point2.distance / scaleX;
+
+  // ตรวจสอบว่าวงกลมตัดกันหรือไม่
   if (d > r1 + r2) {
-    console.log(
-      `Circles of ${point1.name} and ${point2.name} are close but do not intersect.`
-    );
-    // คำนวณจุดที่ใกล้กันที่สุดบนขอบของวงกลมทั้งสอง
-    const ratio1 = r1 / d,
-      ratio2 = r2 / d;
+    console.log("Circles do not intersect.");
+    // คำนวณจุดที่ใกล้ที่สุดบนขอบของวงกลมทั้งสอง
+    const ratio1 = r1 / d;
+    const ratio2 = r2 / d;
     const nearestPoint1 = {
-      x: point1.x + (point2.x - point1.x) * ratio1,
-      y: point1.y + (point2.y - point1.y) * ratio1,
+      x: point1.x + dx * ratio1,
+      y: point1.y + dy * ratio1,
     };
     const nearestPoint2 = {
-      x: point2.x + (point1.x - point2.x) * ratio2,
-      y: point2.y + (point1.y - point2.y) * ratio2,
+      x: point2.x - dx * ratio2,
+      y: point2.y - dy * ratio2,
     };
-    DrawLine(
-      nearestPoint1.x,
-      nearestPoint1.y,
-      nearestPoint2.x,
-      nearestPoint2.y
-    );
-    DrawMidPoint(
-      nearestPoint1.x,
-      nearestPoint1.y,
-      nearestPoint2.x,
-      nearestPoint2.y
-    );
-    console.log(
-      `Draw line between nearest points of ${point1.name} and ${point2.name}`
-    );
+
+    // ลากเส้นระหว่างจุดที่ใกล้ที่สุด
+    DrawLine(nearestPoint1.x, nearestPoint1.y, nearestPoint2.x, nearestPoint2.y);
+
+    // หาจุดกึ่งกลางของเส้น
+    DrawMidPoint(nearestPoint1.x, nearestPoint1.y, nearestPoint2.x, nearestPoint2.y);
+
     return [];
   } else if (d < Math.abs(r1 - r2) || d === 0) {
-    console.log(
-      `Circles of ${point1.name} and ${point2.name} are within each other or identical.`
-    );
+    console.log("One circle is inside the other or they are identical.");
     return [];
   }
 
-  // หากวงกลมตัดกัน (กรณีที่วงกลมสองวงตัดกัน)
+  // หากวงกลมตัดกัน
   const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
   const h = Math.sqrt(r1 * r1 - a * a);
 
-  const x3 = point1.x + (a * (point2.x - point1.x)) / d,
-    y3 = point1.y + (a * (point2.y - point1.y)) / d;
-  const intersectX1 = x3 + (h * (point2.y - point1.y)) / d,
-    intersectY1 = y3 - (h * (point2.x - point1.x)) / d;
-  const intersectX2 = x3 - (h * (point2.y - point1.y)) / d,
-    intersectY2 = y3 + (h * (point2.x - point1.x)) / d;
+  const x3 = point1.x + (a * dx) / d;
+  const y3 = point1.y + (a * dy) / d;
 
-  console.log(`Intersection points for ${point1.name} and ${point2.name}:
-                 Point 1: (${intersectX1}, ${intersectY1})
-                 Point 2: (${intersectX2}, ${intersectY2})`);
-  // วาดจุดตัด
+  const intersectX1 = x3 + (h * dy) / d;
+  const intersectY1 = y3 - (h * dx) / d;
+  const intersectX2 = x3 - (h * dy) / d;
+  const intersectY2 = y3 + (h * dx) / d;
+
+  // วาดจุดตัดบน Canvas
   DrawPoint(intersectX1, intersectY1, "Intersection", "green");
   DrawPoint(intersectX2, intersectY2, "Intersection", "green");
+
   return [
     { x: intersectX1, y: intersectY1 },
     { x: intersectX2, y: intersectY2 },

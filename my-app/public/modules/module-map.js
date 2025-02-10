@@ -7,14 +7,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g",
-  authDomain: "esp8266-t1-37f02.firebaseapp.com",
-  databaseURL:
-    "https://esp8266-t1-37f02-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "esp8266-t1-37f02",
-  storageBucket: "esp8266-t1-37f02.appspot.com",
-  messagingSenderId: "201166852539",
-  appId: "1:201166852539:web:42c3ad90a0611b17d5b49e",
+  apiKey: process.env.NEXT_PUBLIC_APIKEY,
+  authDomain: process.env.NEXT_PUBLIC_AUTHDOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_DATABASEURL,
+  projectId: process.env.NEXT_PUBLIC_PROJECTID,
+  storageBucket: process.env.NEXT_PUBLIC_STORAGEBUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_MESSAGINGSENDERID,
+  appId: process.env.NEXT_PUBLIC_APPID,
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app),
@@ -50,22 +49,7 @@ img.onload = function () {
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
 
-img.src = "./map4.png";
-
-// ฟังก์ชันแปลงพิกัดจากรูปภาพไปเป็นตำแหน่งจริง
-function imageToReal(x, y) {
-  const X = x * scaleX;
-  const Y = y * scaleY;
-  return { X, Y };
-}
-
-// ฟังก์ชันแปลงพิกัดจากตำแหน่งจริงไปเป็นรูปภาพ
-function realToImage(X, Y) {
-  const x = X / scaleX;
-  const y = Y / scaleY;
-  return { x, y };
-}
-
+// img.src = "./map4.png";
 // Check condition
 const CheckCondition = {
   Equal: function (condition, massageAlert) {
@@ -407,24 +391,6 @@ function AddPoint(x, y, name) {
 }
 
 function ShowDistance() {
-  // const index1 = document.getElementById("point1Select").value;
-  // const index2 = document.getElementById("point2Select").value;
-
-  // if (index1 === index2) {
-  //   Swal.fire({
-  //     title: "Error",
-  //     text: "Cannot measure distance between the same point.",
-  //     icon: "error",
-  //   });
-  //   return;
-  // }
-
-  // if (index1 && index2) {
-  //   const distance = calculateDistance(points[index1], points[index2]);
-  //   document.getElementById("distanceDisplay").innerText = `Distance between ${
-  //     points[index1].name
-  //   } and ${points[index2].name}: ${distance.toFixed(2)} meters`;
-  // }
   const index1 = document.getElementById("point1Select").value;
   const index2 = document.getElementById("point2Select").value;
 
