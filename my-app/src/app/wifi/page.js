@@ -4,6 +4,9 @@ import Link from "next/link";
 import "../styles/freerouter.css";
 
 export default function FreeWiFi() {
+  const style = {
+    
+  }
   return (
     <>
       <div className="container">

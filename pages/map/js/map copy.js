@@ -33,7 +33,7 @@ let points = [],
 const img = new Image();
 
 const realWidth = 63; // ความกว้างจริง (เมตร)
-const realHeight = 16.8; // ความยาวจริง (เมตร)
+const realHeight = 23.6; // ความยาวจริง (เมตร)
 
 let scaleX, scaleY;
 
@@ -715,10 +715,20 @@ function CheckCircleIntersection(point1, point2) {
     };
 
     // ลากเส้นระหว่างจุดที่ใกล้ที่สุด
-    DrawLine(nearestPoint1.x, nearestPoint1.y, nearestPoint2.x, nearestPoint2.y);
+    DrawLine(
+      nearestPoint1.x,
+      nearestPoint1.y,
+      nearestPoint2.x,
+      nearestPoint2.y
+    );
 
     // หาจุดกึ่งกลางของเส้น
-    DrawMidPoint(nearestPoint1.x, nearestPoint1.y, nearestPoint2.x, nearestPoint2.y);
+    DrawMidPoint(
+      nearestPoint1.x,
+      nearestPoint1.y,
+      nearestPoint2.x,
+      nearestPoint2.y
+    );
 
     return [];
   } else if (d < Math.abs(r1 - r2) || d === 0) {

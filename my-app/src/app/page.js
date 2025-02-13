@@ -68,15 +68,8 @@ export default function Home() {
     <>
       {/* ✅ แก้ไขให้ใช้ <Head> แทน useEffect */}
       <div className="background-image"></div>
-      <div ref={sidebarRef} className="sidebar" aria-hidden="true">
-        <span
-          className="close-btn"
-          id="close-sidebar"
-          onClick={() => sidebarRef.current.classList.remove("open")}
-        >
-          &times;
-        </span>
-        <ul>
+      <div className="sidebar oswald-bold">
+        <ul className="menu-list">
           <li>
             <Link href="/map">Maps</Link>
           </li>
@@ -95,68 +88,24 @@ export default function Home() {
           <li>
             <Link href="/feedback">Feedback</Link>
           </li>
+          <form
+            className="d-flex text-black input-group w-auto search-bar"
+            onSubmit={searchPage}
+          >
+            <input
+              id="searchInput"
+              type="search"
+              className="form-control search-input"
+              placeholder="Search for maps"
+            />
+            <button className="btn btn-warning search-button" type="submit">
+              Search
+            </button>
+          </form>
         </ul>
       </div>
 
       <main className="main-content">
-        <nav className="navbartop navbar-expand-lg bg-body-tertiary">
-          <div className="container d-flex justify-content-between">
-            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              <li>
-                <Link href="/map" className="nav-link text-secondary">
-                  Maps
-                </Link>
-              </li>
-              <li>
-                <Link href="/wifi" className="nav-link text-secondary">
-                  Free Wifi
-                </Link>
-              </li>
-              <li>
-                <Link href="/wifi-router" className="nav-link text-secondary">
-                  Wifi Router
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="nav-link text-secondary">
-                  Dashboard
-                </Link>
-              </li>
-            </ul>
-
-            <form
-              className="d-flex input-group w-auto search-bar"
-              onSubmit={searchPage}
-            >
-              <input
-                id="searchInput"
-                type="search"
-                className="form-control search-input"
-                placeholder="Search for maps"
-              />
-              <button className="btn btn-warning search-button" type="submit">
-                Search
-              </button>
-            </form>
-
-            <button
-              ref={toggleBtnRef}
-              className="navbar-toggler togglebtn ms-auto"
-              type="button"
-              aria-controls="sidebar"
-              aria-expanded="true"
-            >
-              <Image
-                src="/square-ellipsis.png"
-                className="img-fluid"
-                alt=""
-                width={30}
-                height={30}
-              />
-            </button>
-          </div>
-        </nav>
-
         <header>
           <h1>WiFi Localization</h1>
           <p className="subtitle">
@@ -202,7 +151,7 @@ export default function Home() {
           </section>
         </div>
 
-        <footer className="bg-body-tertiary text-center text-lg-start">
+        <footer className="mt-4 bg-body-tertiary text-center text-lg-start">
           <div
             className="text-center p-3"
             style={{ backgroundColor: "rgba(0, 0, 0, 0.05)" }}

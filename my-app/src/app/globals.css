@@ -1,23 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+.oswald-normal {
+  font-family: "Oswald", serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.oswald-bold {
+  font-family: "Oswald", serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
 :root {
-    --primary-color: #f36f21;
-    --secondary-color: #ff5722;
-    --dark-color: #333;
-    --light-color: #f5f5f5;
-    --white-color: #fff;
-    --transition-duration: 0.3s;
+  --primary-color: #f36f21;
+  --secondary-color: #ff5722;
+  --dark-color: #333;
+  --light-color: #f5f5f5;
+  --white-color: #fff;
+  --transition-duration: 0.3s;
 }
 
 body,
 html {
-    margin: 0;
-    padding: 0;
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--light-color);
-    color: var(--dark-color);
-    box-sizing: border-box;
-    
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  @apply oswald-normal;
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  box-sizing: border-box;
 }
+

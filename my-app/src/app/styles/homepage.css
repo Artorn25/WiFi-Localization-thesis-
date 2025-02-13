@@ -1,350 +1,327 @@
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 nav {
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    z-index: 800;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 800;
 }
 
-
 .nav-content .logo svg {
-    fill: var(--primary-color);
+  fill: var(--primary-color);
 }
 
 .search-bar input {
-    max-width: 300px;
-    border-color: orange;
-    font-size: 12px;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+  max-width: 300px;
+  border-color: orange;
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
 .search-bar button {
-    margin-left: 10px;
-    background-color: var(--primary-color);
-    font-size: 10px;
-    color: var(--white-color);
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+  margin-left: 10px;
+  background-color: var(--primary-color);
+  font-size: 10px;
+  color: var(--white-color);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
 .search-bar button:hover {
-    background-color: var(--white-color);
-    color: var(--primary-color);
+  background-color: var(--white-color);
+  color: var(--primary-color);
 }
 
 .nav-links {
-    display: flex;
-    gap: 20px;
-    a {
-        text-decoration: none;
-        color: var(--dark-color);
-        font-weight: 500;
-        padding: 5px 10px;
-        transition: color var(--transition-duration) ease;
-    }
-    a:hover {
-        color: var(--secondary-color);
-        text-decoration: underline;
-    }
+  display: flex;
+  gap: 20px;
+  a {
+    text-decoration: none;
+    color: var(--dark-color);
+    font-weight: 500;
+    padding: 5px 10px;
+    transition: color var(--transition-duration) ease;
+  }
+  a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+  }
 }
-
 
 .sidebar {
-    width: 250px;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    right: 0; /* เปลี่ยนจาก left: 0 เป็น right: 0 */
-    background-color: rgba(51, 51, 51, 0.95);
-    color: var(--white-color);
-    padding-top: 20px;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3); /* เปลี่ยนทิศทางเงาให้ไปทางซ้าย */
-    transform: translateX(100%); /* เปลี่ยนจาก -100% เป็น 100% */
-    transition: transform var(--transition-duration) ease-in-out;
-    z-index: 1000;
-    ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    ul li {
-        padding: 15px 20px;
-        transition: background-color var(--transition-duration) ease;
-    }
-    ul li:hover {
-        background-color: rgba(235, 13, 13, 0.1);
-    }
-    .close-btn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        font-size: 30px;
-        background-color: gray;
-        border-radius: 8px;
-        cursor: pointer;
-        color: var(--white-color);
-        width: 40px; /* เพิ่มขนาดเพื่อให้มีที่สำหรับการจัดกึ่งกลาง */
-        height: 40px;
-        display: flex; /* ใช้ Flexbox เพื่อจัดให้อยู่กลาง */
-        justify-content: center; /* จัดให้เนื้อหาอยู่ตรงกลางแนวนอน */
-        align-items: center; /* จัดให้เนื้อหาอยู่ตรงกลางแนวตั้ง */
-    }
-
-    .close-btn:hover {
-        background-color: rgb(203, 200, 200);
-        color: var(--light-color);
-    }
-    
-    ul li a {
-        color: var(--white-color);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-    }
-}
+    width: 100%; /* ความกว้างเต็มหน้าจอ */
+    background-color: white; /* สีพื้นหลัง */
+    color: var(--white-color); /* สีข้อความ */
+    padding: 10px 20px; /* Padding ด้านบนและล่าง */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* เงา */
+    z-index: 1000; /* ให้อยู่ด้านบน */
+  }
+  
+  .menu-list {
+    list-style: none; /* ลบจุดหน้าข้อความ */
+    padding: 0;
+    margin: 0;
+    display: flex; /* ทำให้เมนูแสดงผลในแนวนอน */
+    gap: 20px; /* ระยะห่างระหว่างรายการ */
+    justify-content: center; /* จัดเมนูให้อยู่กลาง */
+  }
+  
+  .menu-list li {
+    padding: 10px 0; /* ปรับ padding */
+  }
+  
+  .menu-list li a {
+    color: #333; /* สีข้อความ */
+    text-decoration: none; /* ลบขีดเส้นใต้ */
+    font-size: 16px; /* ขนาดฟอนต์ */
+    transition: color 0.3s ease; /* เพิ่มเอฟเฟกต์เมื่อ hover */
+  }
+  
+  .menu-list li a:hover {
+    color: orange; /* สีเมื่อ hover */
+  }
 
 .sidebar.open {
-    transform: translateX(0); /* เลื่อน sidebar ออกมา */
+  transform: translateX(0); /* เลื่อน sidebar ออกมา */
 }
-
 
 header {
-    text-align: center;
-    padding: 100px 0;
-    background: linear-gradient(to bottom right, var(--primary-color), #ff8c42);
+  text-align: center;
+  padding: 100px 0;
+  background: linear-gradient(to bottom right, var(--primary-color), #ff8c42);
+  color: var(--white-color);
+  h1 {
+    margin: 0;
+    font-size: 3em;
+    font-weight: 700;
+  }
+  .subtitle {
+    font-size: 1.5em;
+    margin-top: 10px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .subtitle span {
+    font-weight: 700;
+  }
+  .cta-button {
+    margin-top: 30px;
+    padding: 15px 30px;
+    background-color: var(--white-color);
+    color: var(--primary-color);
+    border: none;
+    font-size: 1.2em;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color var(--transition-duration) ease,
+      color var(--transition-duration) ease;
+  }
+  .cta-button:hover {
+    background-color: var(--secondary-color);
+    transform: scale(1.1);
     color: var(--white-color);
-    h1 {
-        margin: 0;
-        font-size: 3em;
-        font-weight: 700;
-    }
-    .subtitle {
-        font-size: 1.5em;
-        margin-top: 10px;
-        color: rgba(255, 255, 255, 0.8);
-    }
-    .subtitle span {
-        font-weight: 700;
-    }
-    .cta-button {
-        margin-top: 30px;
-        padding: 15px 30px;
-        background-color: var(--white-color);
-        color: var(--primary-color);
-        border: none;
-        font-size: 1.2em;
-        font-weight: 700;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease;
-    }
-    .cta-button:hover {
-        background-color: var(--secondary-color);
-        transform: scale(1.1);
-        color: var(--white-color);
-        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
-    }
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+  }
 }
 
-.nav-item:hover{
-    background-color: #bcc1c7;
-    border-radius: 5px;
-    font-weight: 700;
+.nav-item:hover {
+  background-color: #bcc1c7;
+  border-radius: 5px;
+  font-weight: 700;
 }
 
 .togglebtn {
-    display: flex; /* ใช้ Flexbox เพื่อจัดให้อยู่ตรงกลาง */
-    justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
-    align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
-    width: 50px; /* ขนาดปุ่ม */
-    height: 50px; /* ขนาดปุ่ม */
-    background-color: #f8f9fa; /* สีพื้นหลัง */
-    border: none; /* ไม่มีเส้นขอบ */
+  display: flex; /* ใช้ Flexbox เพื่อจัดให้อยู่ตรงกลาง */
+  justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+  align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+  width: 50px; /* ขนาดปุ่ม */
+  height: 50px; /* ขนาดปุ่ม */
+  background-color: #f8f9fa; /* สีพื้นหลัง */
+  border: none; /* ไม่มีเส้นขอบ */
 }
 
 .navbar-toggler-icon {
-    display: flex; /* ใช้ Flexbox */
-    justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
-    align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
-    height: 100%; /* ให้ span มีความสูงเต็มปุ่ม */
-    
-    img {
-        width: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
-        height: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
-        /* หรือใช้ max-width และ max-height */
-        max-width: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
-        max-height: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
-        animation: bounce 1s infinite;
-    }
+  display: flex; /* ใช้ Flexbox */
+  justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+  align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+  height: 100%; /* ให้ span มีความสูงเต็มปุ่ม */
+
+  img {
+    width: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
+    height: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
+    /* หรือใช้ max-width และ max-height */
+    max-width: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
+    max-height: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
+    animation: bounce 1s infinite;
+  }
 }
 
 .togglebtn:hover {
-    background-color: rgb(114, 114, 113);
-    border-radius: none;
+  background-color: rgb(114, 114, 113);
+  border-radius: none;
 }
 
 @keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-5px); /* ยกภาพขึ้น */
-    }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px); /* ยกภาพขึ้น */
+  }
 }
 
-
 .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-top: 40px;
 }
 
 .feature-card {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: opacity var(--transition-duration) ease-out, transform var(--transition-duration) ease-out;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    h3 {
-        margin: 0 0 10px;
-        font-size: 1.5em;
-        color: var(--dark-color);
-    }
-    img {
-        width: 100%;
-        border-radius: 8px;
-    }
-    p {
-        margin: 0 0 20px;
-        color: #666;
-    }
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity var(--transition-duration) ease-out,
+    transform var(--transition-duration) ease-out;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  h3 {
+    margin: 0 0 10px;
+    font-size: 1.5em;
+    color: var(--dark-color);
+  }
+  img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  p {
+    margin: 0 0 20px;
+    color: #666;
+  }
 }
 
 .feature-card.revealed {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .loading-spinner {
-    border: 4px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 4px solid var(--primary-color);
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
+  border: 4px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 4px solid var(--primary-color);
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
 
-    100% {
-        transform: rotate(360deg);
-    }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
-    .nav-content,
-    .feature-grid {
-        flex-direction: column;
-        text-align: center;
-    }
+  .nav-content,
+  .feature-grid {
+    flex-direction: column;
+    text-align: center;
+  }
 
-    .nav-links {
-        flex-direction: column;
-        gap: 10px;
-    }
+  .nav-links {
+    flex-direction: column;
+    gap: 10px;
+  }
 
-    .feature-grid {
-        grid-template-columns: 1fr;
-    }
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
-    .search-bar input {
-        max-width: 200px;
+  .search-bar input {
+    max-width: 200px;
+  }
+
+  header h1 {
+    font-size: 2.5em;
+  }
+
+  header .subtitle {
+    font-size: 1.2em;
+  }
+
+  .background-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* animation: gradientBackground 10s ease infinite; */
+    z-index: 1;
+    opacity: 0.7;
+  }
+
+  @keyframes gradientBackground {
+    0% {
+      background-color: #ff7e5f;
     }
 
-    header h1 {
-        font-size: 2.5em;
+    50% {
+      background-color: #feb47b;
     }
 
-    header .subtitle {
-        font-size: 1.2em;
+    100% {
+      background-color: #ff7e5f;
     }
-
-    .background-image {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        /* animation: gradientBackground 10s ease infinite; */
-        z-index: 1;
-        opacity: 0.7;
-    }
-
-    @keyframes gradientBackground {
-        0% {
-            background-color: #ff7e5f;
-        }
-
-        50% {
-            background-color: #feb47b;
-        }
-
-        100% {
-            background-color: #ff7e5f;
-        }
-    }
+  }
 }
 
-
 .search-input {
-    border-radius: 20px 0 0 20px;
-    padding: 0.6rem 1rem;
-    border: 1px solid #ffc107;
-    outline: none;
-    transition: all 0.3s ease;
+  border-radius: 20px 0 0 20px;
+  padding: 0.6rem 1rem;
+  border: 1px solid #ffc107;
+  outline: none;
+  transition: all 0.3s ease;
 }
 
 .search-input:focus {
-    border-color: #ffb300;
-    box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+  border-color: #ffb300;
+  box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
 }
 
 .search-button {
-    border-radius: 0 20px 20px 0;
-    padding: 0.6rem 1.5rem;
-    background-color: #ffc107;
-    border: 1px solid #ffc107;
-    color: #fff;
-    transition: background-color 0.3s ease;
+  border-radius: 0 20px 20px 0;
+  padding: 0.6rem 1.5rem;
+  background-color: #ffc107;
+  border: 1px solid #ffc107;
+  color: #fff;
+  transition: background-color 0.3s ease;
 }
 
 .search-button:hover {
-    background-color: #ffb300;
-    border-color: #ffb300;
+  background-color: #ffb300;
+  border-color: #ffb300;
 }
