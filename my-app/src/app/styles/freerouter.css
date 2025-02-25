@@ -1,24 +1,49 @@
+/* กำหนดสีและตัวแปร */
+:root {
+  --primary-color: #ff6f61; /* สีส้มหลัก */
+  --secondary-color: #ff8c42; /* สีส้มรอง */
+  --text-color: #333; /* สีข้อความ */
+  --background-color: #f9f9f9; /* สีพื้นหลัง */
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* เงา */
+}
+
+/* พื้นหลังและจัดวาง */
 .freerouter {
   margin: 0;
   padding: 0;
-  background-color: #f0f0f0;
+  background-color: var(--background-color);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  font-family: "Poppins", sans-serif;
 }
 
-
+/* Container */
 .container {
   background-color: white;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   padding: 40px;
   text-align: center;
   max-width: 800px;
   width: 90%;
+  animation: fadeIn 1s ease-in-out;
 }
 
+/* Animation สำหรับ container */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* หัวข้อหลัก */
 h1 {
   color: var(--primary-color);
   margin-bottom: 30px;
@@ -38,10 +63,11 @@ h1::after {
   margin: 15px auto 0;
 }
 
+/* ตัวเลือก WiFi */
 .wifi-options {
   display: flex;
   justify-content: center;
-  gap: 40px;
+  gap: 30px;
   margin-bottom: 40px;
   flex-wrap: wrap;
 }
@@ -51,35 +77,55 @@ h1::after {
   border-radius: 15px;
   padding: 20px;
   width: 180px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .wifi-option:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 30px rgba(243, 111, 33, 0.2);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(255, 111, 97, 0.2);
 }
 
-.wifi-option a {
+.wifi-link {
   text-decoration: none;
   color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.wifi-option img {
+/* รูปภาพโลโก้ */
+.logo-container {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid var(--primary-color);
-  padding: 5px;
-  background-color: white;
+  background-color: var(--primary-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
   transition: all 0.3s ease;
 }
 
-.wifi-option:hover img {
+.wifi-option:hover .logo-container {
+  background-color: var(--secondary-color);
+}
+
+.wifi-logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  transition: all 0.3s ease;
+}
+
+.wifi-option:hover .wifi-logo {
   border-color: var(--secondary-color);
 }
 
+/* ข้อความใต้รูปภาพ */
 .wifi-option h2 {
   margin-top: 15px;
   font-size: 1.3em;
@@ -92,6 +138,7 @@ h1::after {
   color: var(--secondary-color);
 }
 
+/* ปุ่ม Back */
 .back-button {
   display: inline-block;
   background-color: var(--primary-color);
@@ -101,16 +148,17 @@ h1::after {
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(243, 111, 33, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 111, 97, 0.3);
 }
 
 .back-button:hover {
   background-color: var(--secondary-color);
-  color: var(--text-color);
+  color: white;
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 6px 18px rgba(255, 140, 66, 0.4);
 }
 
+/* Responsive Design */
 @media (max-width: 600px) {
   .wifi-options {
     flex-direction: column;

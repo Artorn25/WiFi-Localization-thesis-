@@ -50,7 +50,6 @@ img.onload = function () {
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
 
-// img.src = "./map4.png";
 
 // Check condition
 const CheckCondition = {
@@ -620,75 +619,6 @@ function DrawCircle(x, y, distance) {
   }
 }
 
-// function CheckCircleIntersection(point1, point2) {
-//   // d = √(x1 - x2)^2 + (y1 - y2)^2
-//   const d = Math.sqrt(
-//     Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
-//   );
-//   const r1 = point1.distance * 100,
-//     r2 = point2.distance * 100;
-
-//   // ตรวจสอบว่ามีการตัดกันหรือไม่ d > r1 + r2
-//   if (d > r1 + r2) {
-//     console.log(
-//       `Circles of ${point1.name} and ${point2.name} are close but do not intersect.`
-//     );
-//     // คำนวณจุดที่ใกล้กันที่สุดบนขอบของวงกลมทั้งสอง
-//     const ratio1 = r1 / d,
-//       ratio2 = r2 / d;
-//     const nearestPoint1 = {
-//       x: point1.x + (point2.x - point1.x) * ratio1,
-//       y: point1.y + (point2.y - point1.y) * ratio1,
-//     };
-//     const nearestPoint2 = {
-//       x: point2.x + (point1.x - point2.x) * ratio2,
-//       y: point2.y + (point1.y - point2.y) * ratio2,
-//     };
-//     DrawLine(
-//       nearestPoint1.x,
-//       nearestPoint1.y,
-//       nearestPoint2.x,
-//       nearestPoint2.y
-//     );
-//     DrawMidPoint(
-//       nearestPoint1.x,
-//       nearestPoint1.y,
-//       nearestPoint2.x,
-//       nearestPoint2.y
-//     );
-//     console.log(
-//       `Draw line between nearest points of ${point1.name} and ${point2.name}`
-//     );
-//     return [];
-//   } else if (d < Math.abs(r1 - r2) || d === 0) {
-//     console.log(
-//       `Circles of ${point1.name} and ${point2.name} are within each other or identical.`
-//     );
-//     return [];
-//   }
-
-//   // หากวงกลมตัดกัน (กรณีที่วงกลมสองวงตัดกัน)
-//   const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
-//   const h = Math.sqrt(r1 * r1 - a * a);
-
-//   const x3 = point1.x + (a * (point2.x - point1.x)) / d,
-//     y3 = point1.y + (a * (point2.y - point1.y)) / d;
-//   const intersectX1 = x3 + (h * (point2.y - point1.y)) / d,
-//     intersectY1 = y3 - (h * (point2.x - point1.x)) / d;
-//   const intersectX2 = x3 - (h * (point2.y - point1.y)) / d,
-//     intersectY2 = y3 + (h * (point2.x - point1.x)) / d;
-
-//   console.log(`Intersection points for ${point1.name} and ${point2.name}:
-//                  Point 1: (${intersectX1}, ${intersectY1})
-//                  Point 2: (${intersectX2}, ${intersectY2})`);
-//   // วาดจุดตัด
-//   DrawPoint(intersectX1, intersectY1, "Intersection", "green");
-//   DrawPoint(intersectX2, intersectY2, "Intersection", "green");
-//   return [
-//     { x: intersectX1, y: intersectY1 },
-//     { x: intersectX2, y: intersectY2 },
-//   ];
-// }
 function CheckCircleIntersection(point1, point2) {
   // คำนวณระยะห่างระหว่างจุดศูนย์กลางของวงกลมทั้งสอง
   const dx = point2.x - point1.x;

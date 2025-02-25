@@ -1,15 +1,10 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "../styles/wifi-router.css";
 
 export default function WifiRouter() {
-  const wifiData = [
-    { name: "Home WiFi", signalStrength: 85 },
-    { name: "Office WiFi", signalStrength: 60 },
-    { name: "Cafe WiFi", signalStrength: 30 },
-    { name: "Library WiFi", signalStrength: 55 },
-    { name: "Guest WiFi", signalStrength: 40 },
-  ];
+  const [wifiData, setWifiData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // ฟังก์ชันสำหรับแสดง Wi-Fi routers
   function displayWifiList(wifiList) {
@@ -38,9 +33,16 @@ export default function WifiRouter() {
   }
 
   // ฟังก์ชันรีเฟรชรายการ Wi-Fi
-  function refreshWifi() {
+  async function refreshWifi() {
+    setIsLoading(true);
     alert("Refreshing Wi-Fi list...");
-    displayWifiList(wifiData); // เรียกข้อมูล Wi-Fi ซ้ำ (อาจเปลี่ยนข้อมูลใหม่จาก API จริงได้)
+
+    // จำลองการดึงข้อมูล Wi-Fi ใหม่ (อาจเปลี่ยนเป็น API จริงได้)
+    const newWifiData = await fetchWifiData();
+    setWifiData(newWifiData);
+    displayWifiList(newWifiData);
+
+    setIsLoading(false);
   }
 
   // ฟังก์ชันค้นหา Wi-Fi
@@ -52,15 +54,31 @@ export default function WifiRouter() {
     displayWifiList(filteredWifi);
   }
 
+  // ฟังก์ชันจำลองการดึงข้อมูล Wi-Fi
+  async function fetchWifiData() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const data = [
+          { name: "Home WiFi", signalStrength: Math.floor(Math.random() * 100) },
+          { name: "Office WiFi", signalStrength: Math.floor(Math.random() * 100) },
+          { name: "Cafe WiFi", signalStrength: Math.floor(Math.random() * 100) },
+          { name: "Library WiFi", signalStrength: Math.floor(Math.random() * 100) },
+          { name: "Guest WiFi", signalStrength: Math.floor(Math.random() * 100) },
+        ];
+        resolve(data);
+      }, 1000); // จำลองการดีเลย์ 1 วินาที
+    });
+  }
+
   // เริ่มต้นแสดงรายการ Wi-Fi
   useEffect(() => {
-    displayWifiList(wifiData);
-  }, []); // ใช้ useEffect แทน window.onload
+    refreshWifi();
+  }, []); // ใช้ useEffect เพื่อโหลดข้อมูลครั้งแรก
 
   return (
     <>
       <header>
-        <h1>Available Wi-Fi Routers</h1>
+        <h1 className="text-yellow-300 shadow-md">Available Wi-Fi Routers</h1>
       </header>
 
       <section className="wifi-list">
@@ -73,8 +91,8 @@ export default function WifiRouter() {
         <ul id="wifiList"></ul>
       </section>
 
-      <button id="refreshBtn" onClick={refreshWifi}>
-        Refresh
+      <button id="refreshBtn" onClick={refreshWifi} disabled={isLoading}>
+        {isLoading ? "Refreshing..." : "Refresh"}
       </button>
     </>
   );

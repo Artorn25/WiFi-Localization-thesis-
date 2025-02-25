@@ -122,6 +122,13 @@ nav {
     background-color: #c0392b;
 }
 
+#myCanvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
 @media (max-width: 768px) {
     .nav-content {
         flex-direction: column;

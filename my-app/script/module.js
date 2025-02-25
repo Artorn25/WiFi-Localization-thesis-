@@ -5,6 +5,7 @@ import {
   get,
   onValue,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import Swal from "sweetalert2";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_APIKEY,
@@ -15,6 +16,7 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_MESSAGINGSENDERID,
   appId: process.env.NEXT_PUBLIC_APPID,
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app),
   dbRef = ref(db, "Data");

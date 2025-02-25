@@ -1,92 +1,94 @@
 "use client";
 import { useEffect } from "react";
 
+import "../styles/feedback.css";
+
 export default function Feedback() {
   useEffect(() => {
-    const style = document.createElement("style");
-    style.innerHTML = `
-      body {
-          background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
-          background-size: cover;
-          font-family: 'Arial', sans-serif;
-          height: 100vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          overflow: hidden;
-      }
+    // const style = document.createElement("style");
+    // style.innerHTML = `
+    //   body {
+    //       background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+    //       background-size: cover;
+    //       font-family: 'Arial', sans-serif;
+    //       height: 100vh;
+    //       display: flex;
+    //       justify-content: center;
+    //       align-items: center;
+    //       overflow: hidden;
+    //   }
 
-      .glass-container {
-          backdrop-filter: blur(20px);
-          background-color: rgba(255, 255, 255, 0.1);
-          padding: 2.5rem;
-          border-radius: 15px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-          animation: slideIn 1s ease-in-out forwards;
-          opacity: 0;
-          transform: translateY(50px);
-      }
+    //   .glass-container {
+    //       backdrop-filter: blur(20px);
+    //       background-color: rgba(255, 255, 255, 0.1);
+    //       padding: 2.5rem;
+    //       border-radius: 15px;
+    //       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    //       animation: slideIn 1s ease-in-out forwards;
+    //       opacity: 0;
+    //       transform: translateY(50px);
+    //   }
 
-      @keyframes slideIn {
-          to {
-              opacity: 1;
-              transform: translateY(0);
-          }
-      }
+    //   @keyframes slideIn {
+    //       to {
+    //           opacity: 1;
+    //           transform: translateY(0);
+    //       }
+    //   }
 
-      input, textarea {
-          background-color: rgba(255, 255, 255, 0.8);
-          border: 1px solid rgba(0, 0, 0, 0.2);
-          transition: all 0.3s ease-in-out;
-      }
+    //   input, textarea {
+    //       background-color: rgba(255, 255, 255, 0.8);
+    //       border: 1px solid rgba(0, 0, 0, 0.2);
+    //       transition: all 0.3s ease-in-out;
+    //   }
 
-      input:focus, textarea:focus {
-          outline: none;
-          border-color: #3b82f6;
-          box-shadow: 0 0 10px #3b82f6;
-      }
+    //   input:focus, textarea:focus {
+    //       outline: none;
+    //       border-color: #3b82f6;
+    //       box-shadow: 0 0 10px #3b82f6;
+    //   }
 
-      button {
-          background-color: #3b82f6;
-          font-size: 1.2rem;
-          transition: background-color 0.3s ease, transform 0.2s ease;
-      }
+    //   button {
+    //       background-color: #3b82f6;
+    //       font-size: 1.2rem;
+    //       transition: background-color 0.3s ease, transform 0.2s ease;
+    //   }
 
-      button:hover {
-          background-color: #2563eb;
-          transform: translateY(-3px);
-      }
+    //   button:hover {
+    //       background-color: #2563eb;
+    //       transform: translateY(-3px);
+    //   }
 
-      button:active {
-          background-color: #1d4ed8;
-          transform: scale(0.95);
-      }
+    //   button:active {
+    //       background-color: #1d4ed8;
+    //       transform: scale(0.95);
+    //   }
 
-      button.loading {
-          pointer-events: none;
-          opacity: 0.7;
-      }
+    //   button.loading {
+    //       pointer-events: none;
+    //       opacity: 0.7;
+    //   }
 
-      button.loading::after {
-          content: '';
-          display: inline-block;
-          width: 15px;
-          height: 15px;
-          border: 2px solid white;
-          border-radius: 50%;
-          border-right-color: transparent;
-          animation: spin 1s linear infinite;
-          margin-left: 10px;
-      }
+    //   button.loading::after {
+    //       content: '';
+    //       display: inline-block;
+    //       width: 15px;
+    //       height: 15px;
+    //       border: 2px solid white;
+    //       border-radius: 50%;
+    //       border-right-color: transparent;
+    //       animation: spin 1s linear infinite;
+    //       margin-left: 10px;
+    //   }
 
-      @keyframes spin {
-          to {
-              transform: rotate(360deg);
-          }
-      }
-    `;
+    //   @keyframes spin {
+    //       to {
+    //           transform: rotate(360deg);
+    //       }
+    //   }
+    // `;
 
-    document.head.appendChild(style);
+    // document.head.appendChild(style);
 
     // ฟังก์ชันสำหรับโหลดฟ้อนต์จาก localStorage
     function loadFontSetting() {
@@ -98,9 +100,9 @@ export default function Feedback() {
     loadFontSetting();
 
     // ทำความสะอาดเมื่อคอมโพเนนต์ถูกถอดออก
-    return () => {
-      document.head.removeChild(style);
-    };
+    // return () => {
+    //   document.head.removeChild(style);
+    // };
   }, []);
 
   const handleSubmit = (event) => {
@@ -119,6 +121,7 @@ export default function Feedback() {
 
   return (
     <>
+      <title>Feedback</title>
       <div className="glass-container w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3">
         <h1 className="text-4xl font-bold text-center text-white mb-6">
           Feedback

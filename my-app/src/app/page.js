@@ -1,9 +1,12 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+
 import "./styles/homepage.css";
 
 export default function Home() {
@@ -11,8 +14,12 @@ export default function Home() {
   const toggleBtnRef = useRef(null);
   const router = useRouter();
 
+  const scrollToDiscover = () => {
+    const discoverSection = document.getElementById("discover-section");
+    discoverSection.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    // ฟังก์ชันสำหรับโหลดฟอนต์จาก localStorage
     function loadFontSetting() {
       const savedFont = localStorage.getItem("selectedFont");
       if (savedFont) {
@@ -21,7 +28,6 @@ export default function Home() {
     }
     loadFontSetting();
 
-    // ตรวจสอบว่า elements มีอยู่ก่อนหรือไม่
     const sidebar = sidebarRef.current;
     const toggleBtn = toggleBtnRef.current;
 
@@ -40,70 +46,10 @@ export default function Home() {
     };
   }, []);
 
-  function searchPage(event) {
-    event.preventDefault();
-    const searchQuery = document
-      .getElementById("searchInput")
-      .value.toLowerCase();
-    const pages = {
-      maps: "/map",
-      "free wifi": "/wifi",
-      "wifi router": "/wifi-router",
-      dashboard: "/dashboard",
-      setting: "/setting",
-      feedback: "/feedback",
-    };
-
-    for (const page in pages) {
-      if (page.includes(searchQuery)) {
-        router.push(pages[page]); // ใช้ Next.js navigation
-        return;
-      }
-    }
-
-    alert("No matching page found.");
-  }
-
   return (
     <>
-      {/* ✅ แก้ไขให้ใช้ <Head> แทน useEffect */}
       <div className="background-image"></div>
-      <div className="sidebar oswald-bold">
-        <ul className="menu-list">
-          <li>
-            <Link href="/map">Maps</Link>
-          </li>
-          <li>
-            <Link href="/wifi">Free Wifi</Link>
-          </li>
-          <li>
-            <Link href="/wifi-router">Wifi Router</Link>
-          </li>
-          <li>
-            <Link href="/dashboard">Dashboard</Link>
-          </li>
-          <li>
-            <Link href="/setting">Setting</Link>
-          </li>
-          <li>
-            <Link href="/feedback">Feedback</Link>
-          </li>
-          <form
-            className="d-flex text-black input-group w-auto search-bar"
-            onSubmit={searchPage}
-          >
-            <input
-              id="searchInput"
-              type="search"
-              className="form-control search-input"
-              placeholder="Search for maps"
-            />
-            <button className="btn btn-warning search-button" type="submit">
-              Search
-            </button>
-          </form>
-        </ul>
-      </div>
+      <Header />
 
       <main className="main-content">
         <header>
@@ -111,7 +57,9 @@ export default function Home() {
           <p className="subtitle">
             Connect to <span>the world</span> instantly
           </p>
-          <button className="cta-button">Get Started</button>
+          <button className="cta-button" onClick={scrollToDiscover}>
+            What is Wifi Localization?
+          </button>
         </header>
 
         <div className="container">
@@ -151,17 +99,91 @@ export default function Home() {
           </section>
         </div>
 
-        <footer className="mt-4 bg-body-tertiary text-center text-lg-start">
-          <div
-            className="text-center p-3"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.05)" }}
-          >
-            © 2024 test server:{" "}
-            <a className="text-body" href="">
-              WIFI Project
-            </a>
+        <section id="discover-section" className="mt-20 p-10 bg-gray-100">
+          <h2 className="text-3xl font-bold text-center mb-6">
+            What is Wifi localization?
+          </h2>
+          <p className="text-lg text-gray-700 leading-relaxed">
+            WiFi Localization is a technique used to determine the location of a
+            device (such as a smartphone, laptop, or IoT device) using WiFi
+            signals instead of GPS or other sensors. This method is useful for
+            both indoor and outdoor positioning.
+          </p>
+
+          <div className="mt-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              How WiFi Localization Works
+            </h3>
+            <ul className="list-disc list-inside space-y-4">
+              <li>
+                <strong>Received Signal Strength Indicator (RSSI):</strong>{" "}
+                Measures the strength of WiFi signals from multiple Access
+                Points (APs) and calculates the distance from each AP to
+                determine the device&apos;s location.
+              </li>
+              <li>
+                <strong>Time of Flight (ToF) or Round Trip Time (RTT):</strong>{" "}
+                Uses the travel time of signals to calculate the distance
+                between the device and APs.
+              </li>
+              <li>
+                <strong>Fingerprinting:</strong> Creates a database of WiFi
+                signal characteristics at different locations and compares
+                real-time data with this database to determine the device’s
+                position.
+              </li>
+              <li>
+                <strong>Angle of Arrival (AoA):</strong> Measures the angle at
+                which the signal reaches the APs to calculate the device’s
+                location.
+              </li>
+            </ul>
           </div>
-        </footer>
+
+          <div className="mt-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Advantages of WiFi Localization
+            </h3>
+            <ul className="list-disc list-inside space-y-4">
+              <li>Works well indoors, where GPS is less effective.</li>
+              <li>
+                Requires minimal additional hardware since most modern devices
+                already support WiFi.
+              </li>
+              <li>
+                Can be combined with other technologies like Bluetooth, LiDAR,
+                and AI to improve accuracy.
+              </li>
+            </ul>
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Applications
+            </h3>
+            <ul className="list-disc list-inside space-y-4">
+              <li>
+                <strong>Indoor Navigation:</strong> Used in shopping malls,
+                airports, and hospitals for navigation assistance.
+              </li>
+              <li>
+                <strong>Asset and Personnel Tracking:</strong> Used in
+                industries, warehouses, and logistics for monitoring the
+                movement of devices or people.
+              </li>
+              <li>
+                <strong>Smart Homes & IoT:</strong> Helps detect device movement
+                and enable automation based on location.
+              </li>
+            </ul>
+          </div>
+
+          <p className="mt-8 text-lg text-gray-700 leading-relaxed">
+            Are you interested in a specific application of WiFi localization?
+          </p>
+        </section>
+
+        <Footer />
       </main>
     </>
   );

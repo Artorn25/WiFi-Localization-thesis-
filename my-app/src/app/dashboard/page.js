@@ -4,6 +4,9 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue } from "firebase/database";
 import Chart from "chart.js/auto";
 
+import Header from "../../../components/Header";
+import Footer from "../../../components/Footer";
+
 // Firebase Config
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_APIKEY,
@@ -23,14 +26,10 @@ let distanceChart, rssiChart;
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("Unknown");
-  console.log(process.env.NEXT_PUBLIC_APIKEY);
+
   function updateCharts(data) {
-    if (distanceChart) {
-      distanceChart.destroy();
-    }
-    if (rssiChart) {
-      rssiChart.destroy();
-    }
+    if (distanceChart) distanceChart.destroy();
+    if (rssiChart) rssiChart.destroy();
 
     distanceChart = new Chart(document.getElementById("distanceChart"), {
       type: "bar",
@@ -120,7 +119,7 @@ export default function Dashboard() {
   }
 
   function updateDOM(data) {
-    setData(data); // ใช้ React State แทน document.getElementById()
+    setData(data);
     updateCharts(data);
     updateDataTable(data);
   }
@@ -154,7 +153,6 @@ export default function Dashboard() {
     });
   }, []);
 
-  // ดึงข้อมูลที่ใช้จาก `data`
   const start = data?.Datetime?.start ?? "Not available";
   const end = data?.Datetime?.end ?? "Not available";
   const ssid_1 = data?.Router1?.ssid ?? "Not available";
@@ -170,159 +168,138 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+      <title> Dashboard</title>
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
           Combined Firebase Console Display
         </h1>
-        <div id="connection-status">Status: {connectionStatus}</div>
-        <div id="time" className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h3 className="text-xl font-semibold mb-4 text-gray-700">Datetime</h3>
+        <div
+          id="connection-status"
+          className={`p-3 rounded-md font-semibold mb-6 text-center ${
+            connectionStatus === "Connected"
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          Status: {connectionStatus}
+        </div>
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h3 className="text-2xl font-semibold mb-4 text-gray-700">
+            Datetime
+          </h3>
           <div className="flex justify-between">
-            <p id="start" className="text-gray-600">
-              Start: {start}
-            </p>
-            <p id="end" className="text-gray-600">
-              End: {end}
-            </p>
+            <p className="text-gray-600">Start: {start}</p>
+            <p className="text-gray-600">End: {end}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <div id="distance-log" className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-green-600">
               Log Distance Path Model
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-green-500">
                   Router 1
                 </h3>
-                <p id="router-1-ssid-log" className="text-gray-600">
-                  SSID: {ssid_1}
-                </p>
-                <p id="router-1-rssi-log" className="text-gray-600">
-                  RSSI: {rssi_1} dBm
-                </p>
-                <p id="router-1-distance-log" className="text-gray-600">
-                  Distance: {distance_1_Log} m
-                </p>
+                <p className="text-gray-600">SSID: {ssid_1}</p>
+                <p className="text-gray-600">RSSI: {rssi_1} dBm</p>
+                <p className="text-gray-600">Distance: {distance_1_Log} m</p>
               </div>
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-green-500">
                   Router 2
                 </h3>
-                <p id="router-2-ssid-log" className="text-gray-600">
-                  SSID: {ssid_2}
-                </p>
-                <p id="router-2-rssi-log" className="text-gray-600">
-                  RSSI: {rssi_2} dBm
-                </p>
-                <p id="router-2-distance-log" className="text-gray-600">
-                  Distance: {distance_2_Log} m
-                </p>
+                <p className="text-gray-600">SSID: {ssid_2}</p>
+                <p className="text-gray-600">RSSI: {rssi_2} dBm</p>
+                <p className="text-gray-600">Distance: {distance_2_Log} m</p>
               </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-green-500">
-              Distance
-            </h3>
-            <p id="distance-a-b-log" className="text-gray-600">
-              Distance A between Distance B using log: {distanceA_B_Log} m
-            </p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2 text-green-500">
+                Distance
+              </h3>
+              <p className="text-gray-600">
+                Distance A between Distance B using log: {distanceA_B_Log} m
+              </p>
+            </div>
           </div>
 
-          <div id="distance-itu" className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-blue-600">
               ITU Indoor Propagation Model
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-blue-500">
                   Router 1
                 </h3>
-                <p id="router-1-ssid-ITU" className="text-gray-600">
-                  SSID: {ssid_1}
-                </p>
-                <p id="router-1-rssi-ITU" className="text-gray-600">
-                  RSSI: {rssi_1} dBm
-                </p>
-                <p id="router-1-distance-ITU" className="text-gray-600">
-                  Distance: {distance_1_ITU} m
-                </p>
+                <p className="text-gray-600">SSID: {ssid_1}</p>
+                <p className="text-gray-600">RSSI: {rssi_1} dBm</p>
+                <p className="text-gray-600">Distance: {distance_1_ITU} m</p>
               </div>
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-blue-500">
                   Router 2
                 </h3>
-                <p id="router-2-ssid-ITU" className="text-gray-600">
-                  SSID: {ssid_2}
-                </p>
-                <p id="router-2-rssi-ITU" className="text-gray-600">
-                  RSSI: {rssi_2} dBm
-                </p>
-                <p id="router-2-distance-ITU" className="text-gray-600">
-                  Distance: {distance_2_ITU} m
-                </p>
+                <p className="text-gray-600">SSID: {ssid_2}</p>
+                <p className="text-gray-600">RSSI: {rssi_2} dBm</p>
+                <p className="text-gray-600">Distance: {distance_2_ITU} m</p>
               </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-blue-500">
-              Distance
-            </h3>
-            <p id="distance-a-b-ITU" className="text-gray-600">
-              Distance A between Distance B using ITU: {distanceA_B_ITU} m
-            </p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2 text-blue-500">
+                Distance
+              </h3>
+              <p className="text-gray-600">
+                Distance A between Distance B using ITU: {distanceA_B_ITU} m
+              </p>
+            </div>
           </div>
 
-          <div id="distance-fspl" className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-purple-600">
               Free-space Path Loss
             </h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-purple-500">
                   Router 1
                 </h3>
-                <p id="router-1-ssid-FSPL" className="text-gray-600">
-                  SSID: {ssid_1}
-                </p>
-                <p id="router-1-rssi-FSPL" className="text-gray-600">
-                  RSSI: {rssi_1} dBm
-                </p>
-                <p id="router-1-distance-FSPL" className="text-gray-600">
-                  Distance: {distance_1_Log} m
-                </p>
+                <p className="text-gray-600">SSID: {ssid_1}</p>
+                <p className="text-gray-600">RSSI: {rssi_1} dBm</p>
+                <p className="text-gray-600">Distance: {distance_1_Log} m</p>
               </div>
-              <div>
+              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-purple-500">
                   Router 2
                 </h3>
-                <p id="router-2-ssid-FSPL" className="text-gray-600">
-                  SSID: {ssid_2}
-                </p>
-                <p id="router-2-rssi-FSPL" className="text-gray-600">
-                  RSSI: {rssi_2} dBm
-                </p>
-                <p id="router-2-distance-FSPL" className="text-gray-600">
-                  Distance: {distance_2_Log} m
-                </p>
+                <p className="text-gray-600">SSID: {ssid_2}</p>
+                <p className="text-gray-600">RSSI: {rssi_2} dBm</p>
+                <p className="text-gray-600">Distance: {distance_2_Log} m</p>
               </div>
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-purple-500">
-              Distance
-            </h3>
-            <p id="distance-a-b-FSPL" className="text-gray-600">
-              Distance A between Distance B using FSPL: {distanceA_B_Log} m
-            </p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2 text-purple-500">
+                Distance
+              </h3>
+              <p className="text-gray-600">
+                Distance A between Distance B using FSPL: {distanceA_B_Log} m
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-blue-600">
               Distance Comparison Chart
             </h2>
             <canvas id="distanceChart"></canvas>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-green-600">
               RSSI Comparison Chart
             </h2>
@@ -330,7 +307,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4 text-purple-600">
             Detailed Data Table
           </h2>
@@ -349,13 +326,22 @@ export default function Dashboard() {
             </table>
           </div>
         </div>
-        <button id="exportJSON" className="bg-yellow-300">
-          Export as JSON
-        </button>
-        <button id="exportCSV" className="bg-green-400">
-          Export as CSV
-        </button>
+        <div className="flex gap-4">
+          <button
+            id="exportJSON"
+            className="bg-yellow-300 px-4 py-2 rounded-md font-semibold hover:bg-yellow-400 transition-colors"
+          >
+            Export as JSON
+          </button>
+          <button
+            id="exportCSV"
+            className="bg-green-400 px-4 py-2 rounded-md font-semibold hover:bg-green-500 transition-colors"
+          >
+            Export as CSV
+          </button>
+        </div>
       </div>
+      <Footer />
     </>
   );
 }

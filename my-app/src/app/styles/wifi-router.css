@@ -23,6 +23,7 @@ section.wifi-list {
 
 ul#wifiList {
   list-style: none;
+  padding: 0;
 }
 
 ul#wifiList li {
@@ -58,8 +59,14 @@ button#refreshBtn {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  align-self: center;
 }
 
 button#refreshBtn:hover {
   background-color: #e67300;
+}
+
+button#refreshBtn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
