@@ -1,10 +1,10 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import {
   getDatabase,
   ref,
   get,
   onValue,
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g",
@@ -49,7 +49,6 @@ img.onload = function () {
   // วาดรูปภาพลงบน Canvas
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
-
 
 // Check condition
 const CheckCondition = {
@@ -531,9 +530,18 @@ function UpdatePointSelects() {
 }
 
 function CheckAndDisplayPointData(point) {
-  if (point.name === "TP-Link_2536_1" || point.name === "TP-Link_2536_2") {
-    const routerKey = point.name === "TP-Link_2536_1" ? "Router1" : "Router2";
-
+  if (
+    point.name === "TP-Link_2536_1" ||
+    point.name === "TP-Link_2536_2" ||
+    point.name === "TP-Link_2536_3"
+  ) {
+    // const routerKey = point.name === "TP-Link_2536_1" ? "Router1" : "Router2" : "Router3";
+    const routerKey =
+      point.name === "TP-Link_2536_1"
+        ? "Router1"
+        : point.name === "TP-Link_2536_2"
+        ? "Router2"
+        : "Router3";
     // ใช้ onValue แทน get เพื่อฟังข้อมูลจาก Firebase แบบเรียลไทม์
     onValue(
       ref(db, `Data/${routerKey}`),
@@ -579,6 +587,32 @@ function updatePointDistance(pointName, rssi, distance) {
   }
 }
 
+// function RefreshMap() {
+//   const selectedIndex = document.getElementById("map-select").value;
+//   if (selectedIndex && maps[selectedIndex]) {
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+//     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+//     // โหลดจุดจาก pointsPerMap
+//     points = pointsPerMap[selectedIndex] || [];
+//     markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
+
+//     points.forEach((point, index) => {
+//       DrawPoint(point.x, point.y, point.name, point.color);
+//       if (point.distance > 0) {
+//         DrawCircle(point.x, point.y, point.distance);
+//       }
+
+//       // ตรวจสอบการตัดกันของวงกลมแต่ละคู่
+//       for (let i = index + 1; i < points.length; i++) {
+//         CheckCircleIntersection(point, points[i]);
+//       }
+//     });
+
+//     console.log("Map refreshed with updated points and circles.");
+//   }
+// }
+
 function RefreshMap() {
   const selectedIndex = document.getElementById("map-select").value;
   if (selectedIndex && maps[selectedIndex]) {
@@ -594,15 +628,109 @@ function RefreshMap() {
       if (point.distance > 0) {
         DrawCircle(point.x, point.y, point.distance);
       }
-
-      // ตรวจสอบการตัดกันของวงกลมแต่ละคู่
-      for (let i = index + 1; i < points.length; i++) {
-        CheckCircleIntersection(point, points[i]);
-      }
     });
+
+    // หา Router ทั้ง 3 ตัว
+    const routers = points.filter(
+      (point) =>
+        point.name === "TP-Link_2536_1" ||
+        point.name === "TP-Link_2536_2" ||
+        point.name === "TP-Link_2536_3"
+    );
+
+    if (routers.length === 3) {
+      // คำนวณจุดตัดจาก Router 3 ตัว
+      const intersectionPoint = CalculateIntersectionThreeRouters(
+        routers[0],
+        routers[1],
+        routers[2]
+      );
+      if (intersectionPoint) {
+        DrawIntersectionPoint(intersectionPoint.x, intersectionPoint.y);
+      }
+    } else if (routers.length === 2) {
+      // คำนวณจุดตัดจาก Router 2 ตัว
+      const intersectionPoints = CheckCircleIntersection(
+        routers[0],
+        routers[1]
+      );
+      if (intersectionPoints) {
+        intersectionPoints.forEach((point) => {
+          DrawIntersectionPoint(point.x, point.y);
+        });
+      }
+    } else {
+      console.log("Not enough routers to calculate intersection.");
+    }
 
     console.log("Map refreshed with updated points and circles.");
   }
+}
+
+function CalculateIntersectionThreeRouters(point1, point2, point3) {
+  // ฟังก์ชันสำหรับคำนวณระยะทางระหว่างจุดสองจุด
+  function distance(p1, p2) {
+    return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+  }
+
+  // ฟังก์ชันสำหรับคำนวณตำแหน่งโดยใช้ Least Squares Method
+  function trilaterate(p1, p2, p3) {
+    const A = 2 * (p2.x - p1.x);
+    const B = 2 * (p2.y - p1.y);
+    const C =
+      Math.pow(p1.distance / scaleX, 2) -
+      Math.pow(p2.distance / scaleX, 2) -
+      Math.pow(p1.x, 2) +
+      Math.pow(p2.x, 2) -
+      Math.pow(p1.y, 2) +
+      Math.pow(p2.y, 2);
+    const D = 2 * (p3.x - p2.x);
+    const E = 2 * (p3.y - p2.y);
+    const F =
+      Math.pow(p2.distance / scaleX, 2) -
+      Math.pow(p3.distance / scaleX, 2) -
+      Math.pow(p2.x, 2) +
+      Math.pow(p3.x, 2) -
+      Math.pow(p2.y, 2) +
+      Math.pow(p3.y, 2);
+
+    const x = (C * E - F * B) / (E * A - B * D);
+    const y = (C * D - A * F) / (B * D - A * E);
+
+    return { x, y };
+  }
+
+  // คำนวณตำแหน่งโดยใช้ Least Squares Method
+  const estimatedPosition = trilaterate(point1, point2, point3);
+
+  // คำนวณความคลาดเคลื่อน (Error) ของตำแหน่งที่ประมาณได้
+  const error1 = Math.abs(
+    distance(estimatedPosition, point1) - point1.distance / scaleX
+  );
+  const error2 = Math.abs(
+    distance(estimatedPosition, point2) - point2.distance / scaleX
+  );
+  const error3 = Math.abs(
+    distance(estimatedPosition, point3) - point3.distance / scaleX
+  );
+
+  const totalError = error1 + error2 + error3;
+
+  console.log(
+    `Estimated position: (${estimatedPosition.x}, ${estimatedPosition.y})`
+  );
+  console.log(`Total error: ${totalError}`);
+
+  return estimatedPosition;
+}
+
+function DrawIntersectionPoint(x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, 5, 0, 2 * Math.PI);
+  ctx.fillStyle = "red";
+  ctx.fill();
+  ctx.stroke();
+  console.log(`Intersection point drawn at (${x}, ${y})`);
 }
 
 function DrawCircle(x, y, distance) {
@@ -663,6 +791,44 @@ function CheckCircleIntersection(point1, point2) {
     return [];
   } else if (d < Math.abs(r1 - r2) || d === 0) {
     console.log("One circle is inside the other or they are identical.");
+
+    // ตรวจสอบว่าวงกลมใดครอบอีกวงกลมหนึ่ง
+    if (r1 > r2) {
+      console.log("Circle 1 (point1) is the outer circle.");
+      // จุดที่อยู่บนขอบของวงกลมที่ครอบ (วงกลม 1)
+      const nearestPointOuter = {
+        x: point1.x + dx * (r1 / d),
+        y: point1.y + dy * (r1 / d),
+      };
+
+      DrawPoint(
+        nearestPointOuter.x,
+        nearestPointOuter.y,
+        "Outer Circle Nearest Point",
+        "blue"
+      );
+      // DrawPoint(nearestPointInner.x, nearestPointInner.y, "Inner Circle Nearest Point", "red");
+    } else if (r2 > r1) {
+      console.log("Circle 2 (point2) is the outer circle.");
+      // จุดที่อยู่บนขอบของวงกลมที่ครอบ (วงกลม 2)
+      const nearestPointOuter = {
+        x: point2.x - dx * (r2 / d),
+        y: point2.y - dy * (r2 / d),
+      };
+
+      DrawPoint(
+        nearestPointOuter.x,
+        nearestPointOuter.y,
+        "Outer Circle Nearest Point",
+        "blue"
+      );
+      // DrawPoint(nearestPointInner.x, nearestPointInner.y, "Inner Circle Nearest Point", "red");
+    } else {
+      console.log("Both circles are identical.");
+      // หากวงกลมทั้งสองมีขนาดเท่ากันและจุดศูนย์กลางเดียวกัน
+      DrawPoint(point1.x, point1.y, "Identical Circles", "purple");
+    }
+
     return [];
   }
 
