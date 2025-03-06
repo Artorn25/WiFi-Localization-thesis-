@@ -22,18 +22,13 @@ const db = getDatabase(app),
 let pointsPerMap = []; // สร้าง array สำหรับเก็บจุดตามแผนที่
 let markerCoordinatesPerMap = {}; // ใช้เก็บ marker แยกตามแผนที่
 
-const tooltip = document.getElementById("tooltip");
-const canvas = document.getElementById("myCanvas"),
+const tooltip = document.getElementById("tooltip"),
+  canvas = document.getElementById("myCanvas"),
   ctx = canvas.getContext("2d");
-let points = [],
-  drawMode = true,
-  markerCoordinates = [],
-  maps = [];
+let points = [], drawMode = true, markerCoordinates = [], maps = [];
 
 const img = new Image();
-
-const realWidth = 63; // ความกว้างจริง (เมตร)
-const realHeight = 23.6; // ความยาวจริง (เมตร)
+const realWidth = 63, realHeight = 23.6; 
 
 let scaleX, scaleY;
 
@@ -46,35 +41,33 @@ img.onload = function () {
   scaleX = realWidth / canvas.width;
   scaleY = realHeight / canvas.height;
 
-  // วาดรูปภาพลงบน Canvas
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
+
+const alert = (topic,text,icon) =>{
+Swal.fire({
+  title: topic,
+  text: text,
+  icon: icon,
+});
+}
 
 // Check condition
 const CheckCondition = {
   Equal: function (condition, massageAlert) {
     if (condition === "" || condition === null) {
-      Swal.fire({
-        title: "Warning",
-        text: massageAlert,
-        icon: "warning",
-      });
+      alert("Warning", massageAlert, "warning");
       return;
     }
   },
   NotEqual: function (condition, massageAlert) {
     if (!condition) {
-      Swal.fire({
-        title: "Warning",
-        text: massageAlert,
-        icon: "warning",
-      });
+      alert("Warning", massageAlert, "warning");
       return;
     }
   },
 };
 
-// Add function to update map name
 document.getElementById("updateMapName").addEventListener("click", () => {
   const mapSelect = document.getElementById("map-select");
   const selectedIndex = mapSelect.value;
@@ -83,29 +76,20 @@ document.getElementById("updateMapName").addEventListener("click", () => {
   CheckCondition.Equal(selectedIndex, "Please select a map to update.");
 
   if (!newMapName && newMapName !== "") {
-    Swal.fire({
-      title: "Warning",
-      text: "Please enter a new name for the map.",
-      icon: "warning",
-    });
+    alert("Warning", "Please enter a new name for the map.", "warning");
     return;
   }
   maps[selectedIndex] = { ...maps[selectedIndex], name: newMapName };
 
   // Refresh dropdown options
   UpdateMapSelect();
-  Swal.fire({
-    title: "Success",
-    text: `Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`,
-    icon: "success",
-  });
+  alert("Success", `Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`, "success");
   // Re-select the updated map
   mapSelect.value = selectedIndex;
   console.log(`Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`);
   document.getElementById("mapName").value = "";
 });
 
-// Update map select
 function UpdateMapSelect() {
   const mapSelect = document.getElementById("map-select");
   mapSelect.innerHTML = "<option value=''>Select Map</option>";
@@ -125,7 +109,6 @@ document.getElementById("map-select").addEventListener("change", (event) => {
   }
 });
 
-// ฟังก์ชันสำหรับอัปโหลดแผนที่ใหม่
 document.getElementById("map-upload").addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -138,7 +121,6 @@ document.getElementById("map-upload").addEventListener("change", (event) => {
   }
 });
 
-// Load map
 function LoadMap(mapSrc) {
   img.src = mapSrc;
   img.onload = () => {
@@ -177,7 +159,6 @@ function LoadMap(mapSrc) {
   };
 }
 
-// Edit name map
 async function EditMapName(mapSrc) {
   const { value: mapName } = await Swal.fire({
     title: "Enter a name for this map",
@@ -193,11 +174,7 @@ async function EditMapName(mapSrc) {
   });
 
   if (mapName) {
-    Swal.fire({
-      title: "Map uploaded successfully",
-      text: `Map name: ${mapName}`,
-      icon: "success",
-    });
+    alert("Success", `Map uploaded successfully\nMap name: ${mapName}`, "success");
     maps.push({ src: mapSrc, name: mapName });
     UpdateMapSelect();
     document.getElementById("map-select").value = maps.length - 1;
@@ -232,7 +209,6 @@ document.getElementById("map-select").addEventListener("change", (event) => {
   if (selectedIndex) {
     // โหลดแผนที่ตามที่ผู้ใช้เลือก
     LoadMap(maps[selectedIndex].src);
-
     document.getElementById("map-select").value = selectedIndex;
   }
 });
@@ -265,10 +241,7 @@ document.getElementById("delete-map").addEventListener("click", () => {
     }).then((result) => {
       if (result.isConfirmed) {
         // ถ้ายืนยันการลบ
-        Swal.fire({
-          title: "Map deleted",
-          icon: "success",
-        });
+        alert("Map deleted", "Map deleted successfully", "success");
         maps.splice(selectedIndex, 1);
         UpdateMapSelect();
 
@@ -291,11 +264,7 @@ document.getElementById("delete-map").addEventListener("click", () => {
 canvas.addEventListener("click", (event) => {
   const pointName = document.getElementById("pointName").value;
   if (maps.length === 0) {
-    Swal.fire({
-      title: "Info",
-      text: "Please upload or select a map before adding points.",
-      icon: "question",
-    });
+    alert("Info", "Please upload or select a map before adding points.", "question");
     return;
   }
   console.log("Test");
@@ -350,44 +319,37 @@ function ResetCanvas() {
 function DrawMarkers() {
   ctx.save();
   ctx.fillStyle = "blue";
-  markerCoordinates.forEach((marker) => DrawMarker(marker.x, marker.y));
+  markerCoordinates.forEach((marker) => DrawMarker(marker.x, marker.y, "blue"));
   ctx.restore();
 }
 
-// Draw marker
-function DrawMarker(x, y) {
-  ctx.fillStyle = "blue";
-  ctx.beginPath();
-  ctx.arc(x, y, 5, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.stroke();
-}
-
-function DrawPoint(x, y, name, color = "black") {
+const set_ctx = (x, y, color) => {
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(x, y, 5, 0, 2 * Math.PI);
   ctx.fill();
+}
+
+// Draw marker
+function DrawMarker(x, y, color) {
+ set_ctx(x, y, color);
+  ctx.stroke();
+}
+
+function DrawPoint(x, y, name, color = "black") {
+  set_ctx(x, y, color);
   ctx.fillStyle = "black";
   ctx.fillText(`${name} (${Math.round(x)}, ${Math.round(y)})`, x + 5, y - 5);
 }
 
 function ValidatePoint(pointName) {
   if (!pointName) {
-    Swal.fire({
-      title: "Warning",
-      text: "Please enter a name for the point.",
-      icon: "warning",
-    });
+    alert("Warning", "Please enter a name for the point.", "warning");
     return false;
   }
   for (const mapIndex in pointsPerMap) {
     if (pointsPerMap[mapIndex].some((point) => point.name === pointName)) {
-      Swal.fire({
-        title: "Error",
-        text: "Point name must be unique across all maps.",
-        icon: "error",
-      });
+      alert("Error", "Point name must be unique across all maps.", "error");
       return false;
     }
   }
@@ -399,7 +361,7 @@ function AddMarkerAndPoint(x, y, name) {
   if (!markerCoordinatesPerMap[selectedIndex])
     markerCoordinatesPerMap[selectedIndex] = [];
   markerCoordinatesPerMap[selectedIndex].push({ x, y });
-  DrawMarker(x, y);
+  DrawMarker(x, y, "blue");
   AddPoint(x, y, name);
 }
 
@@ -429,11 +391,7 @@ function ShowDistance() {
   const index2 = document.getElementById("point2Select").value;
 
   if (index1 === index2) {
-    Swal.fire({
-      title: "Error",
-      text: "Cannot measure distance between the same point.",
-      icon: "error",
-    });
+    alert("Error", "Cannot measure distance between the same point.", "error");
     return;
   }
 
@@ -454,22 +412,14 @@ function DeletePoint() {
   const selectedPointName = pointSelect.value;
 
   if (!selectedPointName) {
-    Swal.fire({
-      title: "Info",
-      text: "Please select a point to delete.",
-      icon: "question",
-    });
+    alert("Info", "Please select a point to delete.", "question");
     return;
   }
 
   const mapIndex = document.getElementById("map-select").value;
 
   if (!pointsPerMap[mapIndex]) {
-    Swal.fire({
-      title: "Info",
-      text: "No points available for the selected map.",
-      icon: "question",
-    });
+    alert("Info", "No points available for the selected map.", "question");
     return;
   }
 
@@ -587,32 +537,7 @@ function updatePointDistance(pointName, rssi, distance) {
   }
 }
 
-// function RefreshMap() {
-//   const selectedIndex = document.getElementById("map-select").value;
-//   if (selectedIndex && maps[selectedIndex]) {
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-//     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-//     // โหลดจุดจาก pointsPerMap
-//     points = pointsPerMap[selectedIndex] || [];
-//     markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
-
-//     points.forEach((point, index) => {
-//       DrawPoint(point.x, point.y, point.name, point.color);
-//       if (point.distance > 0) {
-//         DrawCircle(point.x, point.y, point.distance);
-//       }
-
-//       // ตรวจสอบการตัดกันของวงกลมแต่ละคู่
-//       for (let i = index + 1; i < points.length; i++) {
-//         CheckCircleIntersection(point, points[i]);
-//       }
-//     });
-
-//     console.log("Map refreshed with updated points and circles.");
-//   }
-// }
-
+// ใหม่
 function RefreshMap() {
   const selectedIndex = document.getElementById("map-select").value;
   if (selectedIndex && maps[selectedIndex]) {
@@ -639,14 +564,41 @@ function RefreshMap() {
     );
 
     if (routers.length === 3) {
-      // คำนวณจุดตัดจาก Router 3 ตัว
-      const intersectionPoint = CalculateIntersectionThreeRouters(
-        routers[0],
-        routers[1],
-        routers[2]
-      );
-      if (intersectionPoint) {
-        DrawIntersectionPoint(intersectionPoint.x, intersectionPoint.y);
+      // ตรวจสอบระยะทางของ Router ทั้ง 3 ตัว
+      const distances = routers.map((router) => router.distance);
+      const maxDistance = Math.max(...distances);
+      const minDistance = Math.min(...distances);
+
+      // หากระยะทางไกลที่สุดมากกว่าระยะทางอื่น ๆ เกินเกณฑ์ (เช่น 20%) ให้ไม่นำมาคำนวณ
+      const threshold = 1.2; // 20% threshold
+      if (maxDistance > minDistance * threshold) {
+        // ตัด Router ที่มีระยะทางไกลที่สุดออก
+        const filteredRouters = routers.filter(
+          (router) => router.distance !== maxDistance
+        );
+
+        if (filteredRouters.length === 2) {
+          // คำนวณจุดตัดจาก Router 2 ตัวที่เหลือ
+          const intersectionPoints = CheckCircleIntersection(
+            filteredRouters[0],
+            filteredRouters[1]
+          );
+          if (intersectionPoints) {
+            intersectionPoints.forEach((point) => {
+              DrawIntersectionPoint(point.x, point.y);
+            });
+          }
+        }
+      } else {
+        // หากระยะทางไม่เกินเกณฑ์ ให้คำนวณจุดตัดจาก Router ทั้ง 3 ตัว
+        const intersectionPoint = CalculateIntersectionThreeRouters(
+          routers[0],
+          routers[1],
+          routers[2]
+        );
+        if (intersectionPoint) {
+          DrawIntersectionPoint(intersectionPoint.x, intersectionPoint.y);
+        }
       }
     } else if (routers.length === 2) {
       // คำนวณจุดตัดจาก Router 2 ตัว
@@ -667,6 +619,7 @@ function RefreshMap() {
   }
 }
 
+// ใหม่
 function CalculateIntersectionThreeRouters(point1, point2, point3) {
   // ฟังก์ชันสำหรับคำนวณระยะทางระหว่างจุดสองจุด
   function distance(p1, p2) {
@@ -700,7 +653,33 @@ function CalculateIntersectionThreeRouters(point1, point2, point3) {
     return { x, y };
   }
 
-  // คำนวณตำแหน่งโดยใช้ Least Squares Method
+  // ตรวจสอบระยะทางของ Router ทั้ง 3 ตัว
+  const distances = [point1.distance, point2.distance, point3.distance];
+  const maxDistance = Math.max(...distances);
+  const minDistance = Math.min(...distances);
+
+  // หากระยะทางไกลที่สุดมากกว่าระยะทางอื่น ๆ เกินเกณฑ์ (เช่น 20%) ให้ไม่นำมาคำนวณ
+  const threshold = 1.2; // 20% threshold
+  if (maxDistance > minDistance * threshold) {
+    // ตัด Router ที่มีระยะทางไกลที่สุดออก
+    const filteredPoints = [point1, point2, point3].filter(
+      (point) => point.distance !== maxDistance
+    );
+
+    if (filteredPoints.length === 2) {
+      // คำนวณจุดตัดจาก Router 2 ตัวที่เหลือ
+      const intersectionPoints = CheckCircleIntersection(
+        filteredPoints[0],
+        filteredPoints[1]
+      );
+      if (intersectionPoints) {
+        return intersectionPoints[0]; // ใช้จุดตัดแรก
+      }
+    }
+    return null;
+  }
+
+  // หากระยะทางไม่เกินเกณฑ์ ให้คำนวณจุดตัดจาก Router ทั้ง 3 ตัว
   const estimatedPosition = trilaterate(point1, point2, point3);
 
   // คำนวณความคลาดเคลื่อน (Error) ของตำแหน่งที่ประมาณได้
@@ -724,11 +703,9 @@ function CalculateIntersectionThreeRouters(point1, point2, point3) {
   return estimatedPosition;
 }
 
+
 function DrawIntersectionPoint(x, y) {
-  ctx.beginPath();
-  ctx.arc(x, y, 5, 0, 2 * Math.PI);
-  ctx.fillStyle = "red";
-  ctx.fill();
+  set_ctx(x, y, "red");
   ctx.stroke();
   console.log(`Intersection point drawn at (${x}, ${y})`);
 }
@@ -746,6 +723,7 @@ function DrawCircle(x, y, distance) {
     ctx.stroke();
   }
 }
+
 
 function CheckCircleIntersection(point1, point2) {
   // คำนวณระยะห่างระหว่างจุดศูนย์กลางของวงกลมทั้งสอง
@@ -869,10 +847,7 @@ function DrawMidPoint(x1, y1, x2, y2) {
   const yMid = (y1 + y2) / 2;
 
   // จุดกึ่งกลางบนแผนที่
-  ctx.beginPath();
-  ctx.arc(xMid, yMid, 5, 0, 2 * Math.PI); // จุดกึ่งกลางเป็นวงกลม
-  ctx.fillStyle = "green";
-  ctx.fill();
+  set_ctx(xMid, yMid, "green");
   console.log(`Midpoint at (${xMid}, ${yMid})`);
 }
 
@@ -892,11 +867,7 @@ document.getElementById("editPoint").addEventListener("click", async () => {
 
   // ตรวจสอบไม่ให้ชื่อใหม่ซ้ำกับชื่อจุดอื่น
   if (!ValidatePoint(newPointName)) {
-    Swal.fire({
-      title: "Error",
-      text: "The new point name already exists.",
-      icon: "error",
-    });
+    alert("Error", "The new point name already exists.", "error");
     return;
   }
 
@@ -931,12 +902,6 @@ document.getElementById("editPoint").addEventListener("click", async () => {
 
   // อัปเดตการเลือกจุดใหม่
   UpdatePointSelects();
-
-  Swal.fire({
-    title: "Success",
-    text: `Point name changed to: ${newPointName}`,
-    icon: "success",
-  });
-
+alert("Success", `Point name changed to: ${newPointName}`, "success");
   document.getElementById("newPointName").value = "";
 });
