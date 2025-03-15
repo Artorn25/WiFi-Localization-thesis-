@@ -1,5 +1,5 @@
 "use client";
-import "../../styles/ais.css";
+import "@styles/ais.css";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 

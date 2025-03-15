@@ -1,13 +1,9 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
-
-import "./styles/homepage.css";
+import "@styles/homepage.css";
 
 export default function Home() {
   const sidebarRef = useRef(null);
@@ -49,8 +45,6 @@ export default function Home() {
   return (
     <>
       <div className="background-image"></div>
-      <Header />
-
       <main className="main-content">
         <header>
           <h1>WiFi Localization</h1>
@@ -182,8 +176,6 @@ export default function Home() {
             Are you interested in a specific application of WiFi localization?
           </p>
         </section>
-
-        <Footer />
       </main>
     </>
   );

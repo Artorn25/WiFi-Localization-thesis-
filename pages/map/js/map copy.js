@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebas
 import {
   getDatabase,
   ref,
-  get,
+  // get,
   onValue,
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
@@ -25,10 +25,15 @@ let markerCoordinatesPerMap = {}; // ใช้เก็บ marker แยกต�
 const tooltip = document.getElementById("tooltip"),
   canvas = document.getElementById("myCanvas"),
   ctx = canvas.getContext("2d");
-let points = [], drawMode = true, markerCoordinates = [], maps = [];
+let points = [],
+  drawMode = true,
+  markerCoordinates = [],
+  maps = [],
+  showCircles = true; // ตัวแปรเก็บสถานะการแสดงผลของวงกลม
 
 const img = new Image();
-const realWidth = 63, realHeight = 23.6; 
+const realWidth = 63,
+  realHeight = 23.6;
 
 let scaleX, scaleY;
 
@@ -44,13 +49,13 @@ img.onload = function () {
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 };
 
-const alert = (topic,text,icon) =>{
-Swal.fire({
-  title: topic,
-  text: text,
-  icon: icon,
-});
-}
+const alert = (topic, text, icon) => {
+  Swal.fire({
+    title: topic,
+    text: text,
+    icon: icon,
+  });
+};
 
 // Check condition
 const CheckCondition = {
@@ -83,7 +88,11 @@ document.getElementById("updateMapName").addEventListener("click", () => {
 
   // Refresh dropdown options
   UpdateMapSelect();
-  alert("Success", `Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`, "success");
+  alert(
+    "Success",
+    `Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`,
+    "success"
+  );
   // Re-select the updated map
   mapSelect.value = selectedIndex;
   console.log(`Map ${parseInt(selectedIndex) + 1} renamed to ${newMapName}`);
@@ -174,7 +183,11 @@ async function EditMapName(mapSrc) {
   });
 
   if (mapName) {
-    alert("Success", `Map uploaded successfully\nMap name: ${mapName}`, "success");
+    alert(
+      "Success",
+      `Map uploaded successfully\nMap name: ${mapName}`,
+      "success"
+    );
     maps.push({ src: mapSrc, name: mapName });
     UpdateMapSelect();
     document.getElementById("map-select").value = maps.length - 1;
@@ -264,7 +277,11 @@ document.getElementById("delete-map").addEventListener("click", () => {
 canvas.addEventListener("click", (event) => {
   const pointName = document.getElementById("pointName").value;
   if (maps.length === 0) {
-    alert("Info", "Please upload or select a map before adding points.", "question");
+    alert(
+      "Info",
+      "Please upload or select a map before adding points.",
+      "question"
+    );
     return;
   }
   console.log("Test");
@@ -328,11 +345,11 @@ const set_ctx = (x, y, color) => {
   ctx.beginPath();
   ctx.arc(x, y, 5, 0, 2 * Math.PI);
   ctx.fill();
-}
+};
 
 // Draw marker
 function DrawMarker(x, y, color) {
- set_ctx(x, y, color);
+  set_ctx(x, y, color);
   ctx.stroke();
 }
 
@@ -538,6 +555,86 @@ function updatePointDistance(pointName, rssi, distance) {
 }
 
 // ใหม่
+// function RefreshMap() {
+//   const selectedIndex = document.getElementById("map-select").value;
+//   if (selectedIndex && maps[selectedIndex]) {
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+//     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+//     // โหลดจุดจาก pointsPerMap
+//     points = pointsPerMap[selectedIndex] || [];
+//     markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
+
+//     points.forEach((point, index) => {
+//       DrawPoint(point.x, point.y, point.name, point.color);
+//       if (point.distance > 0) {
+//         DrawCircle(point.x, point.y, point.distance);
+//       }
+//     });
+
+//     // หา Router ทั้ง 3 ตัว
+//     const routers = points.filter(
+//       (point) =>
+//         point.name === "TP-Link_2536_1" ||
+//         point.name === "TP-Link_2536_2" ||
+//         point.name === "TP-Link_2536_3"
+//     );
+
+//     if (routers.length === 3) {
+//       // ตรวจสอบระยะทางของ Router ทั้ง 3 ตัว
+//       const distances = routers.map((router) => router.distance);
+//       const maxDistance = Math.max(...distances);
+//       const minDistance = Math.min(...distances);
+
+//       // หากระยะทางไกลที่สุดมากกว่าระยะทางอื่น ๆ เกินเกณฑ์ (เช่น 20%) ให้ไม่นำมาคำนวณ
+//       const threshold = 1.2; // 20% threshold
+//       if (maxDistance > minDistance * threshold) {
+//         // ตัด Router ที่มีระยะทางไกลที่สุดออก
+//         const filteredRouters = routers.filter(
+//           (router) => router.distance !== maxDistance
+//         );
+
+//         if (filteredRouters.length === 2) {
+//           // คำนวณจุดตัดจาก Router 2 ตัวที่เหลือ
+//           const intersectionPoints = CheckCircleIntersection(
+//             filteredRouters[0],
+//             filteredRouters[1]
+//           );
+//           if (intersectionPoints) {
+//             intersectionPoints.forEach((point) => {
+//               DrawIntersectionPoint(point.x, point.y);
+//             });
+//           }
+//         }
+//       } else {
+//         // หากระยะทางไม่เกินเกณฑ์ ให้คำนวณจุดตัดจาก Router ทั้ง 3 ตัว
+//         const intersectionPoint = CalculateIntersectionThreeRouters(
+//           routers[0],
+//           routers[1],
+//           routers[2]
+//         );
+//         if (intersectionPoint) {
+//           DrawIntersectionPoint(intersectionPoint.x, intersectionPoint.y);
+//         }
+//       }
+//     } else if (routers.length === 2) {
+//       // คำนวณจุดตัดจาก Router 2 ตัว
+//       const intersectionPoints = CheckCircleIntersection(
+//         routers[0],
+//         routers[1]
+//       );
+//       if (intersectionPoints) {
+//         intersectionPoints.forEach((point) => {
+//           DrawIntersectionPoint(point.x, point.y);
+//         });
+//       }
+//     } else {
+//       console.log("Not enough routers to calculate intersection.");
+//     }
+
+//     console.log("Map refreshed with updated points and circles.");
+//   }
+// }
 function RefreshMap() {
   const selectedIndex = document.getElementById("map-select").value;
   if (selectedIndex && maps[selectedIndex]) {
@@ -703,27 +800,46 @@ function CalculateIntersectionThreeRouters(point1, point2, point3) {
   return estimatedPosition;
 }
 
-
 function DrawIntersectionPoint(x, y) {
   set_ctx(x, y, "red");
   ctx.stroke();
   console.log(`Intersection point drawn at (${x}, ${y})`);
 }
 
+// ฟังก์ชันวาดวงกลม
 function DrawCircle(x, y, distance) {
-  if (distance > 0) {
+  if (showCircles && distance > 0) {
     const radius = distance / scaleX; // ปรับขนาดรัศมีตาม Scale Factor
     console.log(
       `Drawing circle at (${x}, ${y}) with radius: ${distance * 100}`
     );
     ctx.beginPath();
-    // ctx.arc(x, y, distance * 100, 0, 2 * Math.PI); // ปรับขนาดวงกลมตามระยะทาง
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
     ctx.stroke();
   }
 }
 
+document
+  .getElementById("showCircleCheckbox")
+  .addEventListener("change", (event) => {
+    showCircles = !event.target.checked; // สลับสถานะการแสดงผลของวงกลม
+    RefreshMap(); // รีเฟรชแผนที่เพื่ออัปเดตการแสดงผล
+  });
+
+// function DrawCircle(x, y, distance) {
+//   if (distance > 0) {
+//     const radius = distance / scaleX; // ปรับขนาดรัศมีตาม Scale Factor
+//     console.log(
+//       `Drawing circle at (${x}, ${y}) with radius: ${distance * 100}`
+//     );
+//     ctx.beginPath();
+//     // ctx.arc(x, y, distance * 100, 0, 2 * Math.PI); // ปรับขนาดวงกลมตามระยะทาง
+//     ctx.arc(x, y, radius, 0, 2 * Math.PI);
+//     ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
+//     ctx.stroke();
+//   }
+// }
 
 function CheckCircleIntersection(point1, point2) {
   // คำนวณระยะห่างระหว่างจุดศูนย์กลางของวงกลมทั้งสอง
@@ -782,7 +898,7 @@ function CheckCircleIntersection(point1, point2) {
       DrawPoint(
         nearestPointOuter.x,
         nearestPointOuter.y,
-        "Outer Circle Nearest Point",
+        "Propbality Position device",
         "blue"
       );
       // DrawPoint(nearestPointInner.x, nearestPointInner.y, "Inner Circle Nearest Point", "red");
@@ -797,7 +913,7 @@ function CheckCircleIntersection(point1, point2) {
       DrawPoint(
         nearestPointOuter.x,
         nearestPointOuter.y,
-        "Outer Circle Nearest Point",
+        "Propbality Position device",
         "blue"
       );
       // DrawPoint(nearestPointInner.x, nearestPointInner.y, "Inner Circle Nearest Point", "red");
@@ -833,21 +949,23 @@ function CheckCircleIntersection(point1, point2) {
 }
 
 function DrawLine(x1, y1, x2, y2) {
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
-  ctx.stroke();
-  console.log(`Draw line from (${x1}, ${y1}) to (${x2}, ${y2})`);
+  if (showCircles) { // ตรวจสอบสถานะ showCircles
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+    ctx.stroke();
+    console.log(`Draw line from (${x1}, ${y1}) to (${x2}, ${y2})`);
+  }
 }
 
+
 function DrawMidPoint(x1, y1, x2, y2) {
-  // จุดกึ่งกลางของเส้น
   const xMid = (x1 + x2) / 2;
   const yMid = (y1 + y2) / 2;
 
   // จุดกึ่งกลางบนแผนที่
-  set_ctx(xMid, yMid, "green");
+  set_ctx(xMid, yMid, "red");
   console.log(`Midpoint at (${xMid}, ${yMid})`);
 }
 
@@ -902,6 +1020,6 @@ document.getElementById("editPoint").addEventListener("click", async () => {
 
   // อัปเดตการเลือกจุดใหม่
   UpdatePointSelects();
-alert("Success", `Point name changed to: ${newPointName}`, "success");
+  alert("Success", `Point name changed to: ${newPointName}`, "success");
   document.getElementById("newPointName").value = "";
 });

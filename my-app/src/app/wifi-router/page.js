@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import "../styles/wifi-router.css";
+import "@styles/wifi-router.css";
 
 export default function WifiRouter() {
   const [wifiData, setWifiData] = useState([]);
@@ -59,28 +59,42 @@ export default function WifiRouter() {
     return new Promise((resolve) => {
       setTimeout(() => {
         const data = [
-          { name: "Home WiFi", signalStrength: Math.floor(Math.random() * 100) },
-          { name: "Office WiFi", signalStrength: Math.floor(Math.random() * 100) },
-          { name: "Cafe WiFi", signalStrength: Math.floor(Math.random() * 100) },
-          { name: "Library WiFi", signalStrength: Math.floor(Math.random() * 100) },
-          { name: "Guest WiFi", signalStrength: Math.floor(Math.random() * 100) },
+          {
+            name: "Home WiFi",
+            signalStrength: Math.floor(Math.random() * 100),
+          },
+          {
+            name: "Office WiFi",
+            signalStrength: Math.floor(Math.random() * 100),
+          },
+          {
+            name: "Cafe WiFi",
+            signalStrength: Math.floor(Math.random() * 100),
+          },
+          {
+            name: "Library WiFi",
+            signalStrength: Math.floor(Math.random() * 100),
+          },
+          {
+            name: "Guest WiFi",
+            signalStrength: Math.floor(Math.random() * 100),
+          },
         ];
         resolve(data);
-      }, 1000); // จำลองการดีเลย์ 1 วินาที
+      }, 1000);
     });
   }
 
   // เริ่มต้นแสดงรายการ Wi-Fi
   useEffect(() => {
     refreshWifi();
-  }, []); // ใช้ useEffect เพื่อโหลดข้อมูลครั้งแรก
+  }, []); 
 
   return (
     <>
       <header>
         <h1 className="text-yellow-300 shadow-md">Available Wi-Fi Routers</h1>
       </header>
-
       <section className="wifi-list">
         <input
           type="text"
@@ -90,7 +104,6 @@ export default function WifiRouter() {
         />
         <ul id="wifiList"></ul>
       </section>
-
       <button id="refreshBtn" onClick={refreshWifi} disabled={isLoading}>
         {isLoading ? "Refreshing..." : "Refresh"}
       </button>

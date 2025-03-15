@@ -4,9 +4,6 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue } from "firebase/database";
 import Chart from "chart.js/auto";
 
-import Header from "../../../components/Header";
-import Footer from "../../../components/Footer";
-
 // Firebase Config
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_APIKEY,
@@ -169,7 +166,7 @@ export default function Dashboard() {
   return (
     <>
       <title> Dashboard</title>
-      <Header />
+      {/* <Header /> */}
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
           Combined Firebase Console Display
@@ -341,7 +338,7 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

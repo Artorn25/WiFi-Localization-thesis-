@@ -1,14 +1,17 @@
-body {
-    background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+.feedback-body {
+    background: url("https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")
+      no-repeat center center fixed;
     background-size: cover;
-    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
-}
-
-.glass-container {
+    height: 100vh;
+  }
+  
+  .glass-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
     backdrop-filter: blur(20px);
     background-color: rgba(255, 255, 255, 0.1);
     padding: 2.5rem;
@@ -17,50 +20,88 @@ body {
     animation: slideIn 1s ease-in-out forwards;
     opacity: 0;
     transform: translateY(50px);
-}
-
-@keyframes slideIn {
+    width: 90%;
+    max-width: 500px;
+  }
+  
+  @keyframes slideIn {
     to {
-        opacity: 1;
-        transform: translateY(0);
+      opacity: 1;
+      transform: translateY(0);
     }
-}
-
-input, textarea {
+  }
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .label-form {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  
+  .input-form,
+  .text-form {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
     background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease-in-out;
-}
-
-input:focus, textarea:focus {
+    font-size: 1rem;
+    color: #333;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+  
+  .input-form:focus,
+  .text-form:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 10px #3b82f6;
-}
-
-button {
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  }
+  
+  .text-form {
+    resize: vertical;
+    min-height: 120px;
+  }
+  
+  .submit {
+    width: 100%;
+    padding: 0.75rem;
     background-color: #3b82f6;
-    font-size: 1.2rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-button:hover {
+  }
+  
+  .submit:hover {
     background-color: #2563eb;
-    transform: translateY(-3px);
-}
-
-button:active {
+    transform: translateY(-2px);
+  }
+  
+  .submit:active {
     background-color: #1d4ed8;
-    transform: scale(0.95);
-}
-
-button.loading {
+    transform: scale(0.98);
+  }
+  
+  .submit.loading {
     pointer-events: none;
     opacity: 0.7;
-}
-
-button.loading::after {
-    content: '';
+  }
+  
+  .submit.loading::after {
+    content: "";
     display: inline-block;
     width: 15px;
     height: 15px;
@@ -69,10 +110,10 @@ button.loading::after {
     border-right-color: transparent;
     animation: spin 1s linear infinite;
     margin-left: 10px;
-}
-
-@keyframes spin {
+  }
+  
+  @keyframes spin {
     to {
-        transform: rotate(360deg);
+      transform: rotate(360deg);
     }
-}
+  }

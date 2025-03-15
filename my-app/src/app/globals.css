@@ -1,19 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.oswald-normal {
-  font-family: "Oswald", serif;
-  font-optical-sizing: auto;
-  font-weight: 300;
+.mukta-medium {
+  font-family: "Mukta", sans-serif;
+  font-weight: 500;
   font-style: normal;
 }
 
-.oswald-bold {
-  font-family: "Oswald", serif;
-  font-optical-sizing: auto;
-  font-weight: 500;
+.mukta-semibold {
+  font-family: "Mukta", sans-serif;
+  font-weight: 600;
   font-style: normal;
 }
 
@@ -31,9 +29,8 @@ html {
   margin: 0;
   padding: 0;
   font-size: 20px;
-  @apply oswald-normal;
+  @apply mukta-medium;
   background-color: var(--light-color);
   color: var(--dark-color);
   box-sizing: border-box;
 }
-

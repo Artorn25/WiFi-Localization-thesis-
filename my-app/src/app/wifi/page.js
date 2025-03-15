@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import "../styles/freerouter.css";
+import "@styles/freerouter.css";
 
 export default function FreeWiFi() {
   return (

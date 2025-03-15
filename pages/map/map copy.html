@@ -37,8 +37,17 @@
       <div class="container">
         <canvas id="myCanvas" width="1400px" height="700px"></canvas>
         <div id="map-controls">
+          <form action="">
+            <input
+              type="checkbox"
+              id="showCircleCheckbox"
+              name="showCircle"
+              value="show"
+            />
+            <label for="showCircleCheckbox">Hide circle area</label><br />
+          </form>
           <div class="controls-group">
-            <label for="mapName">Map Name:</label>
+            <label for="mapName">Map</label>
             <select id="map-select">
               <option value="">Select Map</option>
             </select>
@@ -114,5 +123,3 @@
     <script type="module" src="/pages/map/js/map copy.js"></script>
   </body>
 </html>
-
-

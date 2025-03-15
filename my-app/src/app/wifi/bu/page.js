@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import "../../styles/bu.css";
+import "@styles/bu.css";
 import { useState, useEffect } from "react";
 
 export default function Bu() {

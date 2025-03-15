@@ -2,10 +2,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import {
   getDatabase,
   ref,
-  get,
   onValue,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
+
+const Swal = require("sweetalert2");
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_APIKEY,
