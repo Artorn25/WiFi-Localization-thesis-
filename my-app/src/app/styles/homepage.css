@@ -59,37 +59,37 @@ nav {
 }
 
 .sidebar {
-    width: 100%; /* ความกว้างเต็มหน้าจอ */
-    background-color: white; /* สีพื้นหลัง */
-    color: var(--white-color); /* สีข้อความ */
-    padding: 10px 20px; /* Padding ด้านบนและล่าง */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* เงา */
-    z-index: 1000; /* ให้อยู่ด้านบน */
-  }
-  
-  .menu-list {
-    list-style: none; /* ลบจุดหน้าข้อความ */
-    padding: 0;
-    margin: 0;
-    display: flex; /* ทำให้เมนูแสดงผลในแนวนอน */
-    gap: 20px; /* ระยะห่างระหว่างรายการ */
-    justify-content: center; /* จัดเมนูให้อยู่กลาง */
-  }
-  
-  .menu-list li {
-    padding: 10px 0; /* ปรับ padding */
-  }
-  
-  .menu-list li a {
-    color: #333; /* สีข้อความ */
-    text-decoration: none; /* ลบขีดเส้นใต้ */
-    font-size: 16px; /* ขนาดฟอนต์ */
-    transition: color 0.3s ease; /* เพิ่มเอฟเฟกต์เมื่อ hover */
-  }
-  
-  .menu-list li a:hover {
-    color: orange; /* สีเมื่อ hover */
-  }
+  width: 100%; /* ความกว้างเต็มหน้าจอ */
+  background-color: white; /* สีพื้นหลัง */
+  color: var(--white-color); /* สีข้อความ */
+  padding: 10px 20px; /* Padding ด้านบนและล่าง */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* เงา */
+  z-index: 1000; /* ให้อยู่ด้านบน */
+}
+
+.menu-list {
+  list-style: none; /* ลบจุดหน้าข้อความ */
+  padding: 0;
+  margin: 0;
+  display: flex; /* ทำให้เมนูแสดงผลในแนวนอน */
+  gap: 20px; /* ระยะห่างระหว่างรายการ */
+  justify-content: center; /* จัดเมนูให้อยู่กลาง */
+}
+
+.menu-list li {
+  padding: 10px 0; /* ปรับ padding */
+}
+
+.menu-list li a {
+  color: #333; /* สีข้อความ */
+  text-decoration: none; /* ลบขีดเส้นใต้ */
+  font-size: 16px; /* ขนาดฟอนต์ */
+  transition: color 0.3s ease; /* เพิ่มเอฟเฟกต์เมื่อ hover */
+}
+
+.menu-list li a:hover {
+  color: orange; /* สีเมื่อ hover */
+}
 
 .sidebar.open {
   transform: translateX(0); /* เลื่อน sidebar ออกมา */
@@ -324,4 +324,91 @@ header {
 .search-button:hover {
   background-color: #ffb300;
   border-color: #ffb300;
+}
+/* Popup Styles */
+.popup-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  left: auto;
+  bottom: auto;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.popup {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 280px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.popup-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #2d3748;
+}
+
+.popup-message {
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin-bottom: 1rem;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.popup-close-btn {
+  background: #3182ce;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.popup-close-btn:hover {
+  background: #2c5282;
+}
+
+.popup-cancel-btn {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.popup-cancel-btn:hover {
+  background: #cbd5e0;
+}
+
+.popup-cancel-btn.active {
+  background: #f56565;
+  color: white;
+}
+
+.popup-cancel-btn.active:hover {
+  background: #c53030;
+}
+
+.countdown {
+  font-weight: bold;
+  color: #e53e3e;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

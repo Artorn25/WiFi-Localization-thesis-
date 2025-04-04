@@ -12,6 +12,7 @@ const nextConfig = {
         pathname: "/**", // อนุญาตทุก path ภายใต้ localhost:3000
       },
     ],
+    unoptimized: false, // ค่า default คือ false
   },
 };
 
