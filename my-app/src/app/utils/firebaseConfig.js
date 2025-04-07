@@ -1,14 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, off } from "firebase/database";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  addDoc,
-  query,
-  where,
-  serverTimestamp,
-} from "firebase/firestore";
+import { getDatabase, ref } from "firebase/database";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_APIKEY,
@@ -25,4 +17,4 @@ const db = getDatabase(app);
 const dbRef = ref(db, "Data");
 const dbfs = getFirestore(app);
 
-export { db, dbRef, dbfs, onValue, off, collection, getDocs, addDoc, query, where, serverTimestamp };
+export { db, dbRef, dbfs };

@@ -1,50 +1,100 @@
 import Swal from "sweetalert2";
 
-export function updateMapSelect(maps, mapSelect) {
-  mapSelect.innerHTML = "<option value=''>Select Map</option>";
-  maps.forEach((map, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = map.name || `Map ${index + 1}`;
-    mapSelect.appendChild(option);
-  });
-}
-
-export async function editMapName(mapSrc, maps, updateMapSelect, loadMap) {
-  const { value: mapName } = await Swal.fire({
-    title: "Enter a name for this map",
-    input: "text",
-    inputLabel: "Map Name",
-    inputValue: `Map ${maps.length + 1}`,
-    showCancelButton: true,
-    inputValidator: (value) => !value && "You need to write something!",
-  });
-
-  if (mapName) {
-    Swal.fire({
-      title: "Success",
-      text: `Map uploaded successfully\nMap name: ${mapName}`,
-      icon: "success",
-    });
-    maps.push({ src: mapSrc, name: mapName });
-    updateMapSelect(maps, document.getElementById("map-select"));
-    document.getElementById("map-select").value = maps.length - 1;
-    loadMap(mapSrc);
+export class MapManager {
+  constructor() {
+    this.maps = [];
   }
-}
 
-export function loadMap(mapSrc, img, ctx, pointsPerMap, markerCoordinatesPerMap, drawMode, drawMarkers, drawPoint, drawCircle, refreshMap) {
-  img.src = mapSrc;
-  img.onload = () => {
-    const selectedIndex = document.getElementById("map-select").value;
-    const points = pointsPerMap[selectedIndex] || [];
-    const markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
+  alert(topic, text, icon) {
+    Swal.fire({ title: topic, text, icon });
+  }
 
-    if (drawMode) drawMarkers(ctx, markerCoordinates);
-    points.forEach((point) => {
-      drawPoint(ctx, point.x, point.y, point.name, point.color);
-      if (point.distance > 0) drawCircle(ctx, point.x, point.y, point.distance);
-    });
-    refreshMap();
+  checkCondition = {
+    Equal: (condition, message) => {
+      if (condition === "" || condition === null) {
+        Swal.fire({ title: "Warning", text: message, icon: "warning" });
+        return true;
+      }
+      return false;
+    },
+    NotEqual: (condition, message) => {
+      if (!condition) {
+        Swal.fire({ title: "Warning", text: message, icon: "warning" });
+        return true;
+      }
+      return false;
+    },
   };
+
+  async editMapName(mapSrc) {
+    const { value: mapName } = await Swal.fire({
+      title: "Enter a name for this map",
+      input: "text",
+      inputValue: `Map ${this.maps.length + 1}`,
+      showCancelButton: true,
+      inputValidator: (value) => !value && "You need to write something!",
+    });
+
+    if (mapName) {
+      this.alert(
+        "Success",
+        `Map uploaded successfully\nMap name: ${mapName}`,
+        "success"
+      );
+      this.maps.push({ src: mapSrc, name: mapName });
+      this.updateMapSelect();
+      return this.maps.length - 1;
+    }
+    return null;
+  }
+
+  updateMapSelect() {
+    const mapSelect = document.getElementById("map-select");
+    mapSelect.innerHTML = "<option value=''>Select Map</option>";
+    this.maps.forEach((map, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = map.name || `Map ${index + 1}`;
+      mapSelect.appendChild(option);
+    });
+  }
+
+  deleteMap(selectedIndex, canvasUtils) {
+    if (this.maps.length === 0) {
+      Swal.fire({
+        title: "No maps available",
+        text: "There are no maps to delete.",
+        icon: "warning",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+    if (
+      this.checkCondition.Equal(selectedIndex, "Please select a map to delete.")
+    )
+      return;
+
+    Swal.fire({
+      title: `Are you sure you want to delete map ${
+        parseInt(selectedIndex) + 1
+      }?`,
+      icon: "question",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      showCancelButton: true,
+      showCloseButton: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.alert("Map deleted", "Map deleted successfully", "success");
+        this.maps.splice(selectedIndex, 1);
+        this.updateMapSelect();
+
+        canvasUtils.resetCanvas();
+        if (this.maps.length > 0) {
+          document.getElementById("map-select").value = 0;
+          canvasUtils.img.src = this.maps[0].src;
+        }
+      }
+    });
+  }
 }

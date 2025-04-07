@@ -42,7 +42,7 @@ let points = [],
   showCircles = true; // ตัวแปรเก็บสถานะการแสดงผลของวงกลม
 
 const img = new Image();
-const FIXED_CANVAS_WIDTH = 900;
+const FIXED_CANVAS_WIDTH = 1000;
 const FIXED_CANVAS_HEIGHT = 400;
 const CENTER_X = FIXED_CANVAS_WIDTH / 2; // 315
 const CENTER_Y = FIXED_CANVAS_HEIGHT / 2; // 118
@@ -146,6 +146,9 @@ document.getElementById("map-select").addEventListener("change", (event) => {
   const selectedIndex = event.target.value;
   if (selectedIndex) {
     LoadMap(maps[selectedIndex].src);
+    macToNodeIndex = {}; // รีเซ็ต mapping เมื่อเปลี่ยนแผนที่
+    trilaterationPositions = {};
+    startRealTimeUpdate();
   }
 });
 
@@ -573,7 +576,7 @@ function UpdatePointSelects() {
 }
 
 function CheckAndDisplayPointData(point) {
-  const routerSSID = point.name; // ใช้ชื่อจุดเป็น SSID ของ Router
+  const routerSSID = point.name;
   const dbRef = ref(db, "Data");
 
   onValue(
@@ -582,16 +585,13 @@ function CheckAndDisplayPointData(point) {
       if (snapshot.exists()) {
         const nodes = snapshot.val();
         let foundData = false;
-
         const allData = [];
 
         Object.keys(nodes).forEach((nodeKey) => {
           const nodeData = nodes[nodeKey];
-
           Object.keys(nodeData).forEach((routerKey) => {
             if (routerKey.startsWith("Router-")) {
               const routerData = nodeData[routerKey];
-
               if (routerData.ssid === routerSSID) {
                 allData.push({
                   rssi: routerData.rssi,
@@ -599,10 +599,6 @@ function CheckAndDisplayPointData(point) {
                   mac: nodeData.Mac,
                 });
                 foundData = true;
-
-                console.log(
-                  `Data for ${point.name} in Node ${nodeKey}: RSSI = ${routerData.rssi}, Distance = ${routerData.distance}, Mac = ${nodeData.Mac}`
-                );
               }
             }
           });
@@ -610,21 +606,12 @@ function CheckAndDisplayPointData(point) {
 
         if (foundData) {
           point.data = allData;
-          console.log(
-            `Updated ${point.name} with ${allData.length} data entries`
-          );
           updatePointData(point.name, allData);
-          RefreshMap(); // รีเฟรชแผนที่เพื่อคำนวณและแสดงผล
-        } else {
-          console.log(`No data found for ${point.name}`);
+          RefreshMap(); // อัปเดตทันทีเมื่อมีข้อมูลใหม่
         }
-      } else {
-        console.log("No data found in Firebase.");
       }
     },
-    (error) => {
-      console.error("Error fetching data:", error);
-    }
+    { onlyOnce: false } // ฟังการเปลี่ยนแปลงแบบ real-time
   );
 }
 
@@ -671,98 +658,134 @@ function calculateTrilateration(point1, point2, point3) {
   return { x, y };
 }
 
-function RefreshMap() {
-  const selectedIndex = document.getElementById("map-select").value;
-  if (selectedIndex && maps[selectedIndex]) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+let macToNodeIndex = {};
+let trilaterationPositions = {};
 
-    circles = []; // ล้างข้อมูลวงกลมเก่า
-
-    points = pointsPerMap[selectedIndex] || [];
-    markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
-
-    points.forEach((point) => {
-      DrawPoint(point.x, point.y, point.name, point.color);
-
-      if (point.data) {
-        point.data.forEach((data) => {
-          DrawCircle(point.x, point.y, data.distance, data.rssi, data.mac);
-        });
-      }
-    });
-
-    const macGroups = {};
-
-    // จัดกลุ่มข้อมูลตาม Mac Address
-    points.forEach((point) => {
-      if (point.data) {
-        point.data.forEach((data) => {
-          if (!macGroups[data.mac]) {
-            macGroups[data.mac] = [];
-          }
-          macGroups[data.mac].push({
-            x: point.x,
-            y: point.y,
-            radius: data.distance / scaleX,
-            name: point.name,
-            mac: data.mac,
-            distance: data.distance,
-          });
-        });
-      }
-    });
-
-    // คำนวณและวาดจุดสำหรับแต่ละ Mac Address
-    Object.keys(macGroups).forEach((mac) => {
-      const circlesInNode = macGroups[mac];
-
-      console.log(`Processing Mac ${mac} with ${circlesInNode.length} routers`);
-
-      if (circlesInNode.length === 3) {
-        const point1 = circlesInNode[0];
-        const point2 = circlesInNode[1];
-        const point3 = circlesInNode[2];
-
-        const position = calculateTrilateration(point1, point2, point3);
-        if (position) {
-          DrawIntersectionPoint(
-            position.x,
-            position.y,
-            "Trilateration Position",
-            mac
-          );
-          console.log("SuccessFully trilaterated position:", position);
-
-        } else {
-          console.log(`Trilateration failed for Mac ${mac}`);
-        }
-      }
-    });
-
-    console.log("Map refreshed with updated points and circles.");
+// ฟังก์ชันสำหรับกำหนด index ให้ MAC Address
+function assignNodeIndex(mac) {
+  if (!(mac in macToNodeIndex)) {
+    macToNodeIndex[mac] = Object.keys(macToNodeIndex).length + 1;
   }
+  return macToNodeIndex[mac];
 }
 
+// ปรับปรุงฟังก์ชัน RefreshMap
+function RefreshMap() {
+  const selectedIndex = document.getElementById("map-select").value;
+  if (!selectedIndex || !maps[selectedIndex]) return;
+
+  // ล้าง canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  circles = [];
+  points = pointsPerMap[selectedIndex] || [];
+  markerCoordinates = markerCoordinatesPerMap[selectedIndex] || [];
+
+  // วาดจุดพื้นฐาน
+  points.forEach((point) => {
+    DrawPoint(point.x, point.y, point.name, point.color);
+    if (point.data) {
+      point.data.forEach((data) => {
+        DrawCircle(point.x, point.y, data.distance, data.rssi, data.mac);
+      });
+    }
+  });
+
+  // จัดกลุ่มตาม MAC Address
+  const macGroups = {};
+  points.forEach((point) => {
+    if (point.data) {
+      point.data.forEach((data) => {
+        if (!macGroups[data.mac]) {
+          macGroups[data.mac] = [];
+        }
+        macGroups[data.mac].push({
+          x: point.x,
+          y: point.y,
+          radius: data.distance / scaleX,
+          name: point.name,
+          mac: data.mac,
+          distance: data.distance,
+        });
+      });
+    }
+  });
+
+  // ล้างตำแหน่งเก่าก่อนคำนวณใหม่
+  trilaterationPositions = {};
+
+  // คำนวณและวาดจุดใหม่
+  Object.keys(macGroups).forEach((mac) => {
+    const circlesInNode = macGroups[mac];
+
+    // กำหนด index ให้ MAC Address
+    const nodeIndex = assignNodeIndex(mac);
+    const nodeName = `Node ${nodeIndex}`;
+
+    if (circlesInNode.length >= 3) {
+      // ใช้ 3 จุดแรกสำหรับการคำนวณ
+      const position = calculateTrilateration(
+        circlesInNode[0],
+        circlesInNode[1],
+        circlesInNode[2]
+      );
+
+      if (position) {
+        trilaterationPositions[mac] = {
+          x: position.x,
+          y: position.y,
+          name: nodeName,
+        };
+        DrawIntersectionPoint(position.x, position.y, nodeName, mac);
+        console.log(
+          `Trilateration calculated for ${nodeName} (MAC: ${mac}) at (${position.x}, ${position.y})`
+        );
+      }
+    }
+  });
+
+  console.log("Map refreshed with real-time trilateration");
+}
+
+// ปรับปรุง DrawIntersectionPoint
 function DrawIntersectionPoint(x, y, name, mac) {
-  // ใช้สีเดิมถ้ามี หรือสุ่มสีใหม่ถ้ายังไม่มี
-  if (!intersectionColors[`${mac}-${name}`]) {
-    intersectionColors[`${mac}-${name}`] = getRandomColor();
+  if (!intersectionColors[mac]) {
+    intersectionColors[mac] = getRandomColor();
   }
-  const color = intersectionColors[`${mac}-${name}`];
+  const color = intersectionColors[mac];
+
+  const { pixelX, pixelY } = toCanvas(x, y);
 
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(x, y, 5, 0, 2 * Math.PI);
+  ctx.arc(pixelX, pixelY, 5, 0, 2 * Math.PI);
   ctx.fill();
   ctx.strokeStyle = color;
   ctx.stroke();
-  ctx.fillStyle = "black"; // ข้อความสีดำ
-  ctx.fillText(`${name} (Mac: ${mac})`, x + 5, y - 5);
-  console.log(
-    `Intersection point drawn at (${x}, ${y}) with name: ${name}, Mac: ${mac}, Color: ${color}`
-  );
+
+  ctx.fillStyle = "black";
+  ctx.fillText(name, pixelX + 5, pixelY - 5); // ใช้ชื่อ Node $index โดยไม่แสดง MAC
 }
+
+// อัปเดตฟังก์ชันเริ่มต้น
+function startRealTimeUpdate() {
+  // รีเซ็ต mapping เมื่อเริ่มใหม่
+  macToNodeIndex = {};
+
+  pointsPerMap.forEach((points, mapIndex) => {
+    if (points) {
+      points.forEach((point) => {
+        CheckAndDisplayPointData(point);
+      });
+    }
+  });
+}
+
+// เรียกใช้เมื่อเริ่มต้น
+document.addEventListener("DOMContentLoaded", () => {
+  startRealTimeUpdate();
+});
 
 function DrawMidPoint(x1, y1, x2, y2, name, mac) {
   const xMid = (x1 + x2) / 2;
