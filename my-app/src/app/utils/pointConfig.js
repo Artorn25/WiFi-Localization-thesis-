@@ -1,25 +1,44 @@
 import { dbRef, dbfs } from "./firebaseConfig";
 import { onValue, off } from "firebase/database";
-import { collection, getDocs, addDoc, query, where, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  query,
+  where,
+  serverTimestamp,
+} from "firebase/firestore";
 
 export class PointManager {
-  constructor(canvasUtils) {
+  constructor(canvasUtils, trilaterationUtils) {
     this.canvasUtils = canvasUtils;
+    this.trilaterationUtils = trilaterationUtils; // เพิ่ม trilaterationUtils เพื่อเรียก refreshMap
     this.pointsPerMap = [];
     this.markerCoordinatesPerMap = {};
     this.points = [];
     this.markerCoordinates = [];
     this.drawMode = true;
+    this.listeners = []; // เก็บ listener เพื่อ cleanup
   }
 
   validatePoint(pointName) {
     if (!pointName) {
-      this.canvasUtils.alert("Warning", "Please enter a name for the point.", "warning");
+      this.canvasUtils.alert(
+        "Warning",
+        "Please enter a name for the point.",
+        "warning"
+      );
       return false;
     }
     for (const mapIndex in this.pointsPerMap) {
-      if (this.pointsPerMap[mapIndex].some((point) => point.name === pointName)) {
-        this.canvasUtils.alert("Error", "Point name must be unique across all maps.", "error");
+      if (
+        this.pointsPerMap[mapIndex].some((point) => point.name === pointName)
+      ) {
+        this.canvasUtils.alert(
+          "Error",
+          "Point name must be unique across all maps.",
+          "error"
+        );
         return false;
       }
     }
@@ -27,7 +46,8 @@ export class PointManager {
   }
 
   addMarkerAndPoint(x, y, name, selectedIndex) {
-    if (!this.markerCoordinatesPerMap[selectedIndex]) this.markerCoordinatesPerMap[selectedIndex] = [];
+    if (!this.markerCoordinatesPerMap[selectedIndex])
+      this.markerCoordinatesPerMap[selectedIndex] = [];
     this.markerCoordinatesPerMap[selectedIndex].push({ x, y });
     this.canvasUtils.drawMarker(x, y, "blue");
     this.addPoint(x, y, name, selectedIndex);
@@ -37,7 +57,8 @@ export class PointManager {
     if (!this.validatePoint(name)) return;
 
     const color = this.drawMode ? "blue" : "red";
-    if (!this.pointsPerMap[selectedIndex]) this.pointsPerMap[selectedIndex] = [];
+    if (!this.pointsPerMap[selectedIndex])
+      this.pointsPerMap[selectedIndex] = [];
 
     this.canvasUtils.drawPoint(x, y, name, color);
     const newPoint = {
@@ -47,25 +68,33 @@ export class PointManager {
       color,
       distance: 0,
       rssi: "Not available",
-      data: [], // กำหนดค่าเริ่มต้นเป็น array ว่าง
+      data: [],
     };
     this.pointsPerMap[selectedIndex].push(newPoint);
     this.points = this.pointsPerMap[selectedIndex];
-    this.checkAndDisplayPointData(newPoint);
+    this.startRealTimeUpdate(newPoint, selectedIndex); // เริ่มฟังข้อมูลแบบ real-time
     this.updatePointSelects();
   }
 
   async savePointToFirestore(x, y, name, color) {
     try {
       const pointsRef = collection(dbfs, "points");
-      const q = query(pointsRef, where("ssid", "==", name), where("mapIndex", "==", document.getElementById("map-select").value));
+      const q = query(
+        pointsRef,
+        where("ssid", "==", name),
+        where("mapIndex", "==", document.getElementById("map-select").value)
+      );
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
         await addDoc(pointsRef, {
           coordinates: { x, y },
           createdAt: serverTimestamp(),
-          details: { color, scaleX: this.canvasUtils.scaleX, scaleY: this.canvasUtils.scaleY },
+          details: {
+            color,
+            scaleX: this.canvasUtils.scaleX,
+            scaleY: this.canvasUtils.scaleY,
+          },
           mapIndex: document.getElementById("map-select").value,
           ssid: name,
           updatedAt: serverTimestamp(),
@@ -78,7 +107,11 @@ export class PointManager {
 
   showDistance(index1, index2) {
     if (index1 === index2) {
-      this.canvasUtils.alert("Error", "Cannot measure distance between the same point.", "error");
+      this.canvasUtils.alert(
+        "Error",
+        "Cannot measure distance between the same point.",
+        "error"
+      );
       return;
     }
     if (index1 && index2) {
@@ -87,34 +120,51 @@ export class PointManager {
       const dx = (point2.x - point1.x) * this.canvasUtils.scaleX;
       const dy = (point2.y - point1.y) * this.canvasUtils.scaleY;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      document.getElementById("distanceDisplay").innerText = `Distance between ${point1.name} and ${point2.name}: ${distance.toFixed(2)} meters`;
+      document.getElementById(
+        "distanceDisplay"
+      ).innerText = `Distance between ${point1.name} and ${
+        point2.name
+      }: ${distance.toFixed(2)} meters`;
     }
   }
 
   deletePoint(selectedPointName, mapIndex) {
     if (!selectedPointName) {
-      this.canvasUtils.alert("Info", "Please select a point to delete.", "question");
+      this.canvasUtils.alert(
+        "Info",
+        "Please select a point to delete.",
+        "question"
+      );
       return;
     }
     if (!this.pointsPerMap[mapIndex]) {
-      this.canvasUtils.alert("Info", "No points available for the selected map.", "question");
+      this.canvasUtils.alert(
+        "Info",
+        "No points available for the selected map.",
+        "question"
+      );
       return;
     }
 
-    this.pointsPerMap[mapIndex] = this.pointsPerMap[mapIndex].filter((point) => point.name !== selectedPointName);
+    this.pointsPerMap[mapIndex] = this.pointsPerMap[mapIndex].filter(
+      (point) => point.name !== selectedPointName
+    );
     if (this.markerCoordinatesPerMap[mapIndex]) {
-      this.markerCoordinatesPerMap[mapIndex] = this.markerCoordinatesPerMap[mapIndex].filter(
-        (marker) => marker.name !== selectedPointName
-      );
+      this.markerCoordinatesPerMap[mapIndex] = this.markerCoordinatesPerMap[
+        mapIndex
+      ].filter((marker) => marker.name !== selectedPointName);
     }
     this.points = this.pointsPerMap[mapIndex];
     this.updatePointSelects();
   }
 
   updatePointSelects() {
-    const selects = ["pointSelect", "point1Select", "point2Select", "editPointSelect"].map((id) =>
-      document.getElementById(id)
-    );
+    const selects = [
+      "pointSelect",
+      "point1Select",
+      "point2Select",
+      "editPointSelect",
+    ].map((id) => document.getElementById(id));
     selects.forEach((select) => (select.innerHTML = ""));
 
     this.pointsPerMap.forEach((points) => {
@@ -123,66 +173,92 @@ export class PointManager {
           const option = document.createElement("option");
           option.value = point.name;
           option.textContent = point.name;
-          selects.forEach((select) => select.appendChild(option.cloneNode(true)));
+          selects.forEach((select) =>
+            select.appendChild(option.cloneNode(true))
+          );
         });
       }
     });
   }
 
-  checkAndDisplayPointData(point) {
-    return new Promise((resolve) => {
-      const routerSSID = point.name;
-      onValue(
-        dbRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            const nodes = snapshot.val();
-            const allData = [];
-  
-            Object.keys(nodes).forEach((nodeKey) => {
-              const nodeData = nodes[nodeKey];
-              // ดึงข้อมูลจากทุก SSID ที่เกี่ยวข้อง
-              const relatedSSIDs = ["TP-Link_2536_1", "TP-Link_2536_2", "TP-Link_2536_3"];
-              Object.keys(nodeData).forEach((routerKey) => {
-                if (routerKey.startsWith("Router-")) {
-                  const routerData = nodeData[routerKey];
-                  // ตรวจสอบว่า SSID อยู่ใน relatedSSIDs และ routerSSID ต้องอยู่ใน relatedSSIDs ด้วย
+  startRealTimeUpdate(point, selectedIndex) {
+    const routerSSID = point.name;
+    const listener = onValue(
+      dbRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const nodes = snapshot.val();
+          const allData = [];
+
+          Object.keys(nodes).forEach((nodeKey) => {
+            const nodeData = nodes[nodeKey];
+            Object.keys(nodeData).forEach((routerKey) => {
+              if (routerKey.startsWith("Router-")) {
+                const routerData = nodeData[routerKey];
+                if (routerData.ssid === routerSSID) {
                   if (
-                    relatedSSIDs.includes(routerData.ssid) &&
-                    relatedSSIDs.includes(routerSSID)
+                    routerData.rssi !== undefined &&
+                    routerData.distance !== undefined &&
+                    nodeData.Mac !== undefined
                   ) {
-                    if (
-                      routerData.rssi !== undefined &&
-                      routerData.distance !== undefined &&
-                      nodeData.Mac !== undefined
-                    ) {
-                      allData.push({
-                        rssi: routerData.rssi,
-                        distance: routerData.distance,
-                        mac: nodeData.Mac,
-                      });
-                    }
+                    allData.push({
+                      rssi: routerData.rssi,
+                      distance: routerData.distance,
+                      mac: nodeData.Mac,
+                    });
                   }
                 }
-              });
+              }
             });
-  
-            console.log(`Data for SSID ${routerSSID}:`, allData);
-  
-            if (allData.length) {
-              point.data = allData;
-              this.updatePointData(point.name, allData);
-            } else {
-              this.canvasUtils.alert("Warning", `No data found in Firebase for SSID: ${routerSSID}`, "warning");
-            }
+          });
+
+          console.log(`Real-time data for SSID ${routerSSID}:`, allData);
+
+          if (allData.length) {
+            point.data = allData; // แทนที่ข้อมูลเก่าด้วยข้อมูลใหม่
+            this.updatePointData(point.name, allData);
+            // รีเฟรชการวาดวงกลมทันที
+            this.trilaterationUtils.refreshMap(selectedIndex);
           } else {
-            this.canvasUtils.alert("Error", "No data available in Firebase", "error");
+            this.canvasUtils.alert(
+              "Warning",
+              `No data found in Firebase for SSID: ${routerSSID}`,
+              "warning"
+            );
+            point.data = []; // ล้างข้อมูลเก่าถ้าไม่มีข้อมูลใหม่
+            this.trilaterationUtils.refreshMap(selectedIndex);
           }
-          resolve();
-        },
-        { onlyOnce: true }
-      );
+        } else {
+          this.canvasUtils.alert(
+            "Error",
+            "No data available in Firebase",
+            "error"
+          );
+          point.data = [];
+          this.trilaterationUtils.refreshMap(selectedIndex);
+        }
+      },
+      (error) => {
+        console.error("Error listening to Firebase:", error);
+        this.canvasUtils.alert(
+          "Error",
+          "Failed to listen to Firebase updates.",
+          "error"
+        );
+      }
+    );
+
+    // เก็บ listener เพื่อ cleanup
+    this.listeners.push({ pointName: point.name, listener });
+  }
+
+  stopRealTimeUpdates() {
+    // หยุดการฟังทั้งหมดเมื่อไม่ต้องการ
+    this.listeners.forEach(({ pointName, listener }) => {
+      off(dbRef, "value", listener);
+      console.log(`Stopped listening for point: ${pointName}`);
     });
+    this.listeners = [];
   }
 
   updatePointData(pointName, data) {
@@ -198,26 +274,56 @@ export class PointManager {
 
   editPoint(selectedPointName, newPointName, mapIndex) {
     if (
-      this.canvasUtils.checkCondition.NotEqual(selectedPointName, "Please select a point to edit.") ||
-      this.canvasUtils.checkCondition.NotEqual(newPointName, "Please enter a new name for the point.")
-    ) return;
+      this.canvasUtils.checkCondition.NotEqual(
+        selectedPointName,
+        "Please select a point to edit."
+      ) ||
+      this.canvasUtils.checkCondition.NotEqual(
+        newPointName,
+        "Please enter a new name for the point."
+      )
+    )
+      return;
 
     if (!this.validatePoint(newPointName)) {
-      this.canvasUtils.alert("Error", "The new point name already exists.", "error");
+      this.canvasUtils.alert(
+        "Error",
+        "The new point name already exists.",
+        "error"
+      );
       return;
     }
 
-    const point = this.pointsPerMap[mapIndex].find((p) => p.name === selectedPointName);
+    const point = this.pointsPerMap[mapIndex].find(
+      (p) => p.name === selectedPointName
+    );
     if (point) {
+      // หยุดการฟังข้อมูลเก่าสำหรับชื่อเดิม
+      const listenerIndex = this.listeners.findIndex(
+        (l) => l.pointName === selectedPointName
+      );
+      if (listenerIndex !== -1) {
+        off(dbRef, "value", this.listeners[listenerIndex].listener);
+        this.listeners.splice(listenerIndex, 1);
+      }
+
       point.name = newPointName;
+      // เริ่มฟังข้อมูลใหม่สำหรับชื่อใหม่
+      this.startRealTimeUpdate(point, mapIndex);
     }
 
     if (this.markerCoordinatesPerMap[mapIndex]) {
-      const marker = this.markerCoordinatesPerMap[mapIndex].find((m) => m.name === selectedPointName);
+      const marker = this.markerCoordinatesPerMap[mapIndex].find(
+        (m) => m.name === selectedPointName
+      );
       if (marker) marker.name = newPointName;
     }
 
     this.updatePointSelects();
-    this.canvasUtils.alert("Success", `Point name changed to: ${newPointName}`, "success");
+    this.canvasUtils.alert(
+      "Success",
+      `Point name changed to: ${newPointName}`,
+      "success"
+    );
   }
 }

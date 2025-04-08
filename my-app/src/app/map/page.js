@@ -23,7 +23,9 @@ export default function Map() {
       canvasUtils,
       pointManager,
       mapManager
-    ); // ส่ง mapManager
+    );
+
+    pointManager.trilaterationUtils = trilaterationUtils;
 
     canvasUtils.initializeCanvas();
 
@@ -67,18 +69,20 @@ export default function Map() {
         .addEventListener("change", async (event) => {
           const selectedIndex = event.target.value;
           if (selectedIndex) {
+            pointManager.stopRealTimeUpdates();
+
             canvasUtils.img.src = mapManager.maps[selectedIndex].src;
             pointManager.points =
               pointManager.pointsPerMap[selectedIndex] || [];
             pointManager.markerCoordinates =
               pointManager.markerCoordinatesPerMap[selectedIndex] || [];
 
+            console.log(
+              `Loaded points for map ${selectedIndex}:`,
+              pointManager.points
+            ); // ดีบัก
+
             try {
-              await Promise.all(
-                pointManager.points.map((point) =>
-                  pointManager.checkAndDisplayPointData(point)
-                )
-              );
               trilaterationUtils.refreshMap(selectedIndex);
               trilaterationUtils.startRealTimeUpdate();
             } catch (error) {
@@ -89,6 +93,8 @@ export default function Map() {
                 "error"
               );
             }
+          } else {
+            pointManager.stopRealTimeUpdates();
           }
         });
 
@@ -104,6 +110,7 @@ export default function Map() {
                   document.getElementById("map-select").value = index;
                   canvasUtils.img.src = e.target.result;
                   trilaterationUtils.refreshMap(index);
+                  trilaterationUtils.startRealTimeUpdate();
                 }
               });
             };
@@ -119,6 +126,7 @@ export default function Map() {
               document.getElementById("map-select").value = index;
               canvasUtils.img.src = mapSrc;
               trilaterationUtils.refreshMap(index);
+              trilaterationUtils.startRealTimeUpdate();
             }
           });
         });
@@ -136,6 +144,11 @@ export default function Map() {
           return;
         }
         mapManager.deleteMap(selectedIndex, canvasUtils);
+        pointManager.stopRealTimeUpdates();
+        // ลบจุดที่เกี่ยวข้องกับแผนที่ที่ถูกลบ
+        delete pointManager.pointsPerMap[selectedIndex];
+        delete pointManager.markerCoordinatesPerMap[selectedIndex];
+        pointManager.savePointsToStorage();
         trilaterationUtils.refreshMap(mapSelect.value);
       });
 
@@ -150,10 +163,12 @@ export default function Map() {
           return;
         }
         canvasUtils.resetCanvas();
+        pointManager.stopRealTimeUpdates();
         pointManager.points = [];
         pointManager.markerCoordinates = [];
         pointManager.pointsPerMap[selectedIndex] = [];
         pointManager.markerCoordinatesPerMap[selectedIndex] = [];
+        pointManager.savePointsToStorage();
         trilaterationUtils.refreshMap(selectedIndex);
       });
 
@@ -225,11 +240,6 @@ export default function Map() {
         document.getElementById("pointName").value = "";
 
         try {
-          await Promise.all(
-            pointManager.points.map((point) =>
-              pointManager.checkAndDisplayPointData(point)
-            )
-          );
           trilaterationUtils.refreshMap(selectedIndex);
         } catch (error) {
           console.error("Error refreshing map after adding point:", error);
@@ -279,18 +289,55 @@ export default function Map() {
             return;
           }
           canvasUtils.showCircles = !event.target.checked;
+          if (!canvasUtils.showCircles) {
+            mapManager.alert(
+              "Info",
+              "Circles are hidden. Real-time updates will not display new circles until you unhide them.",
+              "info"
+            );
+          }
           trilaterationUtils.refreshMap(selectedIndex);
         });
 
-      document.addEventListener("DOMContentLoaded", () =>
-        trilaterationUtils.startRealTimeUpdate()
-      );
+      document.addEventListener("DOMContentLoaded", () => {
+        trilaterationUtils.startRealTimeUpdate();
+      });
     };
 
     setupListeners();
 
     return () => {
-      // Cleanup event listeners if needed
+      pointManager.stopRealTimeUpdates();
+      document
+        .getElementById("updateMapName")
+        .removeEventListener("click", () => {});
+      document
+        .getElementById("map-select")
+        .removeEventListener("change", () => {});
+      document
+        .getElementById("map-upload")
+        .removeEventListener("change", () => {});
+      document
+        .getElementById("delete-map")
+        .removeEventListener("click", () => {});
+      document
+        .getElementById("resetPoints")
+        .removeEventListener("click", () => {});
+      document
+        .getElementById("ShowDistance")
+        .removeEventListener("click", () => {});
+      document
+        .getElementById("DeletePoint")
+        .removeEventListener("click", () => {});
+      document
+        .getElementById("editPoint")
+        .removeEventListener("click", () => {});
+      canvas.removeEventListener("click", () => {});
+      canvas.removeEventListener("mousemove", () => {});
+      document
+        .getElementById("showCircleCheckbox")
+        .removeEventListener("change", () => {});
+      document.removeEventListener("DOMContentLoaded", () => {});
     };
   }, []);
 
