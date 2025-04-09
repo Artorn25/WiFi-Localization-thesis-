@@ -31,7 +31,7 @@ export default function Dashboard() {
     distanceChart = new Chart(document.getElementById("distanceChart"), {
       type: "bar",
       data: {
-        labels: ["Log Model", "ITU Model", "FSPL Model"],
+        labels: ["Log Model"],
         datasets: [
           {
             label: "Router 1",
