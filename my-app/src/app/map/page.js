@@ -351,70 +351,80 @@ export default function Map() {
             width="900px"
             height="400px"
           ></canvas>
+  
           <div id="map-controls">
-            <form action="">
-              <input
-                type="checkbox"
-                id="showCircleCheckbox"
-                name="showCircle"
-                value="show"
-              />
-              <label htmlFor="showCircleCheckbox">Hide circle area</label>
-              <br />
+            <form>
+              <label>
+                <input
+                  type="checkbox"
+                  id="showCircleCheckbox"
+                  name="showCircle"
+                  value="show"
+                />
+                Hide circle area
+              </label>
             </form>
+
             <div className="controls-group">
-              <label htmlFor="mapName">Map Name:</label>
-              <select id="map-select">
-                <option value="">Select Map</option>
-              </select>
-              <input type="text" id="mapName" placeholder="Enter map name" />
-              <button id="updateMapName">Update Map Name</button>
-              <button id="delete-map">🗑️ Delete Map</button>
-              <div className="upload-btn-wrapper">
-                <button className="btn-upload">
-                  📤 Upload Map
-                  <input type="file" id="map-upload" accept="image/*" />
-                </button>
-              </div>
+            <label htmlFor="map-select">Map Name:</label>
+            <select id="map-select">
+              <option value="">Select Map</option>
+            </select>
+
+            <input type="text" id="mapName" placeholder="Enter map name" />
+            <button id="updateMapName" type="button">Update Map Name</button>
+            <button id="delete-map" type="button">🗑️ Delete Map</button>
+
+            <label htmlFor="map-upload" className="btn-upload">
+              📤 Upload Map
+              <input type="file" id="map-upload" accept="image/*" hidden />
+            </label>
+
+               <input
+              type="text"
+              id="pointName"
+              placeholder="Enter point name"
+            />
+            <button id="resetPoints" type="button">🔄 Reset</button>
+
+            <select id="pointSelect"></select>
+            <button id="DeletePoint" type="button">🗑️ Delete Point</button>
+
+            <select id="point1Select"></select>
+            <select id="point2Select"></select>
+            <button id="ShowDistance" type="button">📏 Show Distance</button>
+
+            <select id="editPointSelect"></select>
+
               <input
-                type="text"
-                id="pointName"
-                placeholder="Enter point name"
-              />
-              <button id="resetPoints">🔄 Reset</button>
-            </div>
-            <div className="controls-group">
-              <select id="pointSelect"></select>
-              <button id="DeletePoint">🗑️ Delete Point</button>
-              <select id="point1Select"></select>
-              <select id="point2Select"></select>
-              <button id="ShowDistance">📏 Show Distance</button>
-              <select id="editPointSelect"></select>
-              <input
-                type="text"
-                id="newPointName"
-                placeholder="Enter new point name"
-              />
-              <button id="editPoint">✏️ Update Point Name</button>
-            </div>
+              type="text"
+              id="newPointName"
+              placeholder="Enter new point name"
+            />
+            <button id="editPoint" type="button">✏️ Update Point Name</button>
           </div>
+
           <div id="distanceDisplay"></div>
         </div>
       </div>
+    </div>
+
       <div
-        id="tooltip"
-        style={{
-          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-          padding: "0.8rem",
-          borderRadius: "6px",
-          fontSize: "0.9rem",
-          position: "absolute",
-          display: "none",
-          backgroundColor: "white",
-          border: "1px solid black",
-          pointerEvents: "none",
-        }}
-      ></div>
+      id="tooltip"
+      style={{
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+        padding: "0.8rem",
+        borderRadius: "6px",
+        fontSize: "0.9rem",
+        position: "absolute",
+        display: "none",
+        backgroundColor: "white",
+        border: "1px solid black",
+        pointerEvents: "none",
+      }}
+    ></div>
+
+
       <div id="map-sample-container" className="container">
         <h3>Example Maps</h3>
         <div className="map-samples">
@@ -436,7 +446,6 @@ export default function Map() {
           />
         </div>
       </div>
-      
     </>
   );
 }
