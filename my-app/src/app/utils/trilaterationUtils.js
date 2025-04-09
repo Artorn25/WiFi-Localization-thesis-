@@ -49,8 +49,6 @@ export class TrilaterationUtils {
     this.pointManager.points = this.pointManager.pointsPerMap[selectedIndex] || [];
     this.pointManager.markerCoordinates = this.pointManager.markerCoordinatesPerMap[selectedIndex] || [];
 
-    console.log(`Refreshing map ${selectedIndex} with points:`, this.pointManager.points);
-
     this.pointManager.points.forEach((point) => {
       this.canvasUtils.drawPoint(point.x, point.y, point.name, point.color);
       if (point.data && Array.isArray(point.data)) {

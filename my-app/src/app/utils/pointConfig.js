@@ -1,24 +1,17 @@
 import { dbRef, dbfs } from "./firebaseConfig";
 import { onValue, off } from "firebase/database";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  query,
-  where,
-  serverTimestamp,
-} from "firebase/firestore";
+import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export class PointManager {
   constructor(canvasUtils, trilaterationUtils) {
     this.canvasUtils = canvasUtils;
-    this.trilaterationUtils = trilaterationUtils; // เพิ่ม trilaterationUtils เพื่อเรียก refreshMap
+    this.trilaterationUtils = trilaterationUtils;
     this.pointsPerMap = [];
     this.markerCoordinatesPerMap = {};
     this.points = [];
     this.markerCoordinates = [];
     this.drawMode = true;
-    this.listeners = []; // เก็บ listener เพื่อ cleanup
+    this.listeners = [];
   }
 
   validatePoint(pointName) {
@@ -72,36 +65,63 @@ export class PointManager {
     };
     this.pointsPerMap[selectedIndex].push(newPoint);
     this.points = this.pointsPerMap[selectedIndex];
-    this.startRealTimeUpdate(newPoint, selectedIndex); // เริ่มฟังข้อมูลแบบ real-time
+    this.startRealTimeUpdate(newPoint, selectedIndex);
     this.updatePointSelects();
   }
 
   async savePointToFirestore(x, y, name, color) {
     try {
       const pointsRef = collection(dbfs, "points");
-      const q = query(
-        pointsRef,
-        where("ssid", "==", name),
-        where("mapIndex", "==", document.getElementById("map-select").value)
-      );
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        await addDoc(pointsRef, {
-          coordinates: { x, y },
-          createdAt: serverTimestamp(),
-          details: {
-            color,
-            scaleX: this.canvasUtils.scaleX,
-            scaleY: this.canvasUtils.scaleY,
-          },
-          mapIndex: document.getElementById("map-select").value,
-          ssid: name,
-          updatedAt: serverTimestamp(),
-        });
-      }
+      await setDoc(doc(pointsRef, name), {
+        coordinates: { x, y },
+        createdAt: serverTimestamp(),
+        details: {
+          color,
+          scaleX: this.canvasUtils.scaleX,
+          scaleY: this.canvasUtils.scaleY,
+        },
+        mapIndex: document.getElementById("map-select").value,
+        ssid: name,
+        updatedAt: serverTimestamp(),
+      });
     } catch (error) {
       console.error("Error saving point to Firestore: ", error);
+      throw error;
+    }
+  }
+
+  async saveMapDataToFirestore(mapData) {
+    try {
+      // ตรวจสอบว่า mapData และ mapIndex มีค่าหรือไม่
+      if (!mapData || !mapData.mapIndex) {
+        throw new Error("Map index is missing or invalid.");
+      }
+
+      const mapsRef = collection(dbfs, "maps");
+      const mapDocRef = doc(mapsRef, mapData.mapIndex.toString()); // แปลง mapIndex เป็น string เสมอ
+
+      await setDoc(
+        mapDocRef,
+        {
+          mapIndex: mapData.mapIndex,
+          mapName: mapData.mapName,
+          mapSrc: mapData.mapSrc,
+          points: mapData.points,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      console.log("Map data saved to Firestore:", mapData);
+      this.canvasUtils.alert(
+        "Success",
+        `Map ${mapData.mapName} saved to Firestore with ${mapData.points.length} points.`,
+        "success"
+      );
+    } catch (error) {
+      console.error("Error saving map data to Firestore: ", error);
+      throw error;
     }
   }
 
@@ -144,6 +164,14 @@ export class PointManager {
         "question"
       );
       return;
+    }
+
+    const listenerIndex = this.listeners.findIndex(
+      (l) => l.pointName === selectedPointName
+    );
+    if (listenerIndex !== -1) {
+      off(dbRef, "value", this.listeners[listenerIndex].listener);
+      this.listeners.splice(listenerIndex, 1);
     }
 
     this.pointsPerMap[mapIndex] = this.pointsPerMap[mapIndex].filter(
@@ -215,27 +243,39 @@ export class PointManager {
           console.log(`Real-time data for SSID ${routerSSID}:`, allData);
 
           if (allData.length) {
-            point.data = allData; // แทนที่ข้อมูลเก่าด้วยข้อมูลใหม่
+            point.data = allData;
             this.updatePointData(point.name, allData);
-            // รีเฟรชการวาดวงกลมทันที
-            this.trilaterationUtils.refreshMap(selectedIndex);
           } else {
             this.canvasUtils.alert(
               "Warning",
-              `No data found in Firebase for SSID: ${routerSSID}`,
+              `No data found in Firebase for SSID: ${routerSSID}. Circles removed.`,
               "warning"
             );
-            point.data = []; // ล้างข้อมูลเก่าถ้าไม่มีข้อมูลใหม่
-            this.trilaterationUtils.refreshMap(selectedIndex);
+            point.data = [];
+          }
+
+          const currentSelectedIndex =
+            document.getElementById("map-select").value;
+          if (currentSelectedIndex && currentSelectedIndex === selectedIndex) {
+            this.trilaterationUtils.refreshMap(currentSelectedIndex);
+          } else {
+            console.log(
+              `Skipping refreshMap: Map index mismatch (expected ${selectedIndex}, got ${currentSelectedIndex})`
+            );
           }
         } else {
           this.canvasUtils.alert(
             "Error",
-            "No data available in Firebase",
+            "No data available in Firebase. Circles removed.",
             "error"
           );
           point.data = [];
-          this.trilaterationUtils.refreshMap(selectedIndex);
+
+          const currentSelectedIndex =
+            document.getElementById("map-select").value;
+          if (currentSelectedIndex && currentSelectedIndex === selectedIndex) {
+            this.trilaterationUtils.refreshMap(currentSelectedIndex);
+          }
         }
       },
       (error) => {
@@ -248,12 +288,10 @@ export class PointManager {
       }
     );
 
-    // เก็บ listener เพื่อ cleanup
     this.listeners.push({ pointName: point.name, listener });
   }
 
   stopRealTimeUpdates() {
-    // หยุดการฟังทั้งหมดเมื่อไม่ต้องการ
     this.listeners.forEach(({ pointName, listener }) => {
       off(dbRef, "value", listener);
       console.log(`Stopped listening for point: ${pointName}`);
@@ -298,7 +336,6 @@ export class PointManager {
       (p) => p.name === selectedPointName
     );
     if (point) {
-      // หยุดการฟังข้อมูลเก่าสำหรับชื่อเดิม
       const listenerIndex = this.listeners.findIndex(
         (l) => l.pointName === selectedPointName
       );
@@ -308,7 +345,6 @@ export class PointManager {
       }
 
       point.name = newPointName;
-      // เริ่มฟังข้อมูลใหม่สำหรับชื่อใหม่
       this.startRealTimeUpdate(point, mapIndex);
     }
 

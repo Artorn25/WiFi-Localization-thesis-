@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import NextImage from "next/image";
 import {
   CanvasUtils,
@@ -11,6 +11,7 @@ import "@styles/map.css";
 
 export default function Map() {
   const canvasRef = useRef(null);
+  const [selectedMapData, setSelectedMapData] = useState(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -62,26 +63,59 @@ export default function Map() {
         );
         mapSelect.value = selectedIndex;
         document.getElementById("mapName").value = "";
+
+        const mapData = {
+          mapIndex: selectedIndex,
+          mapName: newMapName,
+          mapSrc: mapManager.maps[selectedIndex].src,
+          points:
+            pointManager.pointsPerMap[selectedIndex]?.map((point) => ({
+              name: point.name,
+              x: point.x,
+              y: point.y,
+            })) || [],
+        };
+        setSelectedMapData(mapData);
+        console.log("Map name updated, maps:", mapManager.maps); // ดีบัก
       });
 
       document
         .getElementById("map-select")
         .addEventListener("change", async (event) => {
           const selectedIndex = event.target.value;
+          console.log(
+            "Map selected, selectedIndex:",
+            selectedIndex,
+            "maps:",
+            mapManager.maps
+          ); // ดีบัก
           if (selectedIndex) {
+            if (!mapManager.maps[selectedIndex]) {
+              mapManager.alert(
+                "Error",
+                "Selected map is not available. Please select another map.",
+                "error"
+              );
+              return;
+            }
             pointManager.stopRealTimeUpdates();
-
             canvasUtils.img.src = mapManager.maps[selectedIndex].src;
             pointManager.points =
               pointManager.pointsPerMap[selectedIndex] || [];
             pointManager.markerCoordinates =
               pointManager.markerCoordinatesPerMap[selectedIndex] || [];
-
-            console.log(
-              `Loaded points for map ${selectedIndex}:`,
-              pointManager.points
-            ); // ดีบัก
-
+            const mapData = {
+              mapIndex: selectedIndex,
+              mapName: mapManager.maps[selectedIndex].name,
+              mapSrc: mapManager.maps[selectedIndex].src,
+              points:
+                pointManager.pointsPerMap[selectedIndex]?.map((point) => ({
+                  name: point.name,
+                  x: point.x,
+                  y: point.y,
+                })) || [],
+            };
+            setSelectedMapData(mapData);
             try {
               trilaterationUtils.refreshMap(selectedIndex);
               trilaterationUtils.startRealTimeUpdate();
@@ -95,6 +129,8 @@ export default function Map() {
             }
           } else {
             pointManager.stopRealTimeUpdates();
+            setSelectedMapData(null);
+            canvasUtils.resetCanvas(); // รีเซ็ต canvas เมื่อไม่ได้เลือกแผนที่
           }
         });
 
@@ -105,14 +141,48 @@ export default function Map() {
           if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-              mapManager.editMapName(e.target.result).then((index) => {
-                if (index !== null) {
-                  document.getElementById("map-select").value = index;
-                  canvasUtils.img.src = e.target.result;
-                  trilaterationUtils.refreshMap(index);
-                  trilaterationUtils.startRealTimeUpdate();
-                }
-              });
+              mapManager
+                .editMapName(e.target.result)
+                .then((index) => {
+                  console.log(
+                    "Map uploaded, index:",
+                    index,
+                    "maps:",
+                    mapManager.maps
+                  ); // ดีบัก
+                  if (index !== null) {
+                    document.getElementById("map-select").value = index;
+                    canvasUtils.img.src = e.target.result;
+                    trilaterationUtils.refreshMap(index);
+                    trilaterationUtils.startRealTimeUpdate();
+                    const mapData = {
+                      mapIndex: index,
+                      mapName: mapManager.maps[index].name,
+                      mapSrc: e.target.result,
+                      points:
+                        pointManager.pointsPerMap[index]?.map((point) => ({
+                          name: point.name,
+                          x: point.x,
+                          y: point.y,
+                        })) || [],
+                    };
+                    setSelectedMapData(mapData);
+                  } else {
+                    mapManager.alert(
+                      "Warning",
+                      "Map upload cancelled. Please upload a map to continue.",
+                      "warning"
+                    );
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error uploading map:", error);
+                  mapManager.alert(
+                    "Error",
+                    "Failed to upload map. Please try again.",
+                    "error"
+                  );
+                });
             };
             reader.readAsDataURL(file);
           }
@@ -121,14 +191,48 @@ export default function Map() {
       document.querySelectorAll(".map-sample").forEach((img) => {
         img.addEventListener("click", () => {
           const mapSrc = img.getAttribute("data-map-src");
-          mapManager.editMapName(mapSrc).then((index) => {
-            if (index !== null) {
-              document.getElementById("map-select").value = index;
-              canvasUtils.img.src = mapSrc;
-              trilaterationUtils.refreshMap(index);
-              trilaterationUtils.startRealTimeUpdate();
-            }
-          });
+          mapManager
+            .editMapName(mapSrc)
+            .then((index) => {
+              console.log(
+                "Sample map selected, index:",
+                index,
+                "maps:",
+                mapManager.maps
+              ); // ดีบัก
+              if (index !== null) {
+                document.getElementById("map-select").value = index;
+                canvasUtils.img.src = mapSrc;
+                trilaterationUtils.refreshMap(index);
+                trilaterationUtils.startRealTimeUpdate();
+                const mapData = {
+                  mapIndex: index,
+                  mapName: mapManager.maps[index].name,
+                  mapSrc: mapSrc,
+                  points:
+                    pointManager.pointsPerMap[index]?.map((point) => ({
+                      name: point.name,
+                      x: point.x,
+                      y: point.y,
+                    })) || [],
+                };
+                setSelectedMapData(mapData);
+              } else {
+                mapManager.alert(
+                  "Warning",
+                  "Map selection cancelled. Please select a map to continue.",
+                  "warning"
+                );
+              }
+            })
+            .catch((error) => {
+              console.error("Error selecting sample map:", error);
+              mapManager.alert(
+                "Error",
+                "Failed to select sample map. Please try again.",
+                "error"
+              );
+            });
         });
       });
 
@@ -145,11 +249,9 @@ export default function Map() {
         }
         mapManager.deleteMap(selectedIndex, canvasUtils);
         pointManager.stopRealTimeUpdates();
-        // ลบจุดที่เกี่ยวข้องกับแผนที่ที่ถูกลบ
-        delete pointManager.pointsPerMap[selectedIndex];
-        delete pointManager.markerCoordinatesPerMap[selectedIndex];
-        pointManager.savePointsToStorage();
         trilaterationUtils.refreshMap(mapSelect.value);
+        setSelectedMapData(null);
+        console.log("Map deleted, maps:", mapManager.maps); // ดีบัก
       });
 
       document.getElementById("resetPoints").addEventListener("click", () => {
@@ -168,8 +270,16 @@ export default function Map() {
         pointManager.markerCoordinates = [];
         pointManager.pointsPerMap[selectedIndex] = [];
         pointManager.markerCoordinatesPerMap[selectedIndex] = [];
-        pointManager.savePointsToStorage();
         trilaterationUtils.refreshMap(selectedIndex);
+
+        const mapData = {
+          mapIndex: selectedIndex,
+          mapName: mapManager.maps[selectedIndex].name,
+          mapSrc: mapManager.maps[selectedIndex].src,
+          points: [],
+        };
+        setSelectedMapData(mapData);
+        console.log("Points reset, maps:", mapManager.maps); // ดีบัก
       });
 
       document.getElementById("ShowDistance").addEventListener("click", () => {
@@ -191,6 +301,19 @@ export default function Map() {
         }
         pointManager.deletePoint(selectedPointName, mapIndex);
         trilaterationUtils.refreshMap(mapIndex);
+
+        const mapData = {
+          mapIndex: mapIndex,
+          mapName: mapManager.maps[mapIndex].name,
+          mapSrc: mapManager.maps[mapIndex].src,
+          points:
+            pointManager.pointsPerMap[mapIndex]?.map((point) => ({
+              name: point.name,
+              x: point.x,
+              y: point.y,
+            })) || [],
+        };
+        setSelectedMapData(mapData);
       });
 
       document.getElementById("editPoint").addEventListener("click", () => {
@@ -209,10 +332,24 @@ export default function Map() {
         pointManager.editPoint(selectedPointName, newPointName, mapIndex);
         trilaterationUtils.refreshMap(mapIndex);
         document.getElementById("newPointName").value = "";
+
+        const mapData = {
+          mapIndex: mapIndex,
+          mapName: mapManager.maps[mapIndex].name,
+          mapSrc: mapManager.maps[mapIndex].src,
+          points:
+            pointManager.pointsPerMap[mapIndex]?.map((point) => ({
+              name: point.name,
+              x: point.x,
+              y: point.y,
+            })) || [],
+        };
+        setSelectedMapData(mapData);
       });
 
       canvas.addEventListener("click", async (event) => {
         const pointName = document.getElementById("pointName").value;
+        console.log("Canvas clicked, maps:", mapManager.maps); // ดีบัก
         if (mapManager.maps.length === 0) {
           mapManager.alert(
             "Info",
@@ -226,10 +363,11 @@ export default function Map() {
         const pixelY = event.clientY - rect.top;
         const { x, y } = canvasUtils.toCartesian(pixelX, pixelY);
         const selectedIndex = document.getElementById("map-select").value;
-        if (!selectedIndex) {
+        console.log("Selected index:", selectedIndex); // ดีบัก
+        if (!selectedIndex || !mapManager.maps[selectedIndex]) {
           mapManager.alert(
             "Warning",
-            "Please select a map before adding a point.",
+            "Please select a valid map before adding a point.",
             "warning"
           );
           return;
@@ -241,6 +379,18 @@ export default function Map() {
 
         try {
           trilaterationUtils.refreshMap(selectedIndex);
+          const mapData = {
+            mapIndex: selectedIndex,
+            mapName: mapManager.maps[selectedIndex].name,
+            mapSrc: mapManager.maps[selectedIndex].src,
+            points:
+              pointManager.pointsPerMap[selectedIndex]?.map((point) => ({
+                name: point.name,
+                x: point.x,
+                y: point.y,
+              })) || [],
+          };
+          setSelectedMapData(mapData);
         } catch (error) {
           console.error("Error refreshing map after adding point:", error);
           mapManager.alert(
@@ -299,6 +449,40 @@ export default function Map() {
           trilaterationUtils.refreshMap(selectedIndex);
         });
 
+      document
+        .getElementById("confirmSave")
+        .addEventListener("click", async () => {
+          if (!selectedMapData) {
+            mapManager.alert(
+              "Warning",
+              "Please select a map and add points before saving.",
+              "warning"
+            );
+            return;
+          }
+
+          if (!selectedMapData.mapIndex) {
+            mapManager.alert(
+              "Error",
+              "Map index is missing. Please select a map again.",
+              "error"
+            );
+            return;
+          }
+
+          try {
+            await pointManager.saveMapDataToFirestore(selectedMapData);
+          } catch (error) {
+            console.error("Error saving map data to Firestore:", error);
+            mapManager.alert(
+              "Error",
+              error.message ||
+                "Failed to save map data to Firestore. Please try again.",
+              "error"
+            );
+          }
+        });
+
       document.addEventListener("DOMContentLoaded", () => {
         trilaterationUtils.startRealTimeUpdate();
       });
@@ -332,6 +516,9 @@ export default function Map() {
       document
         .getElementById("editPoint")
         .removeEventListener("click", () => {});
+      document
+        .getElementById("confirmSave")
+        .removeEventListener("click", () => {});
       canvas.removeEventListener("click", () => {});
       canvas.removeEventListener("mousemove", () => {});
       document
@@ -339,7 +526,7 @@ export default function Map() {
         .removeEventListener("change", () => {});
       document.removeEventListener("DOMContentLoaded", () => {});
     };
-  }, []);
+  }, [selectedMapData]);
 
   return (
     <>
@@ -351,80 +538,72 @@ export default function Map() {
             width="900px"
             height="400px"
           ></canvas>
-  
           <div id="map-controls">
-            <form>
-              <label>
-                <input
-                  type="checkbox"
-                  id="showCircleCheckbox"
-                  name="showCircle"
-                  value="show"
-                />
-                Hide circle area
-              </label>
-            </form>
-
-            <div className="controls-group">
-            <label htmlFor="map-select">Map Name:</label>
-            <select id="map-select">
-              <option value="">Select Map</option>
-            </select>
-
-            <input type="text" id="mapName" placeholder="Enter map name" />
-            <button id="updateMapName" type="button">Update Map Name</button>
-            <button id="delete-map" type="button">🗑️ Delete Map</button>
-
-            <label htmlFor="map-upload" className="btn-upload">
-              📤 Upload Map
-              <input type="file" id="map-upload" accept="image/*" hidden />
-            </label>
-
-               <input
-              type="text"
-              id="pointName"
-              placeholder="Enter point name"
-            />
-            <button id="resetPoints" type="button">🔄 Reset</button>
-
-            <select id="pointSelect"></select>
-            <button id="DeletePoint" type="button">🗑️ Delete Point</button>
-
-            <select id="point1Select"></select>
-            <select id="point2Select"></select>
-            <button id="ShowDistance" type="button">📏 Show Distance</button>
-
-            <select id="editPointSelect"></select>
-
+            <form action="">
               <input
-              type="text"
-              id="newPointName"
-              placeholder="Enter new point name"
-            />
-            <button id="editPoint" type="button">✏️ Update Point Name</button>
+                type="checkbox"
+                id="showCircleCheckbox"
+                name="showCircle"
+                value="show"
+              />
+              <label htmlFor="showCircleCheckbox">Hide circle area</label>
+              <br />
+            </form>
+            <div className="controls-group">
+              <label htmlFor="mapName">Map Name:</label>
+              <select id="map-select">
+                <option value="">Select Map</option>
+              </select>
+              <input type="text" id="mapName" placeholder="Enter map name" />
+              <button id="updateMapName">Update Map Name</button>
+              <button id="delete-map">🗑️ Delete Map</button>
+              <div className="upload-btn-wrapper">
+                <button className="btn-upload">
+                  📤 Upload Map
+                  <input type="file" id="map-upload" accept="image/*" />
+                </button>
+              </div>
+              <input
+                type="text"
+                id="pointName"
+                placeholder="Enter point name"
+              />
+              <button id="resetPoints">🔄 Reset</button>
+              {/* เพิ่มปุ่ม Confirm */}
+              <button id="confirmSave">💾 Confirm Save to Firestore</button>
+            </div>
+            <div className="controls-group">
+              <select id="pointSelect"></select>
+              <button id="DeletePoint">🗑️ Delete Point</button>
+              <select id="point1Select"></select>
+              <select id="point2Select"></select>
+              <button id="ShowDistance">📏 Show Distance</button>
+              <select id="editPointSelect"></select>
+              <input
+                type="text"
+                id="newPointName"
+                placeholder="Enter new point name"
+              />
+              <button id="editPoint">✏️ Update Point Name</button>
+            </div>
           </div>
-
           <div id="distanceDisplay"></div>
         </div>
       </div>
-    </div>
-
       <div
-      id="tooltip"
-      style={{
-        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-        padding: "0.8rem",
-        borderRadius: "6px",
-        fontSize: "0.9rem",
-        position: "absolute",
-        display: "none",
-        backgroundColor: "white",
-        border: "1px solid black",
-        pointerEvents: "none",
-      }}
-    ></div>
-
-
+        id="tooltip"
+        style={{
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+          padding: "0.8rem",
+          borderRadius: "6px",
+          fontSize: "0.9rem",
+          position: "absolute",
+          display: "none",
+          backgroundColor: "white",
+          border: "1px solid black",
+          pointerEvents: "none",
+        }}
+      ></div>
       <div id="map-sample-container" className="container">
         <h3>Example Maps</h3>
         <div className="map-samples">

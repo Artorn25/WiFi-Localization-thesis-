@@ -16,9 +16,9 @@ export default function Header() {
           <li>
             <Link href="/wifi">Free Wifi</Link>
           </li>
-          <li>
+          {/* <li>
             <Link href="/wifi-router">Wifi Router</Link>
-          </li>
+          </li> */}
           <li>
             <Link href="/dashboard">Dashboard</Link>
           </li>

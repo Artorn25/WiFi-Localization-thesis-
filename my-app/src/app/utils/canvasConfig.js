@@ -1,3 +1,5 @@
+import Swal from "sweetalert2";
+
 const FIXED_CANVAS_WIDTH = 1000;
 const FIXED_CANVAS_HEIGHT = 400;
 const CENTER_X = FIXED_CANVAS_WIDTH / 2;
@@ -163,5 +165,14 @@ export class CanvasUtils {
       color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
+  }
+
+  alert(title, text, icon) {
+    Swal.fire({
+      title,
+      text,
+      icon,
+      confirmButtonText: "OK",
+    });
   }
 }
