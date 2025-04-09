@@ -898,6 +898,7 @@ document.getElementById("editPoint").addEventListener("click", async () => {
     console.error(`Point with name "${selectedPointName}" not found.`);
     return;
   }
+  // ...
 
   // แก้ไขชื่อจุดใน markerCoordinatesPerMap (ถ้ามี)
   if (markerCoordinatesPerMap[mapIndex]) {
