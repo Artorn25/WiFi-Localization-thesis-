@@ -1,3 +1,13 @@
+/* :root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --accent-color: #e74c3c;
+  --background-color: #f7f9fc;
+  --card-background: #ffffff;
+  --text-color: #2c3e50;
+  --border-color: #e0e6ed;
+} */
+
 body {
   margin: 0;
   padding: 0;
@@ -70,8 +80,8 @@ canvas {
   /* border-radius: 8px; */
   display: block;
   margin: auto;
-  width: 900px;
-  height: 400px;
+  /* width: 1000px;
+  height: 350px; */
 }
 
 #map-controls {
@@ -107,7 +117,7 @@ button,
   display: inline-block;
 }
 
-.upload-btn-wrapper input[type=file] {
+.upload-btn-wrapper input[type="file"] {
   position: absolute;
   left: 0;
   top: 0;
@@ -152,25 +162,28 @@ input[type="text"]:focus {
   outline: none;
 }
 
-#editPoint, #updateMapName {
+#editPoint,
+#updateMapName {
   background-color: yellow;
   color: black;
 }
 
-#delete-map, #DeletePoint {
+#delete-map,
+#DeletePoint {
   background-color: var(--accent-color);
 }
 
-#ShowDistance, #logPoints {
+#ShowDistance,
+#logPoints {
   background-color: var(--secondary-color);
 }
 
-#modeIndicator, #distanceDisplay {
+#modeIndicator,
+#distanceDisplay {
   text-align: center;
   margin-top: 1rem;
   font-size: 1.2rem;
 }
-
 
 #map-sample-container {
   margin-top: 2rem;
@@ -182,17 +195,17 @@ input[type="text"]:focus {
 
 .map-samples {
   display: flex;
-  flex-wrap: wrap; 
-  gap: 1rem; 
-  justify-content: center; 
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
 }
 
 .map-sample {
   border-radius: 8px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 400px; 
-  height: 200px; 
+  width: 400px;
+  height: 200px;
   margin: 1rem;
 }
 

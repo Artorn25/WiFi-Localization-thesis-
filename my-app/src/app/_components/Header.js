@@ -22,9 +22,9 @@ export default function Header() {
           <li>
             <Link href="/dashboard">Dashboard</Link>
           </li>
-          <li>
+          {/* <li>
             <Link href="/setting">Setting</Link>
-          </li>
+          </li> */}
           <li>
             <Link href="/feedback">Feedback</Link>
           </li>
