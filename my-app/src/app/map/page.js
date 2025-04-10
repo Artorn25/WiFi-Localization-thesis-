@@ -51,6 +51,21 @@ export default function Map() {
           );
           return;
         }
+
+        if (
+          mapManager.maps.some(
+            (map, idx) =>
+              idx !== parseInt(selectedIndex) && map.name === newMapName
+          )
+        ) {
+          mapManager.alert(
+            "Error",
+            "Map name already exists. Please choose a different name.",
+            "error"
+          );
+          return;
+        }
+
         mapManager.maps[selectedIndex] = {
           ...mapManager.maps[selectedIndex],
           name: newMapName,
@@ -75,8 +90,9 @@ export default function Map() {
               y: point.y,
             })) || [],
         };
+        console.log("updateMapName - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
-        console.log("Map name updated, maps:", mapManager.maps); // ดีบัก
+        console.log("Map name updated, maps:", mapManager.maps);
       });
 
       document
@@ -88,7 +104,20 @@ export default function Map() {
             selectedIndex,
             "maps:",
             mapManager.maps
-          ); // ดีบัก
+          );
+          if (mapManager.maps.length === 0) {
+            mapManager.alert(
+              "Warning",
+              "No maps available. Please upload or select a map.",
+              "warning"
+            );
+            console.log(
+              "map-select - Setting selectedMapData to null (no maps available)"
+            );
+            setSelectedMapData(null);
+            canvasUtils.resetCanvas();
+            return;
+          }
           if (selectedIndex) {
             if (!mapManager.maps[selectedIndex]) {
               mapManager.alert(
@@ -115,6 +144,7 @@ export default function Map() {
                   y: point.y,
                 })) || [],
             };
+            console.log("map-select - Setting selectedMapData:", mapData);
             setSelectedMapData(mapData);
             try {
               trilaterationUtils.refreshMap(selectedIndex);
@@ -129,8 +159,16 @@ export default function Map() {
             }
           } else {
             pointManager.stopRealTimeUpdates();
+            mapManager.alert(
+              "Info",
+              "No map selected. Please select a map to continue.",
+              "info"
+            );
+            console.log(
+              "map-select - Setting selectedMapData to null (no map selected)"
+            );
             setSelectedMapData(null);
-            canvasUtils.resetCanvas(); // รีเซ็ต canvas เมื่อไม่ได้เลือกแผนที่
+            canvasUtils.resetCanvas();
           }
         });
 
@@ -149,7 +187,7 @@ export default function Map() {
                     index,
                     "maps:",
                     mapManager.maps
-                  ); // ดีบัก
+                  );
                   if (index !== null) {
                     document.getElementById("map-select").value = index;
                     canvasUtils.img.src = e.target.result;
@@ -166,6 +204,10 @@ export default function Map() {
                           y: point.y,
                         })) || [],
                     };
+                    console.log(
+                      "map-upload - Setting selectedMapData:",
+                      mapData
+                    );
                     setSelectedMapData(mapData);
                   } else {
                     mapManager.alert(
@@ -199,7 +241,7 @@ export default function Map() {
                 index,
                 "maps:",
                 mapManager.maps
-              ); // ดีบัก
+              );
               if (index !== null) {
                 document.getElementById("map-select").value = index;
                 canvasUtils.img.src = mapSrc;
@@ -216,6 +258,7 @@ export default function Map() {
                       y: point.y,
                     })) || [],
                 };
+                console.log("map-sample - Setting selectedMapData:", mapData);
                 setSelectedMapData(mapData);
               } else {
                 mapManager.alert(
@@ -250,8 +293,29 @@ export default function Map() {
         mapManager.deleteMap(selectedIndex, canvasUtils);
         pointManager.stopRealTimeUpdates();
         trilaterationUtils.refreshMap(mapSelect.value);
-        setSelectedMapData(null);
-        console.log("Map deleted, maps:", mapManager.maps); // ดีบัก
+
+        if (mapManager.maps.length > 0) {
+          const newIndex = 0;
+          const mapData = {
+            mapIndex: newIndex,
+            mapName: mapManager.maps[newIndex].name,
+            mapSrc: mapManager.maps[newIndex].src,
+            points:
+              pointManager.pointsPerMap[newIndex]?.map((point) => ({
+                name: point.name,
+                x: point.x,
+                y: point.y,
+              })) || [],
+          };
+          console.log("delete-map - Setting selectedMapData:", mapData);
+          setSelectedMapData(mapData);
+        } else {
+          console.log(
+            "delete-map - Setting selectedMapData to null (no maps left)"
+          );
+          setSelectedMapData(null);
+        }
+        console.log("Map deleted, maps:", mapManager.maps);
       });
 
       document.getElementById("resetPoints").addEventListener("click", () => {
@@ -278,8 +342,9 @@ export default function Map() {
           mapSrc: mapManager.maps[selectedIndex].src,
           points: [],
         };
+        console.log("resetPoints - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
-        console.log("Points reset, maps:", mapManager.maps); // ดีบัก
+        console.log("Points reset, maps:", mapManager.maps);
       });
 
       document.getElementById("ShowDistance").addEventListener("click", () => {
@@ -313,6 +378,7 @@ export default function Map() {
               y: point.y,
             })) || [],
         };
+        console.log("DeletePoint - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
       });
 
@@ -344,12 +410,13 @@ export default function Map() {
               y: point.y,
             })) || [],
         };
+        console.log("editPoint - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
       });
 
       canvas.addEventListener("click", async (event) => {
         const pointName = document.getElementById("pointName").value;
-        console.log("Canvas clicked, maps:", mapManager.maps); // ดีบัก
+        console.log("Canvas clicked, maps:", mapManager.maps);
         if (mapManager.maps.length === 0) {
           mapManager.alert(
             "Info",
@@ -363,7 +430,7 @@ export default function Map() {
         const pixelY = event.clientY - rect.top;
         const { x, y } = canvasUtils.toCartesian(pixelX, pixelY);
         const selectedIndex = document.getElementById("map-select").value;
-        console.log("Selected index:", selectedIndex); // ดีบัก
+        console.log("Selected index:", selectedIndex);
         if (!selectedIndex || !mapManager.maps[selectedIndex]) {
           mapManager.alert(
             "Warning",
@@ -390,6 +457,7 @@ export default function Map() {
                 y: point.y,
               })) || [],
           };
+          console.log("canvas click - Setting selectedMapData:", mapData);
           setSelectedMapData(mapData);
         } catch (error) {
           console.error("Error refreshing map after adding point:", error);
@@ -452,6 +520,10 @@ export default function Map() {
       document
         .getElementById("confirmSave")
         .addEventListener("click", async () => {
+          console.log(
+            "Confirm Save clicked, selectedMapData:",
+            selectedMapData
+          );
           if (!selectedMapData) {
             mapManager.alert(
               "Warning",
@@ -461,10 +533,10 @@ export default function Map() {
             return;
           }
 
-          if (!selectedMapData.mapIndex) {
+          if (!selectedMapData.mapName) {
             mapManager.alert(
               "Error",
-              "Map index is missing. Please select a map again.",
+              "Map name is missing. Please select a map again.",
               "error"
             );
             return;
@@ -526,7 +598,7 @@ export default function Map() {
         .removeEventListener("change", () => {});
       document.removeEventListener("DOMContentLoaded", () => {});
     };
-  }, [selectedMapData]);
+  }, []);
 
   return (
     <>
@@ -570,7 +642,6 @@ export default function Map() {
               />
               <button id="resetPoints">🔄 Reset</button>
               <button id="confirmSave">💾 Confirm Save to Firestore</button>
-
             </div>
             <div className="controls-group">
               <select id="pointSelect"></select>

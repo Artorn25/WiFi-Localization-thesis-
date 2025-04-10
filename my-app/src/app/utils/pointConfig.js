@@ -1,7 +1,7 @@
 import { dbRef, dbfs } from "./firebaseConfig";
 import { onValue, off } from "firebase/database";
 import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
-
+import { getStorage, ref as storageRef, uploadString, getDownloadURL } from "firebase/storage";
 export class PointManager {
   constructor(canvasUtils, trilaterationUtils) {
     this.canvasUtils = canvasUtils;
@@ -92,33 +92,33 @@ export class PointManager {
 
   async saveMapDataToFirestore(mapData) {
     try {
-      // ตรวจสอบว่า mapData และ mapIndex มีค่าหรือไม่
-      if (!mapData || !mapData.mapIndex) {
-        throw new Error("Map index is missing or invalid.");
+      if (!mapData || !mapData.mapName) {
+        throw new Error("Map name is missing or invalid.");
       }
-
+  
+      const storage = getStorage();
+      let mapSrc = mapData.mapSrc;
+  
+      if (mapSrc.startsWith("data:image")) {
+        const storageReference = storageRef(storage, `maps/${mapData.mapName}.png`);
+        await uploadString(storageReference, mapSrc, "data_url");
+        mapSrc = await getDownloadURL(storageReference);
+      }
+  
       const mapsRef = collection(dbfs, "maps");
-      const mapDocRef = doc(mapsRef, mapData.mapIndex.toString()); // แปลง mapIndex เป็น string เสมอ
-
-      await setDoc(
-        mapDocRef,
-        {
-          mapIndex: mapData.mapIndex,
-          mapName: mapData.mapName,
-          mapSrc: mapData.mapSrc,
-          points: mapData.points,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-
-      console.log("Map data saved to Firestore:", mapData);
-      this.canvasUtils.alert(
-        "Success",
-        `Map ${mapData.mapName} saved to Firestore with ${mapData.points.length} points.`,
-        "success"
-      );
+      const mapDocRef = doc(mapsRef, mapData.mapName);
+  
+      await setDoc(mapDocRef, {
+        mapIndex: mapData.mapIndex,
+        mapName: mapData.mapName,
+        mapSrc: mapSrc,
+        points: mapData.points,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+  
+      console.log("Map data saved to Firestore with document ID:", mapData.mapName);
+      this.canvasUtils.alert("Success", `Map ${mapData.mapName} saved to Firestore with ${mapData.points.length} points.`, "success");
     } catch (error) {
       console.error("Error saving map data to Firestore: ", error);
       throw error;

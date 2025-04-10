@@ -32,7 +32,15 @@ export class MapManager {
       input: "text",
       inputValue: `Map ${this.maps.length + 1}`,
       showCancelButton: true,
-      inputValidator: (value) => !value && "You need to write something!",
+      inputValidator: (value) => {
+        if (!value) {
+          return "You need to write something!";
+        }
+        if (this.maps.some((map) => map.name === value)) {
+          return "Map name already exists! Please choose a different name.";
+        }
+        return null;
+      },
     });
 
     if (mapName) {
