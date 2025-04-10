@@ -90,7 +90,6 @@ export default function Map() {
               y: point.y,
             })) || [],
         };
-        console.log("updateMapName - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
         console.log("Map name updated, maps:", mapManager.maps);
       });
@@ -105,14 +104,12 @@ export default function Map() {
             "maps:",
             mapManager.maps
           );
+          console.log(mapManager.maps.length);
           if (mapManager.maps.length === 0) {
             mapManager.alert(
               "Warning",
               "No maps available. Please upload or select a map.",
               "warning"
-            );
-            console.log(
-              "map-select - Setting selectedMapData to null (no maps available)"
             );
             setSelectedMapData(null);
             canvasUtils.resetCanvas();
@@ -144,7 +141,6 @@ export default function Map() {
                   y: point.y,
                 })) || [],
             };
-            console.log("map-select - Setting selectedMapData:", mapData);
             setSelectedMapData(mapData);
             try {
               trilaterationUtils.refreshMap(selectedIndex);
@@ -159,14 +155,6 @@ export default function Map() {
             }
           } else {
             pointManager.stopRealTimeUpdates();
-            mapManager.alert(
-              "Info",
-              "No map selected. Please select a map to continue.",
-              "info"
-            );
-            console.log(
-              "map-select - Setting selectedMapData to null (no map selected)"
-            );
             setSelectedMapData(null);
             canvasUtils.resetCanvas();
           }
@@ -204,10 +192,6 @@ export default function Map() {
                           y: point.y,
                         })) || [],
                     };
-                    console.log(
-                      "map-upload - Setting selectedMapData:",
-                      mapData
-                    );
                     setSelectedMapData(mapData);
                   } else {
                     mapManager.alert(
@@ -258,7 +242,6 @@ export default function Map() {
                       y: point.y,
                     })) || [],
                 };
-                console.log("map-sample - Setting selectedMapData:", mapData);
                 setSelectedMapData(mapData);
               } else {
                 mapManager.alert(
@@ -293,28 +276,7 @@ export default function Map() {
         mapManager.deleteMap(selectedIndex, canvasUtils);
         pointManager.stopRealTimeUpdates();
         trilaterationUtils.refreshMap(mapSelect.value);
-
-        if (mapManager.maps.length > 0) {
-          const newIndex = 0;
-          const mapData = {
-            mapIndex: newIndex,
-            mapName: mapManager.maps[newIndex].name,
-            mapSrc: mapManager.maps[newIndex].src,
-            points:
-              pointManager.pointsPerMap[newIndex]?.map((point) => ({
-                name: point.name,
-                x: point.x,
-                y: point.y,
-              })) || [],
-          };
-          console.log("delete-map - Setting selectedMapData:", mapData);
-          setSelectedMapData(mapData);
-        } else {
-          console.log(
-            "delete-map - Setting selectedMapData to null (no maps left)"
-          );
-          setSelectedMapData(null);
-        }
+        setSelectedMapData(null);
         console.log("Map deleted, maps:", mapManager.maps);
       });
 
@@ -342,7 +304,6 @@ export default function Map() {
           mapSrc: mapManager.maps[selectedIndex].src,
           points: [],
         };
-        console.log("resetPoints - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
         console.log("Points reset, maps:", mapManager.maps);
       });
@@ -378,7 +339,6 @@ export default function Map() {
               y: point.y,
             })) || [],
         };
-        console.log("DeletePoint - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
       });
 
@@ -410,7 +370,6 @@ export default function Map() {
               y: point.y,
             })) || [],
         };
-        console.log("editPoint - Setting selectedMapData:", mapData);
         setSelectedMapData(mapData);
       });
 
@@ -457,7 +416,6 @@ export default function Map() {
                 y: point.y,
               })) || [],
           };
-          console.log("canvas click - Setting selectedMapData:", mapData);
           setSelectedMapData(mapData);
         } catch (error) {
           console.error("Error refreshing map after adding point:", error);
@@ -598,7 +556,7 @@ export default function Map() {
         .removeEventListener("change", () => {});
       document.removeEventListener("DOMContentLoaded", () => {});
     };
-  }, []);
+  }, [selectedMapData]);
 
   return (
     <>
