@@ -569,11 +569,8 @@ export default function Map() {
                 placeholder="Enter point name"
               />
               <button id="resetPoints">🔄 Reset</button>
-<<<<<<< Updated upstream
-              {/* เพิ่มปุ่ม Confirm */}
               <button id="confirmSave">💾 Confirm Save to Firestore</button>
-=======
->>>>>>> Stashed changes
+
             </div>
             <div className="controls-group">
               <select id="pointSelect"></select>
