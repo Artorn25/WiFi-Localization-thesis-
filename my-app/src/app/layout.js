@@ -1,6 +1,5 @@
 import "./globals.css";
-import Header from "@components/Header";
-import Footer from "@components/Footer";
+import ConditionalLayout from "@components/ConditionalLayout";
 
 export const metadata = {
   title: "WiFi Localization System",
@@ -11,11 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <>
-          <Header />
-          {children}
-          <Footer />
-        </>
+        <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
   );
