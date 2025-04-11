@@ -1,17 +1,19 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
 import {
   CanvasUtils,
   MapManager,
   PointManager,
   TrilaterationUtils,
-} from "@utils/index.js";
+} from "@utils/index";
+import Swal from "sweetalert2";
 import "@styles/map.css";
 
 export default function Map() {
   const canvasRef = useRef(null);
-  const [selectedMapData, setSelectedMapData] = useState(null);
+  const [selectedMapData, setSelectedMapData] = useState([]);
+  const [selectedPointData, setSelectedPointData] = useState([]); // เพิ่ม state สำหรับจุด
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -83,14 +85,11 @@ export default function Map() {
           mapIndex: selectedIndex,
           mapName: newMapName,
           mapSrc: mapManager.maps[selectedIndex].src,
-          points:
-            pointManager.pointsPerMap[selectedIndex]?.map((point) => ({
-              name: point.name,
-              x: point.x,
-              y: point.y,
-            })) || [],
+          points: pointManager.pointsPerMap[selectedIndex] || [], // ใช้ selectedPointData แทน
         };
+        console.log("MapData: ", mapData);
         setSelectedMapData(mapData);
+        setSelectedPointData(pointManager.pointsPerMap[selectedIndex] || []); // อัปเดต selectedPointData
         console.log("Map name updated, maps:", mapManager.maps);
       });
 
@@ -104,7 +103,6 @@ export default function Map() {
             "maps:",
             mapManager.maps
           );
-          console.log(mapManager.maps.length);
           if (mapManager.maps.length === 0) {
             mapManager.alert(
               "Warning",
@@ -112,6 +110,7 @@ export default function Map() {
               "warning"
             );
             setSelectedMapData(null);
+            setSelectedPointData([]); // รีเซ็ต selectedPointData
             canvasUtils.resetCanvas();
             return;
           }
@@ -134,14 +133,12 @@ export default function Map() {
               mapIndex: selectedIndex,
               mapName: mapManager.maps[selectedIndex].name,
               mapSrc: mapManager.maps[selectedIndex].src,
-              points:
-                pointManager.pointsPerMap[selectedIndex]?.map((point) => ({
-                  name: point.name,
-                  x: point.x,
-                  y: point.y,
-                })) || [],
+              points: pointManager.pointsPerMap[selectedIndex] || [],
             };
             setSelectedMapData(mapData);
+            setSelectedPointData(
+              pointManager.pointsPerMap[selectedIndex] || []
+            ); // อัปเดต selectedPointData
             try {
               trilaterationUtils.refreshMap(selectedIndex);
               trilaterationUtils.startRealTimeUpdate();
@@ -156,6 +153,7 @@ export default function Map() {
           } else {
             pointManager.stopRealTimeUpdates();
             setSelectedMapData(null);
+            setSelectedPointData([]); // รีเซ็ต selectedPointData
             canvasUtils.resetCanvas();
           }
         });
@@ -185,14 +183,12 @@ export default function Map() {
                       mapIndex: index,
                       mapName: mapManager.maps[index].name,
                       mapSrc: e.target.result,
-                      points:
-                        pointManager.pointsPerMap[index]?.map((point) => ({
-                          name: point.name,
-                          x: point.x,
-                          y: point.y,
-                        })) || [],
+                      points: pointManager.pointsPerMap[index] || [],
                     };
                     setSelectedMapData(mapData);
+                    setSelectedPointData(
+                      pointManager.pointsPerMap[index] || []
+                    ); // อัปเดต selectedPointData
                   } else {
                     mapManager.alert(
                       "Warning",
@@ -235,14 +231,10 @@ export default function Map() {
                   mapIndex: index,
                   mapName: mapManager.maps[index].name,
                   mapSrc: mapSrc,
-                  points:
-                    pointManager.pointsPerMap[index]?.map((point) => ({
-                      name: point.name,
-                      x: point.x,
-                      y: point.y,
-                    })) || [],
+                  points: pointManager.pointsPerMap[index] || [],
                 };
                 setSelectedMapData(mapData);
+                setSelectedPointData(pointManager.pointsPerMap[index] || []); // อัปเดต selectedPointData
               } else {
                 mapManager.alert(
                   "Warning",
@@ -276,7 +268,29 @@ export default function Map() {
         mapManager.deleteMap(selectedIndex, canvasUtils);
         pointManager.stopRealTimeUpdates();
         trilaterationUtils.refreshMap(mapSelect.value);
-        setSelectedMapData(null);
+
+        if (mapManager.maps.length > 0) {
+          mapSelect.value = "0";
+          const newIndex = mapSelect.value;
+          canvasUtils.img.src = mapManager.maps[newIndex].src;
+          pointManager.points = pointManager.pointsPerMap[newIndex] || [];
+          pointManager.markerCoordinates =
+            pointManager.markerCoordinatesPerMap[newIndex] || [];
+          const mapData = {
+            mapIndex: newIndex,
+            mapName: mapManager.maps[newIndex].name,
+            mapSrc: mapManager.maps[newIndex].src,
+            points: pointManager.pointsPerMap[newIndex] || [],
+          };
+          setSelectedMapData(mapData);
+          setSelectedPointData(pointManager.pointsPerMap[newIndex] || []); // อัปเดต selectedPointData
+          trilaterationUtils.refreshMap(newIndex);
+        } else {
+          setSelectedMapData(null);
+          setSelectedPointData([]); // รีเซ็ต selectedPointData
+          canvasUtils.resetCanvas();
+        }
+
         console.log("Map deleted, maps:", mapManager.maps);
       });
 
@@ -305,6 +319,7 @@ export default function Map() {
           points: [],
         };
         setSelectedMapData(mapData);
+        setSelectedPointData([]); // รีเซ็ต selectedPointData
         console.log("Points reset, maps:", mapManager.maps);
       });
 
@@ -332,14 +347,10 @@ export default function Map() {
           mapIndex: mapIndex,
           mapName: mapManager.maps[mapIndex].name,
           mapSrc: mapManager.maps[mapIndex].src,
-          points:
-            pointManager.pointsPerMap[mapIndex]?.map((point) => ({
-              name: point.name,
-              x: point.x,
-              y: point.y,
-            })) || [],
+          points: pointManager.pointsPerMap[mapIndex] || [],
         };
         setSelectedMapData(mapData);
+        setSelectedPointData(pointManager.pointsPerMap[mapIndex] || []); // อัปเดต selectedPointData
       });
 
       document.getElementById("editPoint").addEventListener("click", () => {
@@ -363,19 +374,16 @@ export default function Map() {
           mapIndex: mapIndex,
           mapName: mapManager.maps[mapIndex].name,
           mapSrc: mapManager.maps[mapIndex].src,
-          points:
-            pointManager.pointsPerMap[mapIndex]?.map((point) => ({
-              name: point.name,
-              x: point.x,
-              y: point.y,
-            })) || [],
+          points: pointManager.pointsPerMap[mapIndex] || [],
         };
         setSelectedMapData(mapData);
+        setSelectedPointData(pointManager.pointsPerMap[mapIndex] || []); // อัปเดต selectedPointData
       });
 
       canvas.addEventListener("click", async (event) => {
         const pointName = document.getElementById("pointName").value;
         console.log("Canvas clicked, maps:", mapManager.maps);
+
         if (mapManager.maps.length === 0) {
           mapManager.alert(
             "Info",
@@ -409,14 +417,10 @@ export default function Map() {
             mapIndex: selectedIndex,
             mapName: mapManager.maps[selectedIndex].name,
             mapSrc: mapManager.maps[selectedIndex].src,
-            points:
-              pointManager.pointsPerMap[selectedIndex]?.map((point) => ({
-                name: point.name,
-                x: point.x,
-                y: point.y,
-              })) || [],
+            points: pointManager.pointsPerMap[selectedIndex] || [],
           };
           setSelectedMapData(mapData);
+          setSelectedPointData(pointManager.pointsPerMap[selectedIndex] || []); // อัปเดต selectedPointData
         } catch (error) {
           console.error("Error refreshing map after adding point:", error);
           mapManager.alert(
@@ -478,38 +482,68 @@ export default function Map() {
       document
         .getElementById("confirmSave")
         .addEventListener("click", async () => {
-          console.log(
-            "Confirm Save clicked, selectedMapData:",
-            selectedMapData
-          );
-          if (!selectedMapData) {
-            mapManager.alert(
-              "Warning",
-              "Please select a map and add points before saving.",
-              "warning"
-            );
-            return;
-          }
-
-          if (!selectedMapData.mapName) {
-            mapManager.alert(
-              "Error",
-              "Map name is missing. Please select a map again.",
-              "error"
-            );
-            return;
-          }
-
           try {
-            await pointManager.saveMapDataToFirestore(selectedMapData);
+            if (!selectedMapData) {
+              mapManager.alert(
+                "Warning",
+                "Please select a map and add points before saving.",
+                "warning"
+              );
+              return;
+            }
+
+            console.log("Selected Map Data:", selectedMapData);
+            console.log("Selected Point Data:", selectedPointData);
+
+            // สร้าง HTML สำหรับแสดงข้อมูล
+            let pointsHtml = "<ul>";
+            selectedPointData.forEach((point, index) => {
+              pointsHtml += `<li>Point ${index + 1}: Name: ${
+                point.name
+              }, X: ${point.x.toFixed(2)}, Y: ${point.y.toFixed(2)}</li>`;
+            });
+            pointsHtml += "</ul>";
+
+            // เรียกใช้ SweetAlert2
+            const result = await Swal.fire({
+              title: "Confirm Save",
+              html: `
+                <div style="text-align: left;">
+                  <p><strong>Map Name:</strong> ${selectedMapData.mapName}</p>
+                  <p><strong>Points:</strong></p>
+                  ${pointsHtml}
+                </div>
+              `,
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonText: "Save",
+              cancelButtonText: "Cancel",
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+            });
+
+            console.log("Swal Result:", result);
+
+            if (result.isConfirmed) {
+              const mapDataToSave = {
+                ...selectedMapData,
+                points: selectedPointData.map((point) => ({
+                  name: point.name,
+                  x: point.x,
+                  y: point.y,
+                  color: point.color,
+                })),
+              };
+
+              console.log("Data to save:", mapDataToSave);
+              await pointManager.saveMapDataToFirestore(mapDataToSave);
+              Swal.fire("Saved!", "Your map data has been saved.", "success");
+            } else {
+              Swal.fire("Cancelled", "Save was cancelled", "info");
+            }
           } catch (error) {
-            console.error("Error saving map data to Firestore:", error);
-            mapManager.alert(
-              "Error",
-              error.message ||
-                "Failed to save map data to Firestore. Please try again.",
-              "error"
-            );
+            console.error("Save error:", error);
+            Swal.fire("Error", "Failed to save data", "error");
           }
         });
 
@@ -565,7 +599,7 @@ export default function Map() {
           <canvas
             id="myCanvas"
             ref={canvasRef}
-            width="900px"
+            width="1000px"
             height="400px"
           ></canvas>
           <div id="map-controls">

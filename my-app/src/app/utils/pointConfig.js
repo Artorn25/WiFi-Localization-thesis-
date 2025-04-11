@@ -1,7 +1,7 @@
 import { dbRef, dbfs } from "./firebaseConfig";
 import { onValue, off } from "firebase/database";
 import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { getStorage, ref as storageRef, uploadString, getDownloadURL } from "firebase/storage";
+
 export class PointManager {
   constructor(canvasUtils, trilaterationUtils) {
     this.canvasUtils = canvasUtils;
@@ -12,6 +12,10 @@ export class PointManager {
     this.markerCoordinates = [];
     this.drawMode = true;
     this.listeners = [];
+    // ล้าง pointsPerMap ที่ไม่ถูกต้อง
+    if (this.pointsPerMap[""]) {
+      delete this.pointsPerMap[""];
+    }
   }
 
   validatePoint(pointName) {
@@ -48,6 +52,16 @@ export class PointManager {
 
   addPoint(x, y, name, selectedIndex) {
     if (!this.validatePoint(name)) return;
+
+    if (!selectedIndex || selectedIndex === "") {
+      console.error("Invalid selectedIndex:", selectedIndex);
+      this.canvasUtils.alert(
+        "Error",
+        "Invalid map index. Please select a map first.",
+        "error"
+      );
+      return;
+    }
 
     const color = this.drawMode ? "blue" : "red";
     if (!this.pointsPerMap[selectedIndex])
@@ -95,30 +109,32 @@ export class PointManager {
       if (!mapData || !mapData.mapName) {
         throw new Error("Map name is missing or invalid.");
       }
-  
-      const storage = getStorage();
-      let mapSrc = mapData.mapSrc;
-  
-      if (mapSrc.startsWith("data:image")) {
-        const storageReference = storageRef(storage, `maps/${mapData.mapName}.png`);
-        await uploadString(storageReference, mapSrc, "data_url");
-        mapSrc = await getDownloadURL(storageReference);
-      }
-  
+
       const mapsRef = collection(dbfs, "maps");
       const mapDocRef = doc(mapsRef, mapData.mapName);
-  
-      await setDoc(mapDocRef, {
-        mapIndex: mapData.mapIndex,
-        mapName: mapData.mapName,
-        mapSrc: mapSrc,
-        points: mapData.points,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
-  
-      console.log("Map data saved to Firestore with document ID:", mapData.mapName);
-      this.canvasUtils.alert("Success", `Map ${mapData.mapName} saved to Firestore with ${mapData.points.length} points.`, "success");
+
+      await setDoc(
+        mapDocRef,
+        {
+          mapIndex: mapData.mapIndex,
+          mapName: mapData.mapName,
+          mapSrc: mapData.mapSrc,
+          points: mapData.points, // points จะมี color รวมอยู่แล้ว
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      console.log(
+        "Map data saved to Firestore with document ID:",
+        mapData.mapName
+      );
+      this.canvasUtils.alert(
+        "Success",
+        `Map ${mapData.mapName} saved to Firestore with ${mapData.points.length} points.`,
+        "success"
+      );
     } catch (error) {
       console.error("Error saving map data to Firestore: ", error);
       throw error;
