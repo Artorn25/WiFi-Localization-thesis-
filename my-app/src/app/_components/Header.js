@@ -25,10 +25,10 @@ export default function Header() {
           {/* <li>
             <Link href="/setting">Setting</Link>
           </li> */}
-          <li>
+          {/* <li>
             <Link href="/feedback">Feedback</Link>
-          </li>
-          <SearchForm /> {/* ใช้ Client Component ที่สร้างขึ้น */}
+          </li> */}
+          {/* <SearchForm /> ใช้ Client Component ที่สร้างขึ้น */}
         </ul>
       </div>
     </>

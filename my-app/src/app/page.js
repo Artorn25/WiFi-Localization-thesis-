@@ -1,45 +1,220 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import Script from "next/script";
 import "@styles/map.css";
 import "@styles/homepage.css";
 
-import { collection, query, where, getDocs } from "firebase/firestore";
-// import { dbfs } from "./firebase-config"; // ต้องแน่ใจว่าได้ import dbfs จากไฟล์ที่ตั้งค่า Firebase
+import { collection, getDocs } from "firebase/firestore";
+import { dbfs } from "@utils/firebaseConfig";
 
 export default function Home() {
   const [showInfoPopup, setShowInfoPopup] = useState(true);
   const [countdown, setCountdown] = useState(5);
   const [autoRedirect, setAutoRedirect] = useState(true);
+  const [maps, setMaps] = useState([]); // เก็บข้อมูลแผนที่จาก Firestore
+  const [selectedPoints, setSelectedPoints] = useState([]); // เก็บจุดของแผนที่ที่เลือก
 
-  // ฟังก์ชันดึงข้อมูลจุดจาก Firestore
-  const fetchPointsFromFirestore = async () => {
+  // อ้างอิง canvas
+  const canvasRef = useRef(null);
+  const [canvasUtils, setCanvasUtils] = useState(null);
+
+  // ฟังก์ชันเริ่มต้น CanvasUtils (เลียนแบบจาก Map.js)
+  const initializeCanvas = () => {
+    const canvas = canvasRef.current;
+    const tooltip = document.getElementById("tooltip");
+
+    const utils = {
+      canvas,
+      ctx: canvas.getContext("2d"),
+      tooltip,
+      img: new window.Image(),
+      scaleX: 1,
+      scaleY: 1,
+      offsetX: 0,
+      offsetY: 0,
+
+      initializeCanvas() {
+        this.adjustCanvasScale();
+      },
+
+      adjustCanvasScale() {
+        if (!this.img.src) return;
+
+        const canvasAspect = this.canvas.width / this.canvas.height;
+        const imgAspect = this.img.width / this.img.height;
+
+        if (imgAspect > canvasAspect) {
+          // รูปกว้างกว่า canvas
+          this.scaleX = this.canvas.width / this.img.width;
+          this.scaleY = this.scaleX;
+          this.offsetX = 0;
+          this.offsetY =
+            (this.canvas.height - this.img.height * this.scaleY) / 2;
+        } else {
+          // รูปสูงกว่า canvas
+          this.scaleY = this.canvas.height / this.img.height;
+          this.scaleX = this.scaleY;
+          this.offsetX = (this.canvas.width - this.img.width * this.scaleX) / 2;
+          this.offsetY = 0;
+        }
+      },
+
+      toPixel(x, y) {
+        return {
+          pixelX: x * this.scaleX + this.canvas.width / 2 + this.offsetX,
+          pixelY: -y * this.scaleY + this.canvas.height / 2 + this.offsetY,
+        };
+      },
+
+      clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      },
+    };
+
+    setCanvasUtils(utils);
+  };
+
+  // ฟังก์ชันดึงข้อมูลแผนที่จาก Firestore
+  const fetchMapsFromFirestore = async () => {
     try {
-      const currentMapIndex = document.getElementById("map-select").value;
-
-      if (!currentMapIndex) {
-        console.log("Please select a map first");
-        return;
-      }
-
-      const pointsRef = collection(dbfs, "points");
-      const q = query(pointsRef, where("mapIndex", "==", currentMapIndex));
-
-      const querySnapshot = await getDocs(q);
-
-      console.log("Points data from Firestore:");
-      querySnapshot.forEach((doc) => {
-        console.log(`ID: ${doc.id}`, doc.data());
-      });
-
-      return querySnapshot.docs.map((doc) => doc.data());
+      const mapsRef = collection(dbfs, "maps");
+      const querySnapshot = await getDocs(mapsRef);
+      const mapsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id, // mapName เป็น document ID
+        ...doc.data(),
+      }));
+      setMaps(mapsData);
+      console.log("Maps data from Firestore:", mapsData);
     } catch (error) {
-      console.error("Error fetching points from Firestore: ", error);
-      return [];
+      console.error("Error fetching maps from Firestore: ", error);
+      setMaps([]);
     }
   };
 
+  // ฟังก์ชันดึงข้อมูลจุดจาก Firestore (จาก maps collection)
+  const fetchPointsFromFirestore = async () => {
+    try {
+      const currentMapName = document.getElementById("map-select").value;
+
+      if (!currentMapName) {
+        console.log("Please select a map first");
+        setSelectedPoints([]);
+        canvasUtils?.clearCanvas(); // ล้าง canvas ถ้าไม่มีแผนที่เลือก
+        return;
+      }
+
+      // หาแผนที่ที่เลือกจาก state maps
+      const selectedMap = maps.find((map) => map.id === currentMapName);
+      if (selectedMap) {
+        // ตั้งค่าจุด
+        if (selectedMap.points) {
+          setSelectedPoints(selectedMap.points);
+          console.log("Points for selected map:", selectedMap.points);
+        } else {
+          setSelectedPoints([]);
+          console.log("No points found for this map");
+        }
+        // โหลดรูปแผนที่ไปยัง canvas และวาดจุดหลังจากโหลดเสร็จ
+        loadMapToCanvas(selectedMap.mapSrc);
+      } else {
+        setSelectedPoints([]);
+        canvasUtils?.clearCanvas();
+        console.log("No map found for this mapName");
+      }
+    } catch (error) {
+      console.error("Error fetching points from Firestore: ", error);
+      setSelectedPoints([]);
+      canvasUtils?.clearCanvas();
+    }
+  };
+
+  // ฟังก์ชันโหลดรูปแผนที่ไปยัง canvas และวาดจุดหลังจากโหลดเสร็จ
+  const loadMapToCanvas = (mapSrc) => {
+    if (!canvasUtils) return;
+
+    canvasUtils.img.src = mapSrc;
+    canvasUtils.img.onload = () => {
+      canvasUtils.adjustCanvasScale();
+      canvasUtils.clearCanvas();
+      canvasUtils.ctx.drawImage(
+        canvasUtils.img,
+        canvasUtils.offsetX,
+        canvasUtils.offsetY,
+        canvasUtils.img.width * canvasUtils.scaleX,
+        canvasUtils.img.height * canvasUtils.scaleY
+      );
+      // วาดจุดหลังจากโหลดรูปเสร็จ
+      drawPointsOnCanvas();
+    };
+    canvasUtils.img.onerror = () => {
+      console.error("Error loading map image:", mapSrc);
+      canvasUtils.clearCanvas();
+    };
+  };
+
+  // ฟังก์ชันวาดจุดบน canvas
+  const drawPointsOnCanvas = () => {
+    if (!canvasUtils) return;
+
+    selectedPoints.forEach((point) => {
+      // แปลงพิกัดจาก Cartesian เป็นพิกัดบน canvas
+      const { pixelX, pixelY } = canvasUtils.toPixel(point.x, point.y);
+
+      // ตรวจสอบว่าพิกัดอยู่ในขอบเขตของ canvas หรือไม่
+      if (
+        pixelX < 0 ||
+        pixelX > canvasUtils.canvas.width ||
+        pixelY < 0 ||
+        pixelY > canvasUtils.canvas.height
+      ) {
+        console.warn(
+          `Point ${point.name} is outside canvas bounds: (${pixelX}, ${pixelY})`
+        );
+        return;
+      }
+
+      // วาดจุด
+      canvasUtils.ctx.beginPath();
+      canvasUtils.ctx.arc(pixelX, pixelY, 5, 0, 2 * Math.PI);
+      canvasUtils.ctx.fillStyle = point.color;
+      canvasUtils.ctx.fill();
+      canvasUtils.ctx.strokeStyle = "black";
+      canvasUtils.ctx.stroke();
+
+      // วาดชื่อจุด
+      canvasUtils.ctx.font = "12px Arial";
+      canvasUtils.ctx.fillStyle = "black";
+      canvasUtils.ctx.fillText(point.name, pixelX + 15, pixelY);
+    });
+  };
+
+  // ฟังก์ชันจัดการเมื่อกดที่ตัวอย่างแผนที่
+  const handleSampleMapClick = (mapSrc) => {
+    // หาแผนที่ใน Firestore ที่มี mapSrc ตรงกับตัวอย่าง
+    const matchedMap = maps.find((map) => map.mapSrc === mapSrc);
+    if (matchedMap) {
+      // ตั้งค่า <select> ให้เลือกแผนที่นั้น
+      document.getElementById("map-select").value = matchedMap.id;
+      // ดึงข้อมูลจุดของแผนที่นั้น
+      fetchPointsFromFirestore();
+    } else {
+      console.log("No matching map found in Firestore for mapSrc:", mapSrc);
+      setSelectedPoints([]);
+      canvasUtils?.clearCanvas();
+      document.getElementById("map-select").value = ""; // รีเซ็ต <select> ถ้าไม่พบ
+    }
+  };
+
+  // เริ่มต้น canvas เมื่อ component ถูกโหลด
+  useEffect(() => {
+    initializeCanvas();
+    fetchMapsFromFirestore();
+  }, []);
+
+  // ลบ useEffect ที่วาดจุดเมื่อ selectedPoints เปลี่ยน
+  // เพราะเราจะวาดจุดใน loadMapToCanvas หลังจากโหลดรูปเสร็จ
+
+  // จัดการ countdown สำหรับ popup
   useEffect(() => {
     if (!autoRedirect) return;
 
@@ -101,7 +276,12 @@ export default function Home() {
       {/* ส่วนแผนที่หลัก */}
       <div id="map-container">
         <div className="container">
-          <canvas id="myCanvas" width="1400px" height="700px"></canvas>
+          <canvas
+            id="myCanvas"
+            ref={canvasRef}
+            width="1000px"
+            height="400px"
+          ></canvas>
 
           {/* ส่วนเลือกแผนที่ */}
           <div id="map-controls" style={{ marginBottom: "20px" }}>
@@ -109,8 +289,17 @@ export default function Home() {
               <label htmlFor="map-select" style={{ marginRight: "10px" }}>
                 เลือกแผนที่:
               </label>
-              <select id="map-select" style={{ padding: "5px" }}>
+              <select
+                id="map-select"
+                style={{ padding: "5px" }}
+                onChange={fetchPointsFromFirestore}
+              >
                 <option value="">-- กรุณาเลือกแผนที่ --</option>
+                {maps.map((map) => (
+                  <option key={map.id} value={map.id}>
+                    {map.mapName}
+                  </option>
+                ))}
               </select>
               <button
                 onClick={fetchPointsFromFirestore}
@@ -128,6 +317,56 @@ export default function Home() {
               </button>
             </div>
           </div>
+
+          {/* ส่วนแสดงจุดของแผนที่ที่เลือก */}
+          {selectedPoints.length > 0 ? (
+            <div
+              id="points-display"
+              style={{
+                marginTop: "20px",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "5px",
+                backgroundColor: "#f9f9f9",
+              }}
+            >
+              <h3 style={{ marginBottom: "10px" }}>
+                Points for{" "}
+                {
+                  maps.find(
+                    (map) =>
+                      map.id === document.getElementById("map-select").value
+                  )?.mapName
+                }
+              </h3>
+              <ul style={{ listStyleType: "none", padding: 0 }}>
+                {selectedPoints.map((point, index) => (
+                  <li
+                    key={index}
+                    style={{
+                      padding: "5px 0",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    <strong>Point {index + 1}:</strong> Name: {point.name}, X:{" "}
+                    {point.x.toFixed(2)}, Y: {point.y.toFixed(2)}, Color:{" "}
+                    {point.color}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div
+              style={{
+                marginTop: "20px",
+                padding: "10px",
+                color: "#888",
+              }}
+            >
+              No points available for this map. Please select a map and click
+              &quot;Show Points&quot;.
+            </div>
+          )}
         </div>
       </div>
 
@@ -151,6 +390,7 @@ export default function Home() {
               border: "1px solid #ddd",
               borderRadius: "5px",
             }}
+            onClick={() => handleSampleMapClick("/map/map1.png")}
           />
           <Image
             src="/map/map2.png"
@@ -164,6 +404,7 @@ export default function Home() {
               border: "1px solid #ddd",
               borderRadius: "5px",
             }}
+            onClick={() => handleSampleMapClick("/map/map2.png")}
           />
         </div>
       </div>
@@ -183,12 +424,6 @@ export default function Home() {
           pointerEvents: "none",
         }}
       ></div>
-
-      <Script
-        type="module"
-        src="/script/module.js"
-        strategy="beforeInteractive"
-      />
 
       {/* สไตล์เพิ่มเติมสำหรับ Popup */}
       <style jsx>{`
