@@ -1,12 +1,24 @@
 import "@styles/homepage.css";
 import Link from "next/link";
-import SearchForm from "./SearchForm"; // นำเข้า Client Component
+import Image from "next/image";
+// import SearchForm from "./SearchForm"; // นำเข้า Client Component
 
 export default function Header() {
   return (
     <>
       <div className="sidebar oswald-bold">
+        
         <ul className="menu-list">
+        <div className="sidebar-logo">
+          <Image
+            src="/logo.png"
+            alt="Website Logo"
+            width={40} // ปรับขนาดตามต้องการ
+            height={40}
+          />
+          <span className="logo-text">WiFi Localization</span>{" "}
+          {/* ข้อความเสริม (optional) */}
+        </div>
           <li>
             <Link href="/">Home</Link>
           </li>

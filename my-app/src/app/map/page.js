@@ -554,41 +554,74 @@ export default function Map() {
 
     setupListeners();
 
+    // return () => {
+    //   pointManager.stopRealTimeUpdates();
+    //   document
+    //     .getElementById("updateMapName")
+    //     .removeEventListener("click", () => {});
+    //   document
+    //     .getElementById("map-select")
+    //     .removeEventListener("change", () => {});
+    //   document
+    //     .getElementById("map-upload")
+    //     .removeEventListener("change", () => {});
+    //   document
+    //     .getElementById("delete-map")
+    //     .removeEventListener("click", () => {});
+    //   document
+    //     .getElementById("resetPoints")
+    //     .removeEventListener("click", () => {});
+    //   document
+    //     .getElementById("ShowDistance")
+    //     .removeEventListener("click", () => {});
+    //   document
+    //     .getElementById("DeletePoint")
+    //     .removeEventListener("click", () => {});
+    //   document
+    //     .getElementById("editPoint")
+    //     .removeEventListener("click", () => {});
+    //   document
+    //     .getElementById("confirmSave")
+    //     .removeEventListener("click", () => {});
+    //   canvas.removeEventListener("click", () => {});
+    //   canvas.removeEventListener("mousemove", () => {});
+    //   document
+    //     .getElementById("showCircleCheckbox")
+    //     .removeEventListener("change", () => {});
+    //   document.removeEventListener("DOMContentLoaded", () => {});
+    // };
     return () => {
       pointManager.stopRealTimeUpdates();
-      document
-        .getElementById("updateMapName")
-        .removeEventListener("click", () => {});
-      document
-        .getElementById("map-select")
-        .removeEventListener("change", () => {});
-      document
-        .getElementById("map-upload")
-        .removeEventListener("change", () => {});
-      document
-        .getElementById("delete-map")
-        .removeEventListener("click", () => {});
-      document
-        .getElementById("resetPoints")
-        .removeEventListener("click", () => {});
-      document
-        .getElementById("ShowDistance")
-        .removeEventListener("click", () => {});
-      document
-        .getElementById("DeletePoint")
-        .removeEventListener("click", () => {});
-      document
-        .getElementById("editPoint")
-        .removeEventListener("click", () => {});
-      document
-        .getElementById("confirmSave")
-        .removeEventListener("click", () => {});
-      canvas.removeEventListener("click", () => {});
-      canvas.removeEventListener("mousemove", () => {});
-      document
-        .getElementById("showCircleCheckbox")
-        .removeEventListener("change", () => {});
-      document.removeEventListener("DOMContentLoaded", () => {});
+
+      // ตรวจสอบว่า element มีอยู่ก่อนจะลบ listener
+      const updateMapNameBtn = document.getElementById("updateMapName");
+      const mapSelect = document.getElementById("map-select");
+      const mapUpload = document.getElementById("map-upload");
+      const deleteMapBtn = document.getElementById("delete-map");
+      const resetPointsBtn = document.getElementById("resetPoints");
+      const showDistanceBtn = document.getElementById("ShowDistance");
+      const deletePointBtn = document.getElementById("DeletePoint");
+      const editPointBtn = document.getElementById("editPoint");
+      const confirmSaveBtn = document.getElementById("confirmSave");
+      const showCircleCheckbox = document.getElementById("showCircleCheckbox");
+
+      if (updateMapNameBtn)
+        updateMapNameBtn.removeEventListener("click", () => {});
+      if (mapSelect) mapSelect.removeEventListener("change", () => {});
+      if (mapUpload) mapUpload.removeEventListener("change", () => {});
+      if (deleteMapBtn) deleteMapBtn.removeEventListener("click", () => {});
+      if (resetPointsBtn) resetPointsBtn.removeEventListener("click", () => {});
+      if (showDistanceBtn)
+        showDistanceBtn.removeEventListener("click", () => {});
+      if (deletePointBtn) deletePointBtn.removeEventListener("click", () => {});
+      if (editPointBtn) editPointBtn.removeEventListener("click", () => {});
+      if (confirmSaveBtn) confirmSaveBtn.removeEventListener("click", () => {});
+      if (canvas) {
+        canvas.removeEventListener("click", () => {});
+        canvas.removeEventListener("mousemove", () => {});
+      }
+      if (showCircleCheckbox)
+        showCircleCheckbox.removeEventListener("change", () => {});
     };
   }, [selectedMapData]);
 
