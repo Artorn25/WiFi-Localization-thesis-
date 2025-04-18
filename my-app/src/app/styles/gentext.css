@@ -1,0 +1,40 @@
+@import url("https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap");
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* height: 100vh; */
+}
+
+.textAnimationContainer {
+  border: 2.5px solid #b0c4de;
+  border-radius: 8px;
+  padding: 20px;
+  background: linear-gradient(
+    to bottom,
+    #1e90ff,
+    /* Very bright cyan-blue (top) */ #011f5b,
+    /* Bright blue */ #002147,
+    /* Medium blue */ #073980 /* Deep dark blue (bottom) */
+  );
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.animatedText {
+  color: #002147;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(68, 170, 255, 0.7);
+  @apply poetsen-one-regular;
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0;
+}
+
+.poetsen-one-regular {
+  font-family: "Poetsen One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}

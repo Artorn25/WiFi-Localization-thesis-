@@ -3,7 +3,7 @@
 
 :root {
   --primary-color: #6366f1;
-  --primary-gradient: linear-gradient(135deg, #a78bfa, #6366f1);
+  --primary-gradient: linear-gradient(135deg, #60a5fa, #2563eb);
   --secondary-color: #34d399;
   --accent-color: #f87171;
   --background-color: #f8fafc;
@@ -41,7 +41,7 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 2rem;
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
   animation: fadeInUp 0.6s ease;
   display: flex;
   flex-direction: column;
@@ -49,8 +49,6 @@ body {
 }
 
 canvas {
-  width: 100%;
-  max-width: 100%;
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);

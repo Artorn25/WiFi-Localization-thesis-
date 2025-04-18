@@ -29,8 +29,10 @@ nav {
 .sidebar-logo {
   display: flex;
   align-items: center;
-  padding: 15px;
-  border-bottom: 1px solid #eee;
+  /* padding: 15px; */
+  /* border-bottom: 1px solid #eee; */
+  /* margin-right: -170; */
+  padding: 0;
 }
 
 .logo-text {
@@ -421,8 +423,14 @@ header {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .loading-screen {

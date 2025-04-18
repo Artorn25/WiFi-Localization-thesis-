@@ -2,7 +2,7 @@ import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export class MapManager {
   constructor() {
-    this.maps = [];
+    this.maps = []; // Initialize as array
   }
 
   alert(topic, text, icon) {
@@ -57,14 +57,24 @@ export class MapManager {
   }
 
   updateMapSelect() {
+    console.log("MapManager.maps:", this.maps, "Type:", typeof this.maps); // Debug
     const mapSelect = document.getElementById("map-select");
     mapSelect.innerHTML = "<option value=''>Select Map</option>";
-    this.maps.forEach((map, index) => {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = map.name || `Map ${index + 1}`;
-      mapSelect.appendChild(option);
-    });
+    // Ensure maps is an array
+    if (!Array.isArray(this.maps)) {
+      console.error("MapManager.maps is not an array:", this.maps);
+      this.maps = [];
+    }
+    // Use for loop to handle sparse arrays
+    for (let index = 0; index < this.maps.length; index++) {
+      const map = this.maps[index];
+      if (map) {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = map.name || `Map ${index + 1}`;
+        mapSelect.appendChild(option);
+      }
+    }
   }
 
   deleteMap(selectedIndex, canvasUtils) {

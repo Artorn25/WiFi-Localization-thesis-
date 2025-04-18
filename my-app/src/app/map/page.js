@@ -6,7 +6,7 @@ import {
   MapManager,
   PointManager,
   TrilaterationUtils,
-} from "@utils/index";
+} from "@utils/admin/index";
 import Swal from "sweetalert2";
 import "@styles/map.css";
 
@@ -666,14 +666,8 @@ export default function Map() {
                 placeholder="Enter point name"
               />
               <button id="resetPoints">🔄 Reset</button>
-              <button id="confirmSave">💾 Confirm Save to Firestore</button>
-            </div>
-            <div className="controls-group">
               <select id="pointSelect"></select>
               <button id="DeletePoint">🗑️ Delete Point</button>
-              <select id="point1Select"></select>
-              <select id="point2Select"></select>
-              <button id="ShowDistance">📏 Show Distance</button>
               <select id="editPointSelect"></select>
               <input
                 type="text"
@@ -681,6 +675,12 @@ export default function Map() {
                 placeholder="Enter new point name"
               />
               <button id="editPoint">✏️ Update Point Name</button>
+            </div>
+            <div className="controls-group">
+              <button id="confirmSave">💾 Confirm Save to Firestore</button>
+              <select id="point1Select"></select>
+              <select id="point2Select"></select>
+              <button id="ShowDistance">📏 Show Distance</button>
             </div>
           </div>
           <div id="distanceDisplay"></div>

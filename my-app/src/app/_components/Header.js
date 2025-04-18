@@ -13,11 +13,9 @@ export default function Header() {
           <Image
             src="/logo.png"
             alt="Website Logo"
-            width={40} // ปรับขนาดตามต้องการ
-            height={40}
+            width={50} // ปรับขนาดตามต้องการ
+            height={50}
           />
-          <span className="logo-text">WiFi Localization</span>{" "}
-          {/* ข้อความเสริม (optional) */}
         </div>
           <li>
             <Link href="/">Home</Link>

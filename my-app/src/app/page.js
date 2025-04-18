@@ -8,37 +8,36 @@ import {
   MapManager,
   PointManager,
   TrilaterationUtils,
-} from "@utils/index";
+} from "@utils/user/index";
 import { collection, getDocs } from "firebase/firestore";
-import { dbfs, dbRef } from "@utils/firebaseConfig";
+import { dbfs, dbRef, db } from "@utils/user/firebaseConfig";
+import { onValue, off, get } from "firebase/database";
+import GenText from "@components/Gentext";
 
 export default function Home() {
   const [showInfoPopup, setShowInfoPopup] = useState(true);
   const [countdown, setCountdown] = useState(5);
   const [autoRedirect, setAutoRedirect] = useState(true);
-  const [maps, setMaps] = useState([]); // เก็บข้อมูลแผนที่จาก Firestore
-  const [loadedMaps, setLoadedMaps] = useState([]); // เก็บเฉพาะแผนที่ที่โหลดสำเร็จ
-  const [selectedPoints, setSelectedPoints] = useState([]); // เก็บจุดของแผนที่ที่เลือก
-  const [showCircles, setShowCircles] = useState(true); // ควบคุมการแสดงวงกลม
+  const [maps, setMaps] = useState([]);
+  const [loadedMaps, setLoadedMaps] = useState([]);
+  const [selectedPoints, setSelectedPoints] = useState([]);
+  const [showCircles, setShowCircles] = useState(true);
 
-  // อ้างอิง canvas
   const canvasRef = useRef(null);
   const [canvasUtils, setCanvasUtils] = useState(null);
   const [pointManager, setPointManager] = useState(null);
   const [trilaterationUtils, setTrilaterationUtils] = useState(null);
-  const [mapManager] = useState(new MapManager()); // ใช้ MapManager เพื่อจัดการแผนที่
+  const [mapManager] = useState(new MapManager());
+  const listenersRef = useRef([]); // Store Firebase listeners for cleanup
 
-  // ฟังก์ชันเริ่มต้น CanvasUtils, PointManager และ TrilaterationUtils
   const initializeCanvasAndManagers = () => {
     const canvas = canvasRef.current;
     const tooltip = document.getElementById("tooltip");
 
-    // สร้าง CanvasUtils
     const utils = new CanvasUtils(canvas, tooltip);
     utils.showCircles = showCircles;
     utils.initializeCanvas();
 
-    // สร้าง PointManager และ TrilaterationUtils
     const pm = new PointManager(utils);
     const tu = new TrilaterationUtils(utils, pm, mapManager);
     pm.trilaterationUtils = tu;
@@ -48,7 +47,6 @@ export default function Home() {
     setTrilaterationUtils(tu);
   };
 
-  // ฟังก์ชันตรวจสอบการโหลดรูปภาพ
   const checkImageLoad = (mapSrc) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -58,7 +56,6 @@ export default function Home() {
     });
   };
 
-  // ฟังก์ชันดึงข้อมูลแผนที่จาก Firestore และตรวจสอบการโหลด
   const fetchMapsFromFirestore = async () => {
     try {
       const mapsRef = collection(dbfs, "maps");
@@ -68,9 +65,16 @@ export default function Home() {
         ...doc.data(),
       }));
 
-      // ตรวจสอบการโหลดรูปภาพก่อนเพิ่มลงใน dropdown
+      setLoadedMaps([]);
+      mapManager.maps = {};
+
       const loadedMapsData = [];
       for (const map of mapsData) {
+        if (loadedMapsData.some((loadedMap) => loadedMap.id === map.id)) {
+          console.log(`Duplicate map id found: ${map.id}, skipping...`);
+          continue;
+        }
+
         try {
           await checkImageLoad(map.mapSrc);
           loadedMapsData.push(map);
@@ -98,65 +102,142 @@ export default function Home() {
     }
   };
 
-  // ฟังก์ชันดึงข้อมูลจุดจาก Firestore และเริ่มการอัปเดตเรียลไทม์
-  const fetchPointsFromFirestore = async () => {
-    try {
-      const currentMapName = document.getElementById("map-select").value;
+  const fetchPointsAndListenRealtime = async () => {
+    // Clean up existing listeners
+    listenersRef.current.forEach(({ ref, listener }) => {
+      off(ref, "value", listener);
+    });
+    listenersRef.current = [];
 
-      if (!currentMapName) {
+    try {
+      const currentMapId = document.getElementById("map-select").value;
+
+      if (!currentMapId) {
         console.log("Please select a map first");
         setSelectedPoints([]);
         canvasUtils?.resetCanvas();
         return;
       }
 
-      const selectedMap = maps.find((map) => map.id === currentMapName);
-      if (selectedMap) {
-        if (selectedMap.points) {
-          setSelectedPoints(selectedMap.points);
-          console.log("Points for selected map:", selectedMap.points);
-
-          // ใช้พิกัดจาก Firestore โดยไม่ปรับสเกล
-          pointManager.stopRealTimeUpdates();
-          pointManager.pointsPerMap[selectedMap.mapIndex] =
-            selectedMap.points.map((point) => ({
-              ...point,
-              data: [],
-              rssi: "Not available",
-              distance: 0,
-            }));
-          pointManager.points = pointManager.pointsPerMap[selectedMap.mapIndex];
-
-          // เริ่มการอัปเดตเรียลไทม์สำหรับแต่ละจุด
-          selectedMap.points.forEach((point) => {
-            pointManager.startRealTimeUpdate(point, selectedMap.mapIndex);
-          });
-
-          // เรียก trilaterationUtils.startRealTimeUpdate เพื่อให้แน่ใจว่าการอัปเดตเรียลไทม์เริ่มต้น
-          trilaterationUtils.mapIndex = selectedMap.mapIndex;
-          trilaterationUtils.startRealTimeUpdate();
-        } else {
-          setSelectedPoints([]);
-          pointManager.pointsPerMap[selectedMap.mapIndex] = [];
-          pointManager.points = [];
-          console.log("No points found for this map");
-        }
-        loadMapToCanvas(selectedMap.mapSrc, selectedMap.mapIndex);
-      } else {
+      const selectedMap = maps.find((map) => map.id === currentMapId);
+      if (!selectedMap) {
         setSelectedPoints([]);
-        pointManager.pointsPerMap[currentMapName] = [];
+        pointManager.pointsPerMap[currentMapId] = [];
         pointManager.points = [];
         canvasUtils?.resetCanvas();
-        console.log("No map found for this mapName");
+        console.log("No map found for this mapId");
+        return;
       }
+
+      // Load map image to canvas
+      loadMapToCanvas(selectedMap.mapSrc, selectedMap.mapIndex);
+
+      if (!selectedMap.points || selectedMap.points.length === 0) {
+        setSelectedPoints([]);
+        pointManager.pointsPerMap[selectedMap.mapIndex] = [];
+        pointManager.points = [];
+        console.log("No points found for this map");
+        trilaterationUtils.refreshMap(selectedMap.mapIndex);
+        return;
+      }
+
+      // Initialize points
+      const initialPoints = selectedMap.points.map((point) => ({
+        ...point,
+        data: [], // Array to store real-time data from all nodes
+      }));
+
+      pointManager.stopRealTimeUpdates();
+      pointManager.pointsPerMap[selectedMap.mapIndex] = initialPoints;
+      pointManager.points = initialPoints;
+      setSelectedPoints(initialPoints);
+
+      // Set up real-time listener at the root 'Data' node
+      const dataRef = dbRef;
+      const listener = onValue(
+        dataRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const nodes = snapshot.val();
+            console.log("Realtime snapshot:", nodes);
+
+            // Update data for each point
+            selectedMap.points.forEach((point) => {
+              const pointName = point.name;
+              const allData = [];
+
+              // Iterate through each node (e.g., Node-80D703A47F098)
+              Object.keys(nodes).forEach((nodeKey) => {
+                const nodeData = nodes[nodeKey];
+                // Iterate through each router in the node (e.g., Router-1, Router-2)
+                Object.keys(nodeData).forEach((routerKey) => {
+                  if (routerKey.startsWith("Router-")) {
+                    const routerData = nodeData[routerKey];
+                    if (routerData.ssid === pointName) {
+                      allData.push({
+                        rssi: routerData.rssi,
+                        distance: routerData.distance,
+                        mac: nodeData.Mac,
+                      });
+                    }
+                  }
+                });
+              });
+
+              console.log(`Real-time data for SSID ${pointName}:`, allData);
+
+              // Update the point's data
+              const targetPoint = pointManager.pointsPerMap[
+                selectedMap.mapIndex
+              ].find((p) => p.name === pointName);
+
+              if (targetPoint) {
+                targetPoint.data = allData;
+              }
+            });
+
+            // Update UI
+            setSelectedPoints([
+              ...pointManager.pointsPerMap[selectedMap.mapIndex],
+            ]);
+
+            // Refresh canvas to draw circles and calculate trilateration
+            trilaterationUtils.refreshMap(selectedMap.mapIndex);
+          } else {
+            console.log("No data found in Firebase");
+            selectedMap.points.forEach((point) => {
+              const targetPoint = pointManager.pointsPerMap[
+                selectedMap.mapIndex
+              ].find((p) => p.name === point.name);
+              if (targetPoint) {
+                targetPoint.data = [];
+              }
+            });
+            setSelectedPoints([
+              ...pointManager.pointsPerMap[selectedMap.mapIndex],
+            ]);
+            trilaterationUtils.refreshMap(selectedMap.mapIndex);
+          }
+        },
+        (error) => {
+          console.error("Error listening to Firebase:", error);
+          canvasUtils.alert(
+            "Error",
+            "Failed to fetch real-time data from Firebase.",
+            "error"
+          );
+        }
+      );
+
+      // Store listener for cleanup
+      listenersRef.current.push({ ref: dataRef, listener });
     } catch (error) {
-      console.error("Error fetching points from Firestore: ", error);
+      console.error("Error setting up real-time listener:", error);
       setSelectedPoints([]);
       canvasUtils?.resetCanvas();
     }
   };
 
-  // ฟังก์ชันโหลดรูปแผนที่ไปยัง canvas และวาดจุด/วงกลม
   const loadMapToCanvas = (mapSrc, selectedIndex) => {
     if (!canvasUtils || !trilaterationUtils) return;
 
@@ -175,12 +256,11 @@ export default function Home() {
     };
   };
 
-  // ฟังก์ชันจัดการเมื่อกดที่ตัวอย่างแผนที่
   const handleSampleMapClick = (mapSrc) => {
     const matchedMap = maps.find((map) => map.mapSrc === mapSrc);
     if (matchedMap) {
       document.getElementById("map-select").value = matchedMap.id;
-      fetchPointsFromFirestore();
+      fetchPointsAndListenRealtime();
     } else {
       console.log("No matching map found in Firestore for mapSrc:", mapSrc);
       setSelectedPoints([]);
@@ -189,19 +269,17 @@ export default function Home() {
     }
   };
 
-  // เริ่มต้นเมื่อ component ถูกโหลด
   useEffect(() => {
     initializeCanvasAndManagers();
     fetchMapsFromFirestore();
   }, []);
 
-  // อัปเดต showCircles ใน CanvasUtils
   useEffect(() => {
     if (canvasUtils) {
       canvasUtils.showCircles = showCircles;
-      const currentMapName = document.getElementById("map-select").value;
-      if (currentMapName) {
-        const selectedMap = maps.find((map) => map.id === currentMapName);
+      const currentMapId = document.getElementById("map-select").value;
+      if (currentMapId) {
+        const selectedMap = maps.find((map) => map.id === currentMapId);
         if (selectedMap) {
           trilaterationUtils.refreshMap(selectedMap.mapIndex);
         }
@@ -209,7 +287,6 @@ export default function Home() {
     }
   }, [showCircles, canvasUtils, trilaterationUtils]);
 
-  // จัดการ countdown สำหรับ popup
   useEffect(() => {
     if (!autoRedirect) return;
 
@@ -227,9 +304,18 @@ export default function Home() {
     };
   }, [autoRedirect]);
 
+  // Cleanup listeners on component unmount
+  useEffect(() => {
+    return () => {
+      listenersRef.current.forEach(({ ref, listener }) => {
+        off(ref, "value", listener);
+      });
+      listenersRef.current = [];
+    };
+  }, []);
+
   return (
     <>
-      {/* ส่วน Popup ข้อมูลอธิบาย */}
       {showInfoPopup && (
         <div className="popup-overlay">
           <div className="popup">
@@ -268,8 +354,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* ส่วนแผนที่หลัก */}
       <div id="map-container">
+        <GenText />
         <div className="container">
           <canvas
             id="myCanvas"
@@ -278,7 +364,6 @@ export default function Home() {
             height="400px"
           ></canvas>
 
-          {/* ส่วนเลือกแผนที่และควบคุมวงกลม */}
           <div id="map-controls" style={{ marginBottom: "20px" }}>
             <form action="">
               <input
@@ -293,14 +378,14 @@ export default function Home() {
             </form>
             <div className="controls-group">
               <label htmlFor="map-select" style={{ marginRight: "10px" }}>
-                เลือกแผนที่:
+                Select Map:
               </label>
               <select
                 id="map-select"
                 style={{ padding: "5px" }}
-                onChange={fetchPointsFromFirestore}
+                onChange={fetchPointsAndListenRealtime}
               >
-                <option value="">-- กรุณาเลือกแผนที่ --</option>
+                <option value="">-- Please Select Map --</option>
                 {loadedMaps.map((map) => (
                   <option key={map.id} value={map.id}>
                     {map.mapName}
@@ -308,7 +393,7 @@ export default function Home() {
                 ))}
               </select>
               <button
-                onClick={fetchPointsFromFirestore}
+                onClick={fetchPointsAndListenRealtime}
                 style={{
                   marginLeft: "10px",
                   padding: "5px 10px",
@@ -324,7 +409,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ส่วนแสดงจุดของแผนที่ที่เลือก */}
           {selectedPoints.length > 0 ? (
             <div
               id="points-display"
@@ -357,6 +441,21 @@ export default function Home() {
                     <strong>Point {index + 1}:</strong> Name: {point.name}, X:{" "}
                     {point.x.toFixed(2)}, Y: {point.y.toFixed(2)}, Color:{" "}
                     {point.color}
+                    {point.data && point.data.length > 0 ? (
+                      <ul
+                        style={{ listStyleType: "none", paddingLeft: "20px" }}
+                      >
+                        {point.data.map((nodeData, nodeIndex) => (
+                          <li key={nodeIndex}>
+                            Node {nodeIndex + 1}: Distance:{" "}
+                            {nodeData.distance.toFixed(2)}, RSSI:{" "}
+                            {nodeData.rssi.toFixed(2)}, MAC: {nodeData.mac}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div>No node data available for this point.</div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -376,13 +475,12 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ส่วนตัวอย่างแผนที่ */}
       <div
         id="map-sample-container"
         className="container"
         style={{ marginTop: "30px" }}
       >
-        <h3 style={{ marginBottom: "15px" }}>ตัวอย่างแผนที่</h3>
+        <h3 style={{ marginBottom: "15px" }}>Example Maps</h3>
         <div className="map-samples" style={{ display: "flex", gap: "20px" }}>
           <NextImage
             src="/map/map1.png"
@@ -415,7 +513,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Tooltip สำหรับแผนที่ */}
       <div
         id="tooltip"
         style={{
