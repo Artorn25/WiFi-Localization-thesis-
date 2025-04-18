@@ -66,7 +66,7 @@ export default function Home() {
       }));
 
       setLoadedMaps([]);
-      mapManager.maps = {};
+      mapManager.maps = []; // Ensure maps is an array
 
       const loadedMapsData = [];
       for (const map of mapsData) {
@@ -78,10 +78,10 @@ export default function Home() {
         try {
           await checkImageLoad(map.mapSrc);
           loadedMapsData.push(map);
-          mapManager.maps[map.mapIndex] = {
+          mapManager.maps.push({
             src: map.mapSrc,
             name: map.mapName,
-          };
+          });
         } catch (error) {
           console.error(
             `Failed to load map image for ${map.mapName}:`,
@@ -130,7 +130,10 @@ export default function Home() {
       }
 
       // Load map image to canvas
-      loadMapToCanvas(selectedMap.mapSrc, selectedMap.mapIndex);
+      loadMapToCanvas(
+        selectedMap.mapSrc,
+        mapManager.maps.findIndex((map) => map.src === selectedMap.mapSrc)
+      );
 
       if (!selectedMap.points || selectedMap.points.length === 0) {
         setSelectedPoints([]);
@@ -223,7 +226,7 @@ export default function Home() {
           console.error("Error listening to Firebase:", error);
           canvasUtils.alert(
             "Error",
-            "Failed to fetch real-time data from Firebase.",
+            "Failed to fetch0800 real-time data from Firebase.",
             "error"
           );
         }

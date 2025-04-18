@@ -1,5 +1,5 @@
 /* 💠 Premium SaaS UI — Ultra Refined with Soft Pastels & Superior Responsiveness */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap");
 
 :root {
   --primary-color: #6366f1;
@@ -16,12 +16,18 @@
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 body {
-  /* font-family: 'Outfit', sans-serif; */
+  font-family: "Outfit", sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
   margin: 0;
@@ -30,9 +36,9 @@ body {
 }
 
 .container {
-  max-width: 1240px;
+  max-width: 100%;
   margin: auto;
-  padding: 1.5rem;
+  padding: 1rem;
   animation: fadeInUp 0.5s ease;
 }
 
@@ -40,15 +46,20 @@ body {
   background-color: var(--card-color);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 2rem;
-  /* margin-top: 2rem; */
-  animation: fadeInUp 0.6s ease;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 canvas {
+  /* width: 100%; */
+  align-self: center;
+  justify-self: center;
+  height: auto;
+  max-width: 100%;
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
@@ -58,25 +69,25 @@ canvas {
 #map-controls {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-top: 1.5rem;
-  animation: fadeInUp 0.8s ease;
+  gap: 1.5rem;
+  margin-top: 1rem;
 }
 
 @media (min-width: 640px) {
   #map-controls {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
 }
 
 .controls-group {
   display: contents;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
-button, .btn-upload {
-  padding: 1rem 1.25rem;
-  font-size: 1rem;
+button,
+.btn-upload {
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #fff;
   background: var(--primary-gradient);
@@ -92,12 +103,14 @@ button, .btn-upload {
   animation: fadeInUp 0.9s ease;
 }
 
-button:hover, .btn-upload:hover {
+button:hover,
+.btn-upload:hover {
   transform: scale(1.03);
   box-shadow: 0 10px 24px rgba(99, 102, 241, 0.3);
 }
 
-#delete-map, #DeletePoint {
+#delete-map,
+#DeletePoint {
   background: linear-gradient(135deg, #fb7185, #f43f5e);
   box-shadow: 0 5px 15px rgba(251, 113, 133, 0.3);
 }
@@ -107,20 +120,24 @@ button:hover, .btn-upload:hover {
   box-shadow: 0 5px 15px rgba(52, 211, 153, 0.3);
 }
 
-input[type="text"], select, .autocomplete-input {
+input[type="text"],
+select,
+.autocomplete-input {
   width: 100%;
-  padding: 0.95rem 1.1rem;
-  font-size: 1rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
   border-radius: var(--radius);
   border: 1.5px solid var(--border-color);
   background-color: #fff;
   transition: var(--transition);
-  box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
   animation: fadeInUp 1s ease;
   margin-top: 0.5rem;
 }
 
-input:focus, select:focus, .autocomplete-input:focus {
+input:focus,
+select:focus,
+.autocomplete-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
   outline: none;
@@ -140,14 +157,14 @@ label {
   border-radius: var(--radius);
   z-index: 999;
   width: 100%;
-  max-height: 240px;
+  max-height: 200px;
   overflow-y: auto;
   box-shadow: var(--shadow);
   animation: fadeInUp 0.3s ease;
 }
 
 .autocomplete-suggestion {
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -163,7 +180,8 @@ label {
 
 .upload-btn-wrapper input[type="file"] {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -171,7 +189,7 @@ label {
 }
 
 #map-sample-container {
-  margin-top: 3rem;
+  margin-top: 2rem;
   text-align: center;
   animation: fadeInUp 1s ease;
 }
@@ -179,7 +197,7 @@ label {
 .map-samples {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1rem;
   justify-content: center;
 }
 
@@ -187,7 +205,7 @@ label {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   width: 100%;
-  max-width: 400px;
+  max-width: 300px;
   aspect-ratio: 2 / 1;
   object-fit: cover;
   cursor: pointer;
@@ -211,4 +229,31 @@ label {
   position: absolute;
   pointer-events: none;
   z-index: 9999;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+
+  #map-container {
+    padding: 1rem;
+  }
+
+  button,
+  .btn-upload {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  input[type="text"],
+  select,
+  .autocomplete-input {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .map-sample {
+    max-width: 250px;
+  }
 }
