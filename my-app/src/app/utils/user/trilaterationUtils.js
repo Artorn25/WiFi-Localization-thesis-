@@ -1,80 +1,86 @@
 export class TrilaterationUtils {
-    constructor(canvasUtils, pointManager, mapManager) {
-      this.canvasUtils = canvasUtils;
-      this.pointManager = pointManager;
-      this.mapManager = mapManager;
-      this.macToNodeIndex = {};
-      this.trilaterationPositions = {};
+  constructor(canvasUtils, pointManager, mapManager) {
+    this.canvasUtils = canvasUtils;
+    this.pointManager = pointManager;
+    this.mapManager = mapManager;
+    this.macToNodeIndex = {};
+    this.trilaterationPositions = {};
+  }
+
+  calculateTrilateration(point1, point2, point3) {
+    const x1 = point1.x,
+      y1 = point1.y,
+      d1 = point1.distance / this.canvasUtils.scaleX;
+    const x2 = point2.x,
+      y2 = point2.y,
+      d2 = point2.distance / this.canvasUtils.scaleX;
+    const x3 = point3.x,
+      y3 = point3.y,
+      d3 = point3.distance / this.canvasUtils.scaleX;
+
+    const A = 2 * (x2 - x1);
+    const B = 2 * (y2 - y1);
+    const C = d1 * d1 - d2 * d2 + x2 * x2 + y2 * y2 - x1 * x1 - y1 * y1;
+    const D = 2 * (x3 - x1);
+    const E = 2 * (y3 - y1);
+    const F = d1 * d1 - d3 * d3 + x3 * x3 + y3 * y3 - x1 * x1 - y1 * y1;
+
+    const denominator = A * E - B * D;
+    if (denominator === 0) return null;
+
+    const x = (C * E - F * B) / denominator;
+    const y = (D * C - A * F) / denominator;
+    return { x, y };
+  }
+
+  assignNodeIndex(mac) {
+    if (!(mac in this.macToNodeIndex)) {
+      this.macToNodeIndex[mac] = Object.keys(this.macToNodeIndex).length + 1;
     }
-  
-    calculateTrilateration(point1, point2, point3) {
-      const x1 = point1.x,
-        y1 = point1.y,
-        d1 = point1.distance / this.canvasUtils.scaleX;
-      const x2 = point2.x,
-        y2 = point2.y,
-        d2 = point2.distance / this.canvasUtils.scaleX;
-      const x3 = point3.x,
-        y3 = point3.y,
-        d3 = point3.distance / this.canvasUtils.scaleX;
-  
-      const A = 2 * (x2 - x1);
-      const B = 2 * (y2 - y1);
-      const C = d1 * d1 - d2 * d2 + x2 * x2 + y2 * y2 - x1 * x1 - y1 * y1;
-      const D = 2 * (x3 - x1);
-      const E = 2 * (y3 - y1);
-      const F = d1 * d1 - d3 * d3 + x3 * x3 + y3 * y3 - x1 * x1 - y1 * y1;
-  
-      const denominator = A * E - B * D;
-      if (denominator === 0) {
-        console.log("Trilateration failed: Denominator is zero");
-        return null;
-      }
-  
-      const x = (C * E - F * B) / denominator;
-      const y = (D * C - A * F) / denominator;
-      return { x, y };
-    }
-  
-    assignNodeIndex(mac) {
-      if (!(mac in this.macToNodeIndex)) {
-        this.macToNodeIndex[mac] = Object.keys(this.macToNodeIndex).length + 1;
-      }
-      return this.macToNodeIndex[mac];
-    }
-  
-    refreshMap(selectedIndex) {
-      if (!selectedIndex || !this.mapManager.maps[selectedIndex]) {
-        console.log(
-          "Skipping refreshMap: Invalid selectedIndex or map not found"
-        );
-        return;
-      }
-  
-      this.canvasUtils.ctx.clearRect(
-        0,
-        0,
-        this.canvasUtils.canvas.width,
-        this.canvasUtils.canvas.height
+    return this.macToNodeIndex[mac];
+  }
+
+  refreshMap(selectedIndex, showPoints = false) {
+    if (!selectedIndex || !this.mapManager.maps[selectedIndex]) {
+      console.log(
+        "Skipping refreshMap: Invalid selectedIndex or map not found"
       );
-      this.canvasUtils.ctx.drawImage(
-        this.canvasUtils.img,
-        0,
-        0,
-        this.canvasUtils.canvas.width,
-        this.canvasUtils.canvas.height
-      );
-  
-      this.canvasUtils.circles = [];
-      this.trilaterationPositions = {};
-  
-      this.pointManager.points =
-        this.pointManager.pointsPerMap[selectedIndex] || [];
-      this.pointManager.markerCoordinates =
-        this.pointManager.markerCoordinatesPerMap[selectedIndex] || [];
-  
+      return;
+    }
+
+    // ล้าง canvas และวาดภาพแผนที่เสมอ
+    this.canvasUtils.ctx.clearRect(
+      0,
+      0,
+      this.canvasUtils.canvas.width,
+      this.canvasUtils.canvas.height
+    );
+    this.canvasUtils.ctx.drawImage(
+      this.canvasUtils.img,
+      0,
+      0,
+      this.canvasUtils.canvas.width,
+      this.canvasUtils.canvas.height
+    );
+
+    this.canvasUtils.circles = [];
+    this.trilaterationPositions = {};
+
+    this.pointManager.points =
+      this.pointManager.pointsPerMap[selectedIndex] || [];
+    this.pointManager.markerCoordinates =
+      this.pointManager.markerCoordinatesPerMap[selectedIndex] || [];
+
+    // วาดจุดและวงเฉพาะเมื่อ showPoints เป็น true
+    if (showPoints) {
       this.pointManager.points.forEach((point) => {
-        this.canvasUtils.drawPoint(point.x, point.y, point.name, point.color);
+        this.canvasUtils.drawPoint(
+          point.x,
+          point.y,
+          point.name,
+          point.color,
+          showPoints
+        );
         if (point.data && Array.isArray(point.data)) {
           console.log(`Drawing circles for point ${point.name}:`, point.data);
           point.data.forEach((data) => {
@@ -89,7 +95,8 @@ export class TrilaterationUtils {
                   point.y,
                   data.distance,
                   data.rssi,
-                  data.mac
+                  data.mac,
+                  showPoints
                 );
               }
             } else {
@@ -103,7 +110,7 @@ export class TrilaterationUtils {
           console.log(`No data for point ${point.name}`);
         }
       });
-  
+
       const macGroups = {};
       this.pointManager.points.forEach((point) => {
         if (point.data && Array.isArray(point.data)) {
@@ -122,14 +129,12 @@ export class TrilaterationUtils {
           });
         }
       });
-  
-      console.log("MAC Groups for Trilateration:", macGroups); // Debug: ดูกลุ่มข้อมูล
-  
+
       Object.keys(macGroups).forEach((mac) => {
         const circlesInNode = macGroups[mac];
         const nodeIndex = this.assignNodeIndex(mac);
         const nodeName = `Node ${nodeIndex}`;
-  
+
         if (
           circlesInNode &&
           Array.isArray(circlesInNode) &&
@@ -158,36 +163,28 @@ export class TrilaterationUtils {
               y: position.y,
               name: nodeName,
             };
-            console.log(
-              `Drawing Node ${nodeName} at x=${position.x}, y=${position.y}`
-            ); // Debug: ดูตำแหน่งที่คำนวณ
             this.canvasUtils.drawIntersectionPoint(
               position.x,
               position.y,
               nodeName,
-              mac
+              mac,
+              showPoints
             );
-          } else {
-            console.log(`Trilateration failed for MAC ${mac}`);
           }
-        } else {
-          console.log(
-            `Not enough data for Trilateration for MAC ${mac}:`,
-            circlesInNode
-          );
-        }
-      });
-    }
-  
-    startRealTimeUpdate() {
-      this.macToNodeIndex = {};
-      this.pointManager.pointsPerMap.forEach((points, mapIndex) => {
-        if (points) {
-          points.forEach((point) => {
-            this.pointManager.startRealTimeUpdate(point, mapIndex);
-          });
         }
       });
     }
   }
-  
+
+  startRealTimeUpdate() {
+    堵;
+    this.macToNodeIndex = {};
+    this.pointManager.pointsPerMap.forEach((points, mapIndex) => {
+      if (points) {
+        points.forEach((point) => {
+          this.pointManager.startRealTimeUpdate(point, mapIndex);
+        });
+      }
+    });
+  }
+}

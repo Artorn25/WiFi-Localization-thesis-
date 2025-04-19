@@ -2,7 +2,7 @@ import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export class MapManager {
   constructor() {
-    this.maps = []; // Initialize as array
+    this.maps = [];
   }
 
   alert(topic, text, icon) {
@@ -49,32 +49,36 @@ export class MapManager {
         `Map uploaded successfully\nMap name: ${mapName}`,
         "success"
       );
-      this.maps.push({ src: mapSrc, name: mapName });
+      this.maps.push({ src: mapSrc, name: mapName, index: this.maps.length });
       this.updateMapSelect();
       return this.maps.length - 1;
     }
     return null;
   }
 
+  loadMaps(mapsData) {
+    this.maps = mapsData.map((map, index) => ({
+      id: map.id,
+      src: map.mapSrc,
+      name: map.mapName,
+      index,
+    }));
+    this.updateMapSelect();
+  }
+
   updateMapSelect() {
-    console.log("MapManager.maps:", this.maps, "Type:", typeof this.maps); // Debug
     const mapSelect = document.getElementById("map-select");
-    mapSelect.innerHTML = "<option value=''>Select Map</option>";
-    // Ensure maps is an array
-    if (!Array.isArray(this.maps)) {
-      console.error("MapManager.maps is not an array:", this.maps);
-      this.maps = [];
+    if (!mapSelect) {
+      console.warn("Map select element not found");
+      return;
     }
-    // Use for loop to handle sparse arrays
-    for (let index = 0; index < this.maps.length; index++) {
-      const map = this.maps[index];
-      if (map) {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = map.name || `Map ${index + 1}`;
-        mapSelect.appendChild(option);
-      }
-    }
+    mapSelect.innerHTML = "<option value=''>-- Please Select Map --</option>";
+    this.maps.forEach((map) => {
+      const option = document.createElement("option");
+      option.value = map.id;
+      option.textContent = map.name || `Map ${map.index + 1}`;
+      mapSelect.appendChild(option);
+    });
   }
 
   deleteMap(selectedIndex, canvasUtils) {
@@ -87,32 +91,21 @@ export class MapManager {
       });
       return;
     }
-    if (
-      this.checkCondition.Equal(selectedIndex, "Please select a map to delete.")
-    )
+    if (selectedIndex < 0 || selectedIndex >= this.maps.length) {
+      Swal.fire({
+        title: "Warning",
+        text: "Please select a map to delete.",
+        icon: "warning",
+      });
       return;
+    }
 
-    Swal.fire({
-      title: `Are you sure you want to delete map ${
-        parseInt(selectedIndex) + 1
-      }?`,
-      icon: "question",
-      confirmButtonText: "Delete",
-      cancelButtonText: "Cancel",
-      showCancelButton: true,
-      showCloseButton: true,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.alert("Map deleted", "Map deleted successfully", "success");
-        this.maps.splice(selectedIndex, 1);
-        this.updateMapSelect();
-
-        canvasUtils.resetCanvas();
-        if (this.maps.length > 0) {
-          document.getElementById("map-select").value = 0;
-          canvasUtils.img.src = this.maps[0].src;
-        }
-      }
+    // การลบจะเกิดขึ้นใน Home.jsx หลังยืนยัน
+    // ฟังก์ชันนี้แค่จัดการการอัปเดต maps และ UI
+    this.maps.splice(selectedIndex, 1);
+    this.maps.forEach((map, i) => {
+      map.index = i;
     });
+    this.updateMapSelect();
   }
 }

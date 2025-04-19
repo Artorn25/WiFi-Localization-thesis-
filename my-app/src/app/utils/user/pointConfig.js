@@ -1,6 +1,5 @@
 import { dbRef, dbfs } from "./firebaseConfig";
 import { onValue, off } from "firebase/database";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export class PointManager {
   constructor(canvasUtils, trilaterationUtils) {
@@ -12,7 +11,6 @@ export class PointManager {
     this.markerCoordinates = [];
     this.drawMode = true;
     this.listeners = [];
-    // ล้าง pointsPerMap ที่ไม่ถูกต้อง
     if (this.pointsPerMap[""]) {
       delete this.pointsPerMap[""];
     }
@@ -50,158 +48,6 @@ export class PointManager {
     this.addPoint(x, y, name, selectedIndex);
   }
 
-  addPoint(x, y, name, selectedIndex) {
-    if (!this.validatePoint(name)) return;
-
-    if (!selectedIndex || selectedIndex === "") {
-      console.error("Invalid selectedIndex:", selectedIndex);
-      this.canvasUtils.alert(
-        "Error",
-        "Invalid map index. Please select a map first.",
-        "error"
-      );
-      return;
-    }
-
-    const color = this.drawMode ? "blue" : "red";
-    if (!this.pointsPerMap[selectedIndex])
-      this.pointsPerMap[selectedIndex] = [];
-
-    this.canvasUtils.drawPoint(x, y, name, color);
-    const newPoint = {
-      x,
-      y,
-      name,
-      color,
-      distance: 0,
-      rssi: "Not available",
-      data: [],
-    };
-    this.pointsPerMap[selectedIndex].push(newPoint);
-    this.points = this.pointsPerMap[selectedIndex];
-    this.startRealTimeUpdate(newPoint, selectedIndex);
-    this.updatePointSelects();
-  }
-
-  async savePointToFirestore(x, y, name, color) {
-    try {
-      const pointsRef = collection(dbfs, "points");
-      await setDoc(doc(pointsRef, name), {
-        coordinates: { x, y },
-        createdAt: serverTimestamp(),
-        details: {
-          color,
-          scaleX: this.canvasUtils.scaleX,
-          scaleY: this.canvasUtils.scaleY,
-        },
-        mapIndex: document.getElementById("map-select").value,
-        ssid: name,
-        updatedAt: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error("Error saving point to Firestore: ", error);
-      throw error;
-    }
-  }
-
-  async saveMapDataToFirestore(mapData) {
-    try {
-      if (!mapData || !mapData.mapName) {
-        throw new Error("Map name is missing or invalid.");
-      }
-
-      const mapsRef = collection(dbfs, "maps");
-      const mapDocRef = doc(mapsRef, mapData.mapName);
-
-      await setDoc(
-        mapDocRef,
-        {
-          mapIndex: mapData.mapIndex,
-          mapName: mapData.mapName,
-          mapSrc: mapData.mapSrc,
-          points: mapData.points, // points จะมี color รวมอยู่แล้ว
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-
-      console.log(
-        "Map data saved to Firestore with document ID:",
-        mapData.mapName
-      );
-      this.canvasUtils.alert(
-        "Success",
-        `Map ${mapData.mapName} saved to Firestore with ${mapData.points.length} points.`,
-        "success"
-      );
-    } catch (error) {
-      console.error("Error saving map data to Firestore: ", error);
-      throw error;
-    }
-  }
-
-  showDistance(index1, index2) {
-    if (index1 === index2) {
-      this.canvasUtils.alert(
-        "Error",
-        "Cannot measure distance between the same point.",
-        "error"
-      );
-      return;
-    }
-    if (index1 && index2) {
-      const point1 = this.points[index1];
-      const point2 = this.points[index2];
-      const dx = (point2.x - point1.x) * this.canvasUtils.scaleX;
-      const dy = (point2.y - point1.y) * this.canvasUtils.scaleY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      document.getElementById(
-        "distanceDisplay"
-      ).innerText = `Distance between ${point1.name} and ${
-        point2.name
-      }: ${distance.toFixed(2)} meters`;
-    }
-  }
-
-  deletePoint(selectedPointName, mapIndex) {
-    if (!selectedPointName) {
-      this.canvasUtils.alert(
-        "Info",
-        "Please select a point to delete.",
-        "question"
-      );
-      return;
-    }
-    if (!this.pointsPerMap[mapIndex]) {
-      this.canvasUtils.alert(
-        "Info",
-        "No points available for the selected map.",
-        "question"
-      );
-      return;
-    }
-
-    const listenerIndex = this.listeners.findIndex(
-      (l) => l.pointName === selectedPointName
-    );
-    if (listenerIndex !== -1) {
-      off(dbRef, "value", this.listeners[listenerIndex].listener);
-      this.listeners.splice(listenerIndex, 1);
-    }
-
-    this.pointsPerMap[mapIndex] = this.pointsPerMap[mapIndex].filter(
-      (point) => point.name !== selectedPointName
-    );
-    if (this.markerCoordinatesPerMap[mapIndex]) {
-      this.markerCoordinatesPerMap[mapIndex] = this.markerCoordinatesPerMap[
-        mapIndex
-      ].filter((marker) => marker.name !== selectedPointName);
-    }
-    this.points = this.pointsPerMap[mapIndex];
-    this.updatePointSelects();
-  }
-
   updatePointSelects() {
     const selects = [
       "pointSelect",
@@ -209,7 +55,9 @@ export class PointManager {
       "point2Select",
       "editPointSelect",
     ].map((id) => document.getElementById(id));
-    selects.forEach((select) => (select.innerHTML = ""));
+    selects.forEach((select) => {
+      if (select) select.innerHTML = "";
+    });
 
     this.pointsPerMap.forEach((points) => {
       if (points) {
@@ -217,9 +65,9 @@ export class PointManager {
           const option = document.createElement("option");
           option.value = point.name;
           option.textContent = point.name;
-          selects.forEach((select) =>
-            select.appendChild(option.cloneNode(true))
-          );
+          selects.forEach((select) => {
+            if (select) select.appendChild(option.cloneNode(true));
+          });
         });
       }
     });
@@ -260,7 +108,7 @@ export class PointManager {
 
           if (allData.length) {
             point.data = allData;
-            this.updatePointData(point.name, allData);
+            this.updatePointData(point.name, allData, selectedIndex);
           } else {
             this.canvasUtils.alert(
               "Warning",
@@ -268,16 +116,7 @@ export class PointManager {
               "warning"
             );
             point.data = [];
-          }
-
-          const currentSelectedIndex =
-            document.getElementById("map-select").value;
-          if (currentSelectedIndex && currentSelectedIndex === selectedIndex) {
-            this.trilaterationUtils.refreshMap(currentSelectedIndex);
-          } else {
-            console.log(
-              `Skipping refreshMap: Map index mismatch (expected ${selectedIndex}, got ${currentSelectedIndex})`
-            );
+            this.updatePointData(point.name, [], selectedIndex);
           }
         } else {
           this.canvasUtils.alert(
@@ -286,12 +125,7 @@ export class PointManager {
             "error"
           );
           point.data = [];
-
-          const currentSelectedIndex =
-            document.getElementById("map-select").value;
-          if (currentSelectedIndex && currentSelectedIndex === selectedIndex) {
-            this.trilaterationUtils.refreshMap(currentSelectedIndex);
-          }
+          this.updatePointData(point.name, [], selectedIndex);
         }
       },
       (error) => {
@@ -315,67 +149,13 @@ export class PointManager {
     this.listeners = [];
   }
 
-  updatePointData(pointName, data) {
-    const selectedIndex = document.getElementById("map-select").value;
-    if (selectedIndex && this.pointsPerMap[selectedIndex]) {
+  updatePointData(pointName, data, selectedIndex) {
+    if (this.pointsPerMap[selectedIndex]) {
       this.pointsPerMap[selectedIndex].forEach((point) => {
         if (point.name === pointName) {
           point.data = data;
         }
       });
     }
-  }
-
-  editPoint(selectedPointName, newPointName, mapIndex) {
-    if (
-      this.canvasUtils.checkCondition.NotEqual(
-        selectedPointName,
-        "Please select a point to edit."
-      ) ||
-      this.canvasUtils.checkCondition.NotEqual(
-        newPointName,
-        "Please enter a new name for the point."
-      )
-    )
-      return;
-
-    if (!this.validatePoint(newPointName)) {
-      this.canvasUtils.alert(
-        "Error",
-        "The new point name already exists.",
-        "error"
-      );
-      return;
-    }
-
-    const point = this.pointsPerMap[mapIndex].find(
-      (p) => p.name === selectedPointName
-    );
-    if (point) {
-      const listenerIndex = this.listeners.findIndex(
-        (l) => l.pointName === selectedPointName
-      );
-      if (listenerIndex !== -1) {
-        off(dbRef, "value", this.listeners[listenerIndex].listener);
-        this.listeners.splice(listenerIndex, 1);
-      }
-
-      point.name = newPointName;
-      this.startRealTimeUpdate(point, mapIndex);
-    }
-
-    if (this.markerCoordinatesPerMap[mapIndex]) {
-      const marker = this.markerCoordinatesPerMap[mapIndex].find(
-        (m) => m.name === selectedPointName
-      );
-      if (marker) marker.name = newPointName;
-    }
-
-    this.updatePointSelects();
-    this.canvasUtils.alert(
-      "Success",
-      `Point name changed to: ${newPointName}`,
-      "success"
-    );
   }
 }

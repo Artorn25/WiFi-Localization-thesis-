@@ -21,31 +21,44 @@ export class CanvasUtils {
   }
 
   initializeCanvas() {
-    this.img.onload = () => {
-      this.canvas.width = FIXED_CANVAS_WIDTH;
-      this.canvas.height = FIXED_CANVAS_HEIGHT;
+    this.canvas.width = FIXED_CANVAS_WIDTH;
+    this.canvas.height = FIXED_CANVAS_HEIGHT;
 
-      const imgAspect = this.img.width / this.img.height;
-      const canvasAspect = this.canvas.width / this.canvas.height;
-      let drawWidth, drawHeight, offsetX, offsetY;
+    const imgAspect = this.img.width / this.img.height || 1;
+    const canvasAspect = this.canvas.width / this.canvas.height;
+    let drawWidth, drawHeight, offsetX, offsetY;
 
-      if (imgAspect > canvasAspect) {
-        drawWidth = this.canvas.width;
-        drawHeight = this.canvas.width / imgAspect;
-        offsetX = 0;
-        offsetY = (this.canvas.height - drawHeight) / 2;
-      } else {
-        drawHeight = this.canvas.height;
-        drawWidth = this.canvas.height * imgAspect;
-        offsetX = (this.canvas.width - drawWidth) / 2;
-        offsetY = 0;
-      }
+    if (imgAspect > canvasAspect) {
+      drawWidth = this.canvas.width;
+      drawHeight = this.canvas.width / imgAspect;
+      offsetX = 0;
+      offsetY = (this.canvas.height - drawHeight) / 2;
+    } else {
+      drawHeight = this.canvas.height;
+      drawWidth = this.canvas.height * imgAspect;
+      offsetX = (this.canvas.width - drawWidth) / 2;
+      offsetY = 0;
+    }
 
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.ctx.fillStyle = "#000000";
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
-    };
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  drawImageImmediately(imgSrc) {
+    this.img.src = imgSrc;
+    if (this.img.complete && this.img.naturalWidth !== 0) {
+      console.log("Drawing cached image:", imgSrc);
+      this.initializeCanvas();
+    } else {
+      this.img.onload = () => {
+        console.log("Drawing loaded image:", imgSrc);
+        this.initializeCanvas();
+      };
+      this.img.onerror = () => {
+        console.error("Failed to load image:", imgSrc);
+        this.alert("Error", `Failed to load map image: ${imgSrc}`, "error");
+      };
+    }
   }
 
   toCartesian(pixelX, pixelY) {
@@ -69,7 +82,8 @@ export class CanvasUtils {
     this.ctx.stroke();
   }
 
-  drawPoint(x, y, name, color = "black") {
+  drawPoint(x, y, name, color = "black", showPoints = false) {
+    if (!showPoints) return;
     const { pixelX, pixelY } = this.toCanvas(x, y);
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
@@ -83,8 +97,8 @@ export class CanvasUtils {
     );
   }
 
-  drawCircle(x, y, distance, rssi, mac) {
-    if (this.showCircles && distance > 0) {
+  drawCircle(x, y, distance, rssi, mac, showPoints = false) {
+    if (this.showCircles && distance > 0 && showPoints) {
       const { pixelX, pixelY } = this.toCanvas(x, y);
       const radius = distance / this.scaleX;
 
@@ -97,7 +111,8 @@ export class CanvasUtils {
     }
   }
 
-  drawIntersectionPoint(x, y, name, mac) {
+  drawIntersectionPoint(x, y, name, mac, showPoints = false) {
+    if (!showPoints) return;
     if (!this.intersectionColors[mac]) {
       this.intersectionColors[mac] = this.getRandomColor();
     }

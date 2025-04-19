@@ -59,7 +59,10 @@ export default function ReportButton() {
       setMessage("");
       setIsOpen(false);
     } catch (error) {
-      console.error("Sorry, we couldn't submit your report due to an error.:", error);
+      console.error(
+        "Sorry, we couldn't submit your report due to an error.:",
+        error
+      );
       alert(
         `Sorry, we couldn't submit your report due to an error.: ${error.message}\nกรุณาลองอีกครั้งหรือติดต่อผู้ดูแลระบบโดยตรง`
       );

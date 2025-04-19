@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import NextImage from "next/image";
-import "@styles/map.css";
+import "@styles/usermap.css";
 import "@styles/homepage.css";
 import {
   CanvasUtils,
@@ -10,9 +10,11 @@ import {
   TrilaterationUtils,
 } from "@utils/user/index";
 import { collection, getDocs } from "firebase/firestore";
-import { dbfs, dbRef, db } from "@utils/user/firebaseConfig";
-import { onValue, off, get } from "firebase/database";
+import { dbfs, dbRef } from "@utils/user/firebaseConfig";
+import { onValue, off } from "firebase/database";
 import GenText from "@components/Gentext";
+import Swal from "sweetalert2/dist/sweetalert2.js";
+import Loading from "@components/Loading";
 
 export default function Home() {
   const [showInfoPopup, setShowInfoPopup] = useState(true);
@@ -22,41 +24,64 @@ export default function Home() {
   const [loadedMaps, setLoadedMaps] = useState([]);
   const [selectedPoints, setSelectedPoints] = useState([]);
   const [showCircles, setShowCircles] = useState(true);
+  const [showPoints, setShowPoints] = useState(false);
+  const [isLoadingMaps, setIsLoadingMaps] = useState(false);
+  const [loadError, setLoadError] = useState(null);
+  const [sampleMaps, setSampleMaps] = useState([]);
+  const [isAppLoading, setIsAppLoading] = useState(true);
 
   const canvasRef = useRef(null);
   const [canvasUtils, setCanvasUtils] = useState(null);
   const [pointManager, setPointManager] = useState(null);
   const [trilaterationUtils, setTrilaterationUtils] = useState(null);
   const [mapManager] = useState(new MapManager());
-  const listenersRef = useRef([]); // Store Firebase listeners for cleanup
+  const listenersRef = useRef([]);
 
-  const initializeCanvasAndManagers = () => {
-    const canvas = canvasRef.current;
-    const tooltip = document.getElementById("tooltip");
-
-    const utils = new CanvasUtils(canvas, tooltip);
-    utils.showCircles = showCircles;
-    utils.initializeCanvas();
-
-    const pm = new PointManager(utils);
-    const tu = new TrilaterationUtils(utils, pm, mapManager);
-    pm.trilaterationUtils = tu;
-
-    setCanvasUtils(utils);
-    setPointManager(pm);
-    setTrilaterationUtils(tu);
+  // ดึงข้อมูลตัวอย่างแผนที่จาก Firestore
+  const fetchSampleMaps = async () => {
+    try {
+      const mapsRef = collection(dbfs, "maps");
+      const querySnapshot = await getDocs(mapsRef);
+      const mapsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      const samples = mapsData.filter((map) => map.isSample || true);
+      setSampleMaps(samples);
+      console.log("Sample maps loaded:", samples);
+    } catch (error) {
+      console.error("Error fetching sample maps: ", error);
+      setSampleMaps([]);
+      Swal.fire({
+        title: "Error",
+        text: "Failed to load sample maps.",
+        icon: "error",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    }
   };
 
+  // ตรวจสอบการโหลดรูปภาพ
   const checkImageLoad = (mapSrc) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.src = mapSrc;
-      img.onload = () => resolve(true);
-      img.onerror = () => reject(false);
+      img.onload = () => {
+        console.log("Image loaded successfully:", mapSrc);
+        resolve(true);
+      };
+      img.onerror = () => {
+        console.error("Failed to load image:", mapSrc);
+        reject(false);
+      };
     });
   };
 
+  // ดึงข้อมูลแผนที่จาก Firestore
   const fetchMapsFromFirestore = async () => {
+    setIsLoadingMaps(true);
+    setLoadError(null);
     try {
       const mapsRef = collection(dbfs, "maps");
       const querySnapshot = await getDocs(mapsRef);
@@ -65,22 +90,21 @@ export default function Home() {
         ...doc.data(),
       }));
 
-      setLoadedMaps([]);
-      mapManager.maps = []; // Ensure maps is an array
+      if (mapsData.length === 0) {
+        throw new Error("No maps found in Firestore.");
+      }
 
       const loadedMapsData = [];
+      mapManager.maps = [];
       for (const map of mapsData) {
-        if (loadedMapsData.some((loadedMap) => loadedMap.id === map.id)) {
-          console.log(`Duplicate map id found: ${map.id}, skipping...`);
-          continue;
-        }
-
         try {
           await checkImageLoad(map.mapSrc);
           loadedMapsData.push(map);
           mapManager.maps.push({
+            id: map.id,
             src: map.mapSrc,
             name: map.mapName,
+            index: loadedMapsData.length - 1,
           });
         } catch (error) {
           console.error(
@@ -92,70 +116,135 @@ export default function Home() {
 
       setMaps(mapsData);
       setLoadedMaps(loadedMapsData);
-      mapManager.updateMapSelect();
-
+      setIsLoadingMaps(false);
       console.log("Loaded maps:", loadedMapsData);
+
+      if (loadedMapsData.length > 0) {
+        Swal.fire({
+          title: "Maps Loaded",
+          text: `${loadedMapsData.length} map(s) have been loaded.`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        throw new Error("No valid map images could be loaded.");
+      }
     } catch (error) {
       console.error("Error fetching maps from Firestore: ", error);
       setMaps([]);
       setLoadedMaps([]);
+      setLoadError("Failed to load maps. Please try again later.");
+      setIsLoadingMaps(false);
+      Swal.fire({
+        title: "Error",
+        text: error.message || "Failed to load maps from Firestore.",
+        icon: "error",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     }
   };
 
+  // โหลดแผนที่ลงใน Canvas
+  const loadMapToCanvas = (mapSrc, selectedIndex) => {
+    if (!canvasUtils) {
+      console.error("CanvasUtils not initialized");
+      return;
+    }
+
+    console.log("Attempting to load map with src:", mapSrc);
+    canvasUtils.resetCanvas(); // ล้าง canvas ก่อนวาด
+    canvasUtils.drawImageImmediately(mapSrc);
+  };
+
+  // จัดการการเลือกแผนที่ (โหลดเฉพาะภาพแผนที่)
   const fetchPointsAndListenRealtime = async () => {
-    // Clean up existing listeners
-    listenersRef.current.forEach(({ ref, listener }) => {
-      off(ref, "value", listener);
-    });
-    listenersRef.current = [];
-
     try {
-      const currentMapId = document.getElementById("map-select").value;
+      const mapSelect = document.getElementById("map-select");
+      if (!mapSelect) {
+        console.log("Map select element not found");
+        return;
+      }
 
+      const currentMapId = mapSelect.value;
       if (!currentMapId) {
         console.log("Please select a map first");
-        setSelectedPoints([]);
         canvasUtils?.resetCanvas();
         return;
       }
 
       const selectedMap = maps.find((map) => map.id === currentMapId);
       if (!selectedMap) {
-        setSelectedPoints([]);
-        pointManager.pointsPerMap[currentMapId] = [];
-        pointManager.points = [];
+        console.log("No map found for this mapId:", currentMapId);
         canvasUtils?.resetCanvas();
-        console.log("No map found for this mapId");
         return;
       }
 
-      // Load map image to canvas
+      // แสดงการแจ้งเตือนเมื่อเลือกแผนที่
+      Swal.fire({
+        title: "Map Selected",
+        text: `Map ${selectedMap.mapName} has been selected.`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // โหลดเฉพาะภาพแผนที่ลง canvas
       loadMapToCanvas(
         selectedMap.mapSrc,
-        mapManager.maps.findIndex((map) => map.src === selectedMap.mapSrc)
+        mapManager.maps.findIndex((map) => map.id === selectedMap.id)
       );
+    } catch (error) {
+      console.error("Error loading map:", error);
+      canvasUtils?.resetCanvas();
+    }
+  };
 
-      if (!selectedMap.points || selectedMap.points.length === 0) {
-        setSelectedPoints([]);
-        pointManager.pointsPerMap[selectedMap.mapIndex] = [];
-        pointManager.points = [];
-        console.log("No points found for this map");
-        trilaterationUtils.refreshMap(selectedMap.mapIndex);
-        return;
-      }
+  // จัดการการแสดงจุดและวงกลมเมื่อกด "Show Points"
+  const handleShowPoints = () => {
+    setShowPoints(true);
+    const mapSelect = document.getElementById("map-select");
+    if (!mapSelect || !mapSelect.value) {
+      Swal.fire({
+        title: "No Map Selected",
+        text: "Please select a map first.",
+        icon: "warning",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
 
-      // Initialize points
-      const initialPoints = selectedMap.points.map((point) => ({
-        ...point,
-        data: [], // Array to store real-time data from all nodes
-      }));
+    const currentMapId = mapSelect.value;
+    const selectedMap = maps.find((map) => map.id === currentMapId);
+    if (!selectedMap) {
+      console.log("No map found for this mapId");
+      canvasUtils?.resetCanvas();
+      return;
+    }
+
+    // หยุดการฟังข้อมูลเรียลไทม์ที่มีอยู่
+    listenersRef.current.forEach(({ ref, listener }) => {
+      off(ref, "value", listener);
+    });
+    listenersRef.current = [];
+
+    try {
+      // เตรียมข้อมูลจุด
+      const initialPoints = selectedMap.points?.length
+        ? selectedMap.points.map((point) => ({
+            ...point,
+            data: [],
+          }))
+        : [];
 
       pointManager.stopRealTimeUpdates();
       pointManager.pointsPerMap[selectedMap.mapIndex] = initialPoints;
       pointManager.points = initialPoints;
       setSelectedPoints(initialPoints);
 
-      // Set up real-time listener at the root 'Data' node
+      // ตั้งค่าการฟังข้อมูลเรียลไทม์
       const dataRef = dbRef;
       const listener = onValue(
         dataRef,
@@ -164,15 +253,12 @@ export default function Home() {
             const nodes = snapshot.val();
             console.log("Realtime snapshot:", nodes);
 
-            // Update data for each point
-            selectedMap.points.forEach((point) => {
+            selectedMap.points?.forEach((point) => {
               const pointName = point.name;
               const allData = [];
 
-              // Iterate through each node (e.g., Node-80D703A47F098)
               Object.keys(nodes).forEach((nodeKey) => {
                 const nodeData = nodes[nodeKey];
-                // Iterate through each router in the node (e.g., Router-1, Router-2)
                 Object.keys(nodeData).forEach((routerKey) => {
                   if (routerKey.startsWith("Router-")) {
                     const routerData = nodeData[routerKey];
@@ -189,7 +275,6 @@ export default function Home() {
 
               console.log(`Real-time data for SSID ${pointName}:`, allData);
 
-              // Update the point's data
               const targetPoint = pointManager.pointsPerMap[
                 selectedMap.mapIndex
               ].find((p) => p.name === pointName);
@@ -199,16 +284,17 @@ export default function Home() {
               }
             });
 
-            // Update UI
             setSelectedPoints([
               ...pointManager.pointsPerMap[selectedMap.mapIndex],
             ]);
 
-            // Refresh canvas to draw circles and calculate trilateration
-            trilaterationUtils.refreshMap(selectedMap.mapIndex);
+            // อัปเดต canvas เพื่อแสดงจุดและวงกลม
+            if (trilaterationUtils) {
+              trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+            }
           } else {
             console.log("No data found in Firebase");
-            selectedMap.points.forEach((point) => {
+            selectedMap.points?.forEach((point) => {
               const targetPoint = pointManager.pointsPerMap[
                 selectedMap.mapIndex
               ].find((p) => p.name === point.name);
@@ -219,77 +305,205 @@ export default function Home() {
             setSelectedPoints([
               ...pointManager.pointsPerMap[selectedMap.mapIndex],
             ]);
-            trilaterationUtils.refreshMap(selectedMap.mapIndex);
+            if (trilaterationUtils) {
+              trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+            }
           }
         },
         (error) => {
           console.error("Error listening to Firebase:", error);
           canvasUtils.alert(
             "Error",
-            "Failed to fetch0800 real-time data from Firebase.",
+            "Failed to fetch real-time data from Firebase.",
             "error"
           );
         }
       );
 
-      // Store listener for cleanup
       listenersRef.current.push({ ref: dataRef, listener });
+
+      // อัปเดต canvas ครั้งแรก
+      if (trilaterationUtils) {
+        trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+      }
     } catch (error) {
-      console.error("Error setting up real-time listener:", error);
+      console.error("Error setting up points and real-time listener:", error);
       setSelectedPoints([]);
+      setShowPoints(false);
       canvasUtils?.resetCanvas();
     }
   };
 
-  const loadMapToCanvas = (mapSrc, selectedIndex) => {
-    if (!canvasUtils || !trilaterationUtils) return;
+  // ฟังก์ชันสำหรับปุ่ม Delete Map
+  const handleDeleteMap = () => {
+    const mapSelect = document.getElementById("map-select");
+    if (!mapSelect || !mapSelect.value) {
+      canvasUtils.alert("Warning", "Please select a map to delete.", "warning");
+      return;
+    }
 
-    canvasUtils.img.src = mapSrc;
-    canvasUtils.img.onload = () => {
-      trilaterationUtils.refreshMap(selectedIndex);
-    };
-    canvasUtils.img.onerror = () => {
-      console.error("Error loading map image:", mapSrc);
-      canvasUtils.resetCanvas();
-      canvasUtils.alert(
-        "Error",
-        "Failed to load map image. Please check the mapSrc path.",
-        "error"
+    const currentMapId = mapSelect.value;
+    const selectedMap = maps.find((map) => map.id === currentMapId);
+    if (!selectedMap) {
+      canvasUtils.alert("Error", "Selected map not found.", "error");
+      return;
+    }
+
+    const selectedIndex = mapManager.maps.findIndex(
+      (map) => map.id === selectedMap.id
+    );
+
+    // ลบแผนที่จาก MapManager
+    mapManager.deleteMap(selectedIndex, canvasUtils);
+
+    // อัปเดต state
+    const updatedMaps = maps.filter((map) => map.id !== currentMapId);
+    const updatedLoadedMaps = loadedMaps.filter(
+      (map) => map.id !== currentMapId
+    );
+    setMaps(updatedMaps);
+    setLoadedMaps(updatedLoadedMaps);
+    setSelectedPoints([]);
+    setShowPoints(false);
+
+    // หยุดการฟังข้อมูลเรียลไทม์
+    listenersRef.current.forEach(({ ref, listener }) => {
+      off(ref, "value", listener);
+    });
+    listenersRef.current = [];
+
+    // อัปเดต UI
+    if (updatedLoadedMaps.length > 0) {
+      const nextMap = updatedLoadedMaps[0];
+      mapSelect.value = nextMap.id;
+      loadMapToCanvas(
+        nextMap.mapSrc,
+        mapManager.maps.findIndex((map) => map.id === nextMap.id)
       );
-    };
+    } else {
+      mapSelect.value = "";
+      canvasUtils.resetCanvas();
+    }
   };
 
-  const handleSampleMapClick = (mapSrc) => {
-    const matchedMap = maps.find((map) => map.mapSrc === mapSrc);
+  // จัดการการคลิกตัวอย่างแผนที่
+  const handleSampleMapClick = async (mapSrc) => {
+    const mapSelect = document.getElementById("map-select");
+    if (!mapSelect) return;
+
+    // Normalize mapSrc เพื่อให้ตรงกัน
+    const normalizeSrc = (src) => {
+      return src.replace(/^\/+/, "").replace(/\/+/g, "/");
+    };
+
+    const normalizedMapSrc = normalizeSrc(mapSrc);
+    console.log("Sample map clicked, normalized src:", normalizedMapSrc);
+
+    let matchedMap = maps.find(
+      (map) => normalizeSrc(map.mapSrc) === normalizedMapSrc
+    );
+    if (!matchedMap) {
+      console.log("Map not found, fetching from Firestore...");
+      await fetchMapsFromFirestore();
+      matchedMap = maps.find(
+        (map) => normalizeSrc(map.mapSrc) === normalizedMapSrc
+      );
+    }
+
     if (matchedMap) {
-      document.getElementById("map-select").value = matchedMap.id;
+      console.log("Matched map found:", matchedMap);
+      mapSelect.value = matchedMap.id;
+      setShowPoints(false);
       fetchPointsAndListenRealtime();
     } else {
       console.log("No matching map found in Firestore for mapSrc:", mapSrc);
       setSelectedPoints([]);
+      setShowPoints(false);
       canvasUtils?.resetCanvas();
-      document.getElementById("map-select").value = "";
+      mapSelect.value = "";
+      Swal.fire({
+        title: "Error",
+        text: "Selected map not found in Firestore. Please check the map source.",
+        icon: "error",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     }
   };
 
+  // เริ่มต้น Canvas และ Managers
+  const initializeCanvasAndManagers = () => {
+    const canvas = canvasRef.current;
+    const tooltip = document.getElementById("tooltip");
+
+    if (!canvas || !tooltip) {
+      console.error("Canvas or tooltip not found");
+      return;
+    }
+
+    const utils = new CanvasUtils(canvas, tooltip);
+    utils.showCircles = showCircles;
+    utils.initializeCanvas();
+
+    const pm = new PointManager(utils);
+    const tu = new TrilaterationUtils(utils, pm, mapManager);
+    pm.trilaterationUtils = tu;
+
+    setCanvasUtils(utils);
+    setPointManager(pm);
+    setTrilaterationUtils(tu);
+  };
+
+  // เรียกเมื่อคอมโพเนนต์โหลด
   useEffect(() => {
-    initializeCanvasAndManagers();
-    fetchMapsFromFirestore();
+    fetchSampleMaps();
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
+  // เริ่มต้น canvas เมื่อหน้าโหลดหายไป
+  useEffect(() => {
+    if (!isAppLoading) {
+      initializeCanvasAndManagers();
+    }
+  }, [isAppLoading]);
+
+  // อัปเดตการแสดงวงกลมและจุด
   useEffect(() => {
     if (canvasUtils) {
       canvasUtils.showCircles = showCircles;
-      const currentMapId = document.getElementById("map-select").value;
-      if (currentMapId) {
-        const selectedMap = maps.find((map) => map.id === currentMapId);
-        if (selectedMap) {
-          trilaterationUtils.refreshMap(selectedMap.mapIndex);
+      if (showPoints && trilaterationUtils) {
+        const mapSelect = document.getElementById("map-select");
+        if (mapSelect && mapSelect.value) {
+          const selectedMap = maps.find((map) => map.id === mapSelect.value);
+          if (selectedMap) {
+            trilaterationUtils.refreshMap(selectedMap.mapIndex, showPoints);
+          }
         }
       }
     }
-  }, [showCircles, canvasUtils, trilaterationUtils]);
+  }, [showCircles, showPoints, canvasUtils, trilaterationUtils, maps]);
 
+  // อัปเดต UI เมื่อ loadedMaps เปลี่ยนแปลง
+  useEffect(() => {
+    const mapSelect = document.getElementById("map-select");
+    if (mapSelect && loadedMaps.length > 0) {
+      if (!mapSelect.value || !maps.find((map) => map.id === mapSelect.value)) {
+        mapSelect.value = loadedMaps[0].id;
+        const selectedMap = maps.find((map) => map.id === loadedMaps[0].id);
+        if (selectedMap) {
+          loadMapToCanvas(
+            selectedMap.mapSrc,
+            mapManager.maps.findIndex((map) => map.id === selectedMap.id)
+          );
+        }
+      }
+    }
+  }, [loadedMaps]);
+
+  // จัดการป๊อปอัป
   useEffect(() => {
     if (!autoRedirect) return;
 
@@ -307,7 +521,7 @@ export default function Home() {
     };
   }, [autoRedirect]);
 
-  // Cleanup listeners on component unmount
+  // ทำความสะอาด listeners เมื่อคอมโพเนนต์ unmount
   useEffect(() => {
     return () => {
       listenersRef.current.forEach(({ ref, listener }) => {
@@ -316,6 +530,11 @@ export default function Home() {
       listenersRef.current = [];
     };
   }, []);
+
+  // แสดงหน้าโหลดเมื่อ isAppLoading เป็น true
+  if (isAppLoading) {
+    return <Loading />;
+  }
 
   return (
     <>
@@ -360,162 +579,112 @@ export default function Home() {
       <div id="map-container">
         <GenText />
         <div className="container">
-          <canvas
-            id="myCanvas"
-            ref={canvasRef}
-            width="1000px"
-            height="400px"
-          ></canvas>
+          <div className="canvas-wrapper">
+            <canvas
+              id="myCanvas"
+              ref={canvasRef}
+              width="1000px"
+              height="400px"
+            ></canvas>
+          </div>
 
-          <div id="map-controls" style={{ marginBottom: "20px" }}>
-            <form action="">
-              <input
-                type="checkbox"
-                id="showCircleCheckbox"
-                name="showCircle"
-                checked={showCircles}
-                onChange={(e) => setShowCircles(!e.target.checked)}
-              />
-              <label htmlFor="showCircleCheckbox">Hide circle area</label>
-              <br />
-            </form>
-            <div className="controls-group">
-              <label htmlFor="map-select" style={{ marginRight: "10px" }}>
-                Select Map:
+          <div className="controls-container">
+            <div className="control-item">
+              <label className="checkbox-control">
+                <input
+                  type="checkbox"
+                  id="showCircleCheckbox"
+                  checked={showCircles}
+                  onChange={(e) => setShowCircles(!e.target.checked)}
+                />
+                <span className="checkmark"></span>
+                <span className="checkbox-label">Hide circle area</span>
               </label>
-              <select
-                id="map-select"
-                style={{ padding: "5px" }}
-                onChange={fetchPointsAndListenRealtime}
-              >
-                <option value="">-- Please Select Map --</option>
-                {loadedMaps.map((map) => (
-                  <option key={map.id} value={map.id}>
-                    {map.mapName}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={fetchPointsAndListenRealtime}
-                style={{
-                  marginLeft: "10px",
-                  padding: "5px 10px",
-                  backgroundColor: "#4CAF50",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Show Points
-              </button>
+            </div>
+
+            <div className="control-item">
+              {isLoadingMaps ? (
+                <div className="loading-maps">
+                  <div className="loading-spinner"></div>
+                  <span>Loading maps...</span>
+                </div>
+              ) : loadError ? (
+                <div className="error-message">
+                  <span className="error-icon">⚠️</span>
+                  <span>{loadError}</span>
+                </div>
+              ) : (
+                <div className="map-selector">
+                  <label htmlFor="map-select" className="selector-label">
+                    Select Map:
+                  </label>
+                  <div className="select-btn-group">
+                    <select
+                      id="map-select"
+                      className="map-select"
+                      onChange={fetchPointsAndListenRealtime}
+                    >
+                      <option value="">-- Please Select Map --</option>
+                      {loadedMaps.map((map) => (
+                        <option key={map.id} value={map.id}>
+                          {map.mapName}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      className="action-btn show-points-btn"
+                      onClick={handleShowPoints}
+                      disabled={!document.getElementById("map-select")?.value}
+                    >
+                      Show Points
+                    </button>
+                    <button
+                      className="action-btn delete-map-btn"
+                      onClick={handleDeleteMap}
+                      disabled={!document.getElementById("map-select")?.value}
+                    >
+                      Delete Map
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {selectedPoints.length > 0 ? (
-            <div
-              id="points-display"
-              style={{
-                marginTop: "20px",
-                padding: "10px",
-                border: "1px solid #ddd",
-                borderRadius: "5px",
-                backgroundColor: "#f9f9f9",
-              }}
-            >
-              <h3 style={{ marginBottom: "10px" }}>
-                Points for{" "}
-                {
-                  loadedMaps.find(
-                    (map) =>
-                      map.id === document.getElementById("map-select").value
-                  )?.mapName
-                }
-              </h3>
-              <ul style={{ listStyleType: "none", padding: 0 }}>
-                {selectedPoints.map((point, index) => (
-                  <li
-                    key={index}
-                    style={{
-                      padding: "5px 0",
-                      borderBottom: "1px solid #eee",
-                    }}
+          <div className="map-sample-container">
+            <h3 className="sample-maps-title">Example Maps</h3>
+            {sampleMaps.length > 0 ? (
+              <div className="map-samples-grid">
+                {sampleMaps.map((map) => (
+                  <div
+                    key={map.id}
+                    className="map-sample-item"
+                    onClick={() => handleSampleMapClick(map.mapSrc)}
                   >
-                    <strong>Point {index + 1}:</strong> Name: {point.name}, X:{" "}
-                    {point.x.toFixed(2)}, Y: {point.y.toFixed(2)}, Color:{" "}
-                    {point.color}
-                    {point.data && point.data.length > 0 ? (
-                      <ul
-                        style={{ listStyleType: "none", paddingLeft: "20px" }}
-                      >
-                        {point.data.map((nodeData, nodeIndex) => (
-                          <li key={nodeIndex}>
-                            Node {nodeIndex + 1}: Distance:{" "}
-                            {nodeData.distance.toFixed(2)}, RSSI:{" "}
-                            {nodeData.rssi.toFixed(2)}, MAC: {nodeData.mac}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div>No node data available for this point.</div>
-                    )}
-                  </li>
+                    <div className="map-image-wrapper">
+                      <NextImage
+                        src={map.mapSrc}
+                        alt={map.mapName}
+                        width={400}
+                        height={200}
+                        className="map-sample-img"
+                      />
+                    </div>
+                    <div className="map-sample-overlay">
+                      <span className="map-name">{map.mapName}</span>
+                      <span className="click-hint">Click to select</span>
+                    </div>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ) : (
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "10px",
-                color: "#888",
-              }}
-            >
-              No points available for this map. Please select a map and click
-              &quot;Show Points&quot;.
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="no-maps-message">
+                No sample maps available. Please upload maps in the admin panel.
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      <div
-        id="map-sample-container"
-        className="container"
-        style={{ marginTop: "30px" }}
-      >
-        <h3 style={{ marginBottom: "15px" }}>Example Maps</h3>
-        <div className="map-samples" style={{ display: "flex", gap: "20px" }}>
-          <NextImage
-            src="/map/map1.png"
-            alt="Sample Map 1"
-            className="map-sample"
-            data-map-src="/map/map1.png"
-            width={400}
-            height={200}
-            style={{
-              cursor: "pointer",
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-            }}
-            onClick={() => handleSampleMapClick("/map/map1.png")}
-          />
-          <NextImage
-            src="/map/map2.png"
-            alt="Sample Map 2"
-            className="map-sample"
-            data-map-src="/map/map2.png"
-            width={400}
-            height={200}
-            style={{
-              cursor: "pointer",
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-            }}
-            onClick={() => handleSampleMapClick("/map/map2.png")}
-          />
-        </div>
-      </div>
-
       <div
         id="tooltip"
         style={{
