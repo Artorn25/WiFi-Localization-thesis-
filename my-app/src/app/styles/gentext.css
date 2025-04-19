@@ -1,40 +1,70 @@
-@import url("https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap");
 
-.loadingContainer {
+.loading-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  /* height: 100vh; */
-}
-
-.textAnimationContainer {
-  border: 2.5px solid #b0c4de;
-  border-radius: 8px;
+  align-items: center;
   padding: 20px;
-  background: linear-gradient(
-    to bottom,
-    #1e90ff,
-    /* Very bright cyan-blue (top) */ #011f5b,
-    /* Bright blue */ #002147,
-    /* Medium blue */ #073980 /* Deep dark blue (bottom) */
-  );
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  width: 100%;
 }
 
-.animatedText {
-  color: #002147;
+.text-animation-container {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  border: 2px solid #60a5fa;
+  border-radius: 12px;
+  padding: 15px 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+.text-animation-container:hover {
+  transform: scale(1.05);
+}
+
+.animated-text {
+  color: #ffffff;
+  font-family: "Orbitron", sans-serif;
   font-size: 2rem;
-  font-weight: bold;
-  text-shadow: 0 0 8px rgba(68, 170, 255, 0.7);
-  @apply poetsen-one-regular;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.8), 0 0 20px rgba(96, 165, 250, 0.4);
+  margin: 0;
   white-space: nowrap;
   overflow: hidden;
-  margin: 0;
+  letter-spacing: 2px;
 }
 
-.poetsen-one-regular {
-  font-family: "Poetsen One", sans-serif;
-  font-weight: 400;
-  font-style: normal;
+.cursor {
+  display: inline-block;
+  width: 4px;
+  height: 2rem;
+  background-color: #60a5fa;
+  margin-left: 4px;
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .animated-text {
+    font-size: 1.5rem;
+  }
+
+  .text-animation-container {
+    padding: 10px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .animated-text {
+    font-size: 1.2rem;
+  }
+
+  .text-animation-container {
+    padding: 8px 15px;
+  }
 }
