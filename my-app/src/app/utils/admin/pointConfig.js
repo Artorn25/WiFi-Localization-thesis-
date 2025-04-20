@@ -1,6 +1,14 @@
 import { dbRef, dbfs } from "./firebaseConfig";
 import { onValue, off } from "firebase/database";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  setDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 export class PointManager {
   constructor(canvasUtils, trilaterationUtils) {
@@ -12,13 +20,25 @@ export class PointManager {
     this.markerCoordinates = [];
     this.drawMode = true;
     this.listeners = [];
-    // ล้าง pointsPerMap ที่ไม่ถูกต้อง
     if (this.pointsPerMap[""]) {
       delete this.pointsPerMap[""];
     }
   }
 
-  validatePoint(pointName) {
+  // ฟังก์ชันตรวจสอบชื่อจุดซ้ำใน Firestore
+  async checkDuplicatePointName(pointName) {
+    try {
+      const pointsRef = collection(dbfs, "points");
+      const q = query(pointsRef, where("ssid", "==", pointName));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking duplicate point name:", error);
+      return false;
+    }
+  }
+
+  async validatePoint(pointName) {
     if (!pointName) {
       this.canvasUtils.alert(
         "Warning",
@@ -27,13 +47,26 @@ export class PointManager {
       );
       return false;
     }
+
+    // ตรวจสอบชื่อซ้ำใน Firestore
+    const isDuplicate = await this.checkDuplicatePointName(pointName);
+    if (isDuplicate) {
+      this.canvasUtils.alert(
+        "Error",
+        "Point name already exists in Firestore. Please choose a different name.",
+        "error"
+      );
+      return false;
+    }
+
+    // ตรวจสอบชื่อซ้ำในหน่วยความจำท้องถิ่น
     for (const mapIndex in this.pointsPerMap) {
       if (
         this.pointsPerMap[mapIndex].some((point) => point.name === pointName)
       ) {
         this.canvasUtils.alert(
           "Error",
-          "Point name must be unique across all maps.",
+          "Point name must be unique across all maps locally.",
           "error"
         );
         return false;
@@ -50,22 +83,62 @@ export class PointManager {
     this.addPoint(x, y, name, selectedIndex);
   }
 
-  addPoint(x, y, name, selectedIndex) {
-    if (!this.validatePoint(name)) return;
+  async addPoint(x, y, name, selectedIndex) {
+    console.log("Adding point:", { name, selectedIndex });
 
-    if (!selectedIndex || selectedIndex === "") {
+    // ตรวจสอบชื่อจุด
+    if (!name || name.trim() === "") {
+      console.warn("Empty point name");
+      this.canvasUtils.alert(
+        "Warning",
+        "Please enter a name for the point.",
+        "warning"
+      );
+      throw new Error("ALREADY_HANDLED");
+    }
+
+    // ตรวจสอบว่า selectedIndex ถูกต้อง
+    if (
+      selectedIndex === undefined ||
+      selectedIndex === null ||
+      selectedIndex === ""
+    ) {
       console.error("Invalid selectedIndex:", selectedIndex);
       this.canvasUtils.alert(
         "Error",
         "Invalid map index. Please select a map first.",
         "error"
       );
-      return;
+      throw new Error("ALREADY_HANDLED");
+    }
+    // ตรวจสอบชื่อซ้ำใน Firestore
+    const isDuplicate = await this.checkDuplicatePointName(name);
+    if (isDuplicate) {
+      this.canvasUtils.alert(
+        "Error",
+        "Point name already exists in Firestore. Please choose a different name.",
+        "error"
+      );
+      throw new Error("ALREADY_HANDLED");
     }
 
+    // ตรวจสอบชื่อซ้ำในหน่วยความจำ
+    if (
+      this.pointsPerMap[selectedIndex]?.some((point) => point.name === name)
+    ) {
+      this.canvasUtils.alert(
+        "Error",
+        "Point name must be unique across all maps locally.",
+        "error"
+      );
+      throw new Error("ALREADY_HANDLED");
+    }
+
+    // สร้างจุดใหม่
     const color = this.drawMode ? "blue" : "red";
-    if (!this.pointsPerMap[selectedIndex])
+    if (!this.pointsPerMap[selectedIndex]) {
       this.pointsPerMap[selectedIndex] = [];
+    }
 
     this.canvasUtils.drawPoint(x, y, name, color);
     const newPoint = {
@@ -77,14 +150,30 @@ export class PointManager {
       rssi: "Not available",
       data: [],
     };
+
     this.pointsPerMap[selectedIndex].push(newPoint);
     this.points = this.pointsPerMap[selectedIndex];
     this.startRealTimeUpdate(newPoint, selectedIndex);
     this.updatePointSelects();
+
+    // แสดง alert เมื่อเพิ่มจุดสำเร็จ
+    this.canvasUtils.alert(
+      "Success",
+      `Point "${name}" added successfully at (${x.toFixed(2)}, ${y.toFixed(
+        2
+      )})`,
+      "success"
+    );
   }
 
   async savePointToFirestore(x, y, name, color) {
     try {
+      // ตรวจสอบชื่อซ้ำก่อนบันทึก
+      const isDuplicate = await this.checkDuplicatePointName(name);
+      if (isDuplicate) {
+        throw new Error("Point name already exists in Firestore.");
+      }
+
       const pointsRef = collection(dbfs, "points");
       await setDoc(doc(pointsRef, name), {
         coordinates: { x, y },
@@ -107,36 +196,34 @@ export class PointManager {
   async saveMapDataToFirestore(mapData) {
     try {
       if (!mapData || !mapData.mapName) {
-        throw new Error("Map name is missing or invalid.");
+        throw new Error("Invalid map data");
       }
 
       const mapsRef = collection(dbfs, "maps");
       const mapDocRef = doc(mapsRef, mapData.mapName);
 
-      await setDoc(
-        mapDocRef,
-        {
-          mapIndex: mapData.mapIndex,
-          mapName: mapData.mapName,
-          mapSrc: mapData.mapSrc,
-          points: mapData.points, // points จะมี color รวมอยู่แล้ว
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      const dataToSave = {
+        mapIndex: mapData.mapIndex,
+        mapName: mapData.mapName,
+        mapSrc: mapData.mapSrc,
+        points: mapData.points.map((point) => ({
+          name: point.name,
+          x: point.x,
+          y: point.y,
+          color: point.color,
+          distance: point.distance || 0,
+          rssi: point.rssi || "Not available",
+          data: point.data || [],
+        })),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
 
-      console.log(
-        "Map data saved to Firestore with document ID:",
-        mapData.mapName
-      );
-      this.canvasUtils.alert(
-        "Success",
-        `Map ${mapData.mapName} saved to Firestore with ${mapData.points.length} points.`,
-        "success"
-      );
+      await setDoc(mapDocRef, dataToSave, { merge: true });
+      console.log("Map saved successfully:", mapData.mapName);
+      return true;
     } catch (error) {
-      console.error("Error saving map data to Firestore: ", error);
+      console.error("Error saving map:", error);
       throw error;
     }
   }
@@ -326,7 +413,7 @@ export class PointManager {
     }
   }
 
-  editPoint(selectedPointName, newPointName, mapIndex) {
+  async editPoint(selectedPointName, newPointName, mapIndex) {
     if (
       this.canvasUtils.checkCondition.NotEqual(
         selectedPointName,
@@ -339,10 +426,21 @@ export class PointManager {
     )
       return;
 
-    if (!this.validatePoint(newPointName)) {
+    // ตรวจสอบชื่อซ้ำใน Firestore
+    const isDuplicate = await this.checkDuplicatePointName(newPointName);
+    if (isDuplicate) {
       this.canvasUtils.alert(
         "Error",
-        "The new point name already exists.",
+        "The new point name already exists in Firestore.",
+        "error"
+      );
+      return;
+    }
+
+    if (!(await this.validatePoint(newPointName))) {
+      this.canvasUtils.alert(
+        "Error",
+        "The new point name already exists locally.",
         "error"
       );
       return;

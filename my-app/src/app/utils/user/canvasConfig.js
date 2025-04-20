@@ -190,4 +190,12 @@ export class CanvasUtils {
       confirmButtonText: "OK",
     });
   }
+  
+  clearCircles() {
+    this.circles = [];
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (this.img.complete) {
+      this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
+    }
+  }
 }
