@@ -177,7 +177,6 @@ export class TrilaterationUtils {
   }
 
   startRealTimeUpdate() {
-    堵;
     this.macToNodeIndex = {};
     this.pointManager.pointsPerMap.forEach((points, mapIndex) => {
       if (points) {
@@ -186,5 +185,28 @@ export class TrilaterationUtils {
         });
       }
     });
+  }
+
+  startAutoRefresh(interval = 1000) {
+    this.stopAutoRefresh(); // ยืนยันว่ายังไม่มี interval ทำงานอยู่
+    
+    this.refreshInterval = setInterval(() => {
+      const mapSelect = document.getElementById("map-select");
+      if (mapSelect?.value) {
+        const selectedMap = this.mapManager.maps.find(
+          map => map.id === mapSelect.value
+        );
+        if (selectedMap) {
+          this.refreshMap(selectedMap.index, true);
+        }
+      }
+    }, interval);
+  }
+  
+  stopAutoRefresh() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
   }
 }

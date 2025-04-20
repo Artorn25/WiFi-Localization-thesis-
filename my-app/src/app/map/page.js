@@ -381,9 +381,10 @@ export default function Map() {
       });
 
       canvas.addEventListener("click", async (event) => {
-        const pointName = document.getElementById("pointName").value;
+        const pointName = document.getElementById("pointName").value.trim();
         console.log("Canvas clicked, maps:", mapManager.maps);
-
+        console.log("length: ", mapManager.maps.length);
+        // ตรวจสอบเงื่อนไขทั้งหมดก่อนทำอะไรต่อ
         if (mapManager.maps.length === 0) {
           mapManager.alert(
             "Info",
@@ -392,12 +393,10 @@ export default function Map() {
           );
           return;
         }
-        const rect = canvas.getBoundingClientRect();
-        const pixelX = event.clientX - rect.left;
-        const pixelY = event.clientY - rect.top;
-        const { x, y } = canvasUtils.toCartesian(pixelX, pixelY);
+
         const selectedIndex = document.getElementById("map-select").value;
         console.log("Selected index:", selectedIndex);
+
         if (!selectedIndex || !mapManager.maps[selectedIndex]) {
           mapManager.alert(
             "Warning",
@@ -406,13 +405,37 @@ export default function Map() {
           );
           return;
         }
-        if (pointManager.drawMode)
-          pointManager.addMarkerAndPoint(x, y, pointName, selectedIndex);
-        else pointManager.addPoint(x, y, pointName, selectedIndex);
-        document.getElementById("pointName").value = "";
+
+        if (!pointName) {
+          mapManager.alert(
+            "Warning",
+            "Please enter a name for the point before clicking on the map.",
+            "warning"
+          );
+          return;
+        }
+
+        // ดำเนินการเพิ่มจุด
+        const rect = canvas.getBoundingClientRect();
+        const pixelX = event.clientX - rect.left;
+        const pixelY = event.clientY - rect.top;
+        const { x, y } = canvasUtils.toCartesian(pixelX, pixelY);
 
         try {
+          if (pointManager.drawMode) {
+            await pointManager.addMarkerAndPoint(
+              x,
+              y,
+              pointName,
+              selectedIndex
+            );
+          } else {
+            await pointManager.addPoint(x, y, pointName, selectedIndex);
+          }
+
+          document.getElementById("pointName").value = "";
           trilaterationUtils.refreshMap(selectedIndex);
+
           const mapData = {
             mapIndex: selectedIndex,
             mapName: mapManager.maps[selectedIndex].name,
@@ -420,14 +443,17 @@ export default function Map() {
             points: pointManager.pointsPerMap[selectedIndex] || [],
           };
           setSelectedMapData(mapData);
-          setSelectedPointData(pointManager.pointsPerMap[selectedIndex] || []); // อัปเดต selectedPointData
+          setSelectedPointData(pointManager.pointsPerMap[selectedIndex] || []);
         } catch (error) {
-          console.error("Error refreshing map after adding point:", error);
-          mapManager.alert(
-            "Error",
-            "Failed to refresh map after adding point. Please try again.",
-            "error"
-          );
+          console.error("Error adding point:", error);
+          if (error.message !== "ALREADY_HANDLED") {
+            // ตรวจสอบว่า error นี้ยังไม่ถูกจัดการ
+            mapManager.alert(
+              "Error",
+              "Failed to add point. Please try again.",
+              "error"
+            );
+          }
         }
       });
 
@@ -554,42 +580,6 @@ export default function Map() {
 
     setupListeners();
 
-    // return () => {
-    //   pointManager.stopRealTimeUpdates();
-    //   document
-    //     .getElementById("updateMapName")
-    //     .removeEventListener("click", () => {});
-    //   document
-    //     .getElementById("map-select")
-    //     .removeEventListener("change", () => {});
-    //   document
-    //     .getElementById("map-upload")
-    //     .removeEventListener("change", () => {});
-    //   document
-    //     .getElementById("delete-map")
-    //     .removeEventListener("click", () => {});
-    //   document
-    //     .getElementById("resetPoints")
-    //     .removeEventListener("click", () => {});
-    //   document
-    //     .getElementById("ShowDistance")
-    //     .removeEventListener("click", () => {});
-    //   document
-    //     .getElementById("DeletePoint")
-    //     .removeEventListener("click", () => {});
-    //   document
-    //     .getElementById("editPoint")
-    //     .removeEventListener("click", () => {});
-    //   document
-    //     .getElementById("confirmSave")
-    //     .removeEventListener("click", () => {});
-    //   canvas.removeEventListener("click", () => {});
-    //   canvas.removeEventListener("mousemove", () => {});
-    //   document
-    //     .getElementById("showCircleCheckbox")
-    //     .removeEventListener("change", () => {});
-    //   document.removeEventListener("DOMContentLoaded", () => {});
-    // };
     return () => {
       pointManager.stopRealTimeUpdates();
 

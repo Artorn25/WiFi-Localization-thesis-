@@ -30,13 +30,16 @@ export class MapManager {
     const { value: mapName } = await Swal.fire({
       title: "Enter a name for this map",
       input: "text",
-      inputValue: `Map ${this.maps.length + 1}`,
+      placeholder: "Map name",
       showCancelButton: true,
+      allowOutsideClick: false, // ป้องกันการคลิกนอกหน้าต่างเพื่อปิด
+      allowEscapeKey: false, // ป้องกันการกด Escape เพื่อปิด
       inputValidator: (value) => {
-        if (!value) {
-          return "You need to write something!";
+        if (!value.trim()) {
+          // ตรวจสอบว่าค่าที่ป้อนว่างหรือมีแค่ช่องว่าง
+          return "You need to write a map name!";
         }
-        if (this.maps.some((map) => map.name === value)) {
+        if (this.maps.some((map) => map.name === value.trim())) {
           return "Map name already exists! Please choose a different name.";
         }
         return null;

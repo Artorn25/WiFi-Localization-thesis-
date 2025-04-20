@@ -150,12 +150,18 @@ export class PointManager {
   }
 
   updatePointData(pointName, data, selectedIndex) {
-    if (this.pointsPerMap[selectedIndex]) {
-      this.pointsPerMap[selectedIndex].forEach((point) => {
-        if (point.name === pointName) {
-          point.data = data;
-        }
-      });
-    }
+    if (!this.pointsPerMap[selectedIndex]) return;
+  
+    // กรองข้อมูลที่ไม่สมบูรณ์
+    const validData = data.filter(
+      item => item.rssi && item.distance > 0 && item.mac
+    );
+  
+    this.pointsPerMap[selectedIndex].forEach((point) => {
+      if (point.name === pointName) {
+        point.data = validData;
+        console.log(`Updated ${pointName} with ${validData.length} valid records`);
+      }
+    });
   }
 }

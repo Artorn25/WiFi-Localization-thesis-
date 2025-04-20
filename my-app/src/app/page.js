@@ -181,10 +181,6 @@ export default function Home() {
         return;
       }
 
-      if (trilaterationUtils) {
-        trilaterationUtils.startAutoRefresh();
-      }
-
       // แสดงการแจ้งเตือนเมื่อเลือกแผนที่
       Swal.fire({
         title: "Map Selected",
@@ -205,30 +201,136 @@ export default function Home() {
     }
   };
 
+  // จัดการการแสดงจุดและวงกลมเมื่อกด "Show Points"
   const handleShowPoints = () => {
-    setShowPoints((prev) => !prev); // Toggle state
-
-    if (!showPoints) {
-      // ถ้ากำลังจะแสดงจุด
-      const mapSelect = document.getElementById("map-select");
-      if (!mapSelect || !mapSelect.value) {
-        Swal.fire({
-          title: "No Map Selected",
-          text: "Please select a map first.",
-          icon: "warning",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        return;
-      }
-
-      fetchPointsAndListenRealtime();
-    } else {
-      // หยุดการอัปเดตเมื่อปิดโหมดแสดงจุด
-      listenersRef.current.forEach(({ ref, listener }) => {
-        off(ref, "value", listener);
+    setShowPoints(true);
+    const mapSelect = document.getElementById("map-select");
+    if (!mapSelect || !mapSelect.value) {
+      Swal.fire({
+        title: "No Map Selected",
+        text: "Please select a map first.",
+        icon: "warning",
+        timer: 1500,
+        showConfirmButton: false,
       });
-      listenersRef.current = [];
+      return;
+    }
+
+    const currentMapId = mapSelect.value;
+    const selectedMap = maps.find((map) => map.id === currentMapId);
+    if (!selectedMap) {
+      console.log("No map found for this mapId");
+      canvasUtils?.resetCanvas();
+      return;
+    }
+
+    // หยุดการฟังข้อมูลเรียลไทม์ที่มีอยู่
+    listenersRef.current.forEach(({ ref, listener }) => {
+      off(ref, "value", listener);
+    });
+    listenersRef.current = [];
+
+    try {
+      // เตรียมข้อมูลจุด
+      const initialPoints = selectedMap.points?.length
+        ? selectedMap.points.map((point) => ({
+            ...point,
+            data: [],
+          }))
+        : [];
+
+      pointManager.stopRealTimeUpdates();
+      pointManager.pointsPerMap[selectedMap.mapIndex] = initialPoints;
+      pointManager.points = initialPoints;
+      setSelectedPoints(initialPoints);
+
+      // ตั้งค่าการฟังข้อมูลเรียลไทม์
+      const dataRef = dbRef;
+      const listener = onValue(
+        dataRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const nodes = snapshot.val();
+            console.log("Realtime snapshot:", nodes);
+
+            selectedMap.points?.forEach((point) => {
+              const pointName = point.name;
+              const allData = [];
+
+              Object.keys(nodes).forEach((nodeKey) => {
+                const nodeData = nodes[nodeKey];
+                Object.keys(nodeData).forEach((routerKey) => {
+                  if (routerKey.startsWith("Router-")) {
+                    const routerData = nodeData[routerKey];
+                    if (routerData.ssid === pointName) {
+                      allData.push({
+                        rssi: routerData.rssi,
+                        distance: routerData.distance,
+                        mac: nodeData.Mac,
+                      });
+                    }
+                  }
+                });
+              });
+
+              console.log(`Real-time data for SSID ${pointName}:`, allData);
+
+              const targetPoint = pointManager.pointsPerMap[
+                selectedMap.mapIndex
+              ].find((p) => p.name === pointName);
+
+              if (targetPoint) {
+                targetPoint.data = allData;
+              }
+            });
+
+            setSelectedPoints([
+              ...pointManager.pointsPerMap[selectedMap.mapIndex],
+            ]);
+
+            // อัปเดต canvas เพื่อแสดงจุดและวงกลม
+            if (trilaterationUtils) {
+              trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+            }
+          } else {
+            console.log("No data found in Firebase");
+            selectedMap.points?.forEach((point) => {
+              const targetPoint = pointManager.pointsPerMap[
+                selectedMap.mapIndex
+              ].find((p) => p.name === point.name);
+              if (targetPoint) {
+                targetPoint.data = [];
+              }
+            });
+            setSelectedPoints([
+              ...pointManager.pointsPerMap[selectedMap.mapIndex],
+            ]);
+            if (trilaterationUtils) {
+              trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+            }
+          }
+        },
+        (error) => {
+          console.error("Error listening to Firebase:", error);
+          canvasUtils.alert(
+            "Error",
+            "Failed to fetch real-time data from Firebase.",
+            "error"
+          );
+        }
+      );
+
+      listenersRef.current.push({ ref: dataRef, listener });
+
+      // อัปเดต canvas ครั้งแรก
+      if (trilaterationUtils) {
+        trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+      }
+    } catch (error) {
+      console.error("Error setting up points and real-time listener:", error);
+      setSelectedPoints([]);
+      setShowPoints(false);
+      canvasUtils?.resetCanvas();
     }
   };
 
@@ -428,32 +530,6 @@ export default function Home() {
       listenersRef.current = [];
     };
   }, []);
-
-  useEffect(() => {
-    if (!showPoints || !trilaterationUtils || !pointManager) return;
-
-    const mapSelect = document.getElementById("map-select");
-    if (!mapSelect?.value) return;
-
-    const currentMapId = mapSelect.value;
-    const selectedMap = maps.find((map) => map.id === currentMapId);
-    if (!selectedMap) return;
-
-    // ตั้งค่า interval สำหรับ refresh อัตโนมัติ
-    const refreshInterval = setInterval(() => {
-      trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
-    }, 1000); // อัปเดตทุก 1 วินาที
-
-    return () => clearInterval(refreshInterval);
-  }, [showPoints, maps, trilaterationUtils, pointManager]);
-
-  useEffect(() => {
-    return () => {
-      if (trilaterationUtils) {
-        trilaterationUtils.stopAutoRefresh();
-      }
-    };
-  }, [trilaterationUtils]);
 
   // แสดงหน้าโหลดเมื่อ isAppLoading เป็น true
   if (isAppLoading) {

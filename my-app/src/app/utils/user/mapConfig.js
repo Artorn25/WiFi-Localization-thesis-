@@ -68,17 +68,21 @@ export class MapManager {
 
   updateMapSelect() {
     const mapSelect = document.getElementById("map-select");
-    if (!mapSelect) {
-      console.warn("Map select element not found");
-      return;
-    }
+    if (!mapSelect) return;
+    
     mapSelect.innerHTML = "<option value=''>-- Please Select Map --</option>";
+    
     this.maps.forEach((map) => {
       const option = document.createElement("option");
       option.value = map.id;
       option.textContent = map.name || `Map ${map.index + 1}`;
       mapSelect.appendChild(option);
     });
+    
+    // เลือกแผนที่แรกโดยอัตโนมัติถ้ามีแผนที่เดียว
+    if (this.maps.length === 1) {
+      mapSelect.value = this.maps[0].id;
+    }
   }
 
   deleteMap(selectedIndex, canvasUtils) {
