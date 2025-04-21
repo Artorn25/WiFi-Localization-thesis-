@@ -50,7 +50,6 @@ export class MapManager {
         "success"
       );
       this.maps.push({ src: mapSrc, name: mapName, index: this.maps.length });
-      this.updateMapSelect();
       return this.maps.length - 1;
     }
     return null;
@@ -63,26 +62,11 @@ export class MapManager {
       name: map.mapName,
       index,
     }));
-    this.updateMapSelect();
   }
 
+  // ลบฟังก์ชัน updateMapSelect ออก เนื่องจากจัดการใน React แล้ว
   updateMapSelect() {
-    const mapSelect = document.getElementById("map-select");
-    if (!mapSelect) return;
-    
-    mapSelect.innerHTML = "<option value=''>-- Please Select Map --</option>";
-    
-    this.maps.forEach((map) => {
-      const option = document.createElement("option");
-      option.value = map.id;
-      option.textContent = map.name || `Map ${map.index + 1}`;
-      mapSelect.appendChild(option);
-    });
-    
-    // เลือกแผนที่แรกโดยอัตโนมัติถ้ามีแผนที่เดียว
-    if (this.maps.length === 1) {
-      mapSelect.value = this.maps[0].id;
-    }
+    // ไม่ต้องใช้แล้ว เนื่องจากจัดการใน Home.jsx ผ่าน React state
   }
 
   deleteMap(selectedIndex, canvasUtils) {
@@ -104,12 +88,10 @@ export class MapManager {
       return;
     }
 
-    // การลบจะเกิดขึ้นใน Home.jsx หลังยืนยัน
-    // ฟังก์ชันนี้แค่จัดการการอัปเดต maps และ UI
+    // ลบแผนที่
     this.maps.splice(selectedIndex, 1);
     this.maps.forEach((map, i) => {
       map.index = i;
     });
-    this.updateMapSelect();
   }
 }

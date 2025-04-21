@@ -9,12 +9,11 @@ import {
   PointManager,
   TrilaterationUtils,
 } from "@utils/user/index";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { dbfs, dbRef } from "@utils/user/firebaseConfig";
 import { onValue, off } from "firebase/database";
 import GenText from "@components/Gentext";
 import Swal from "sweetalert2/dist/sweetalert2.js";
-import Loading from "@components/Loading";
 
 export default function Home() {
   const [showInfoPopup, setShowInfoPopup] = useState(true);
@@ -22,13 +21,14 @@ export default function Home() {
   const [autoRedirect, setAutoRedirect] = useState(true);
   const [maps, setMaps] = useState([]);
   const [loadedMaps, setLoadedMaps] = useState([]);
+  const [allLoadedMaps, setAllLoadedMaps] = useState([]); // เก็บแผนที่ทั้งหมดที่เคยโหลด
   const [selectedPoints, setSelectedPoints] = useState([]);
   const [showCircles, setShowCircles] = useState(true);
   const [showPoints, setShowPoints] = useState(false);
   const [isLoadingMaps, setIsLoadingMaps] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [sampleMaps, setSampleMaps] = useState([]);
-  const [isAppLoading, setIsAppLoading] = useState(true);
+  const [selectedMapId, setSelectedMapId] = useState(""); // state สำหรับจัดการ dropdown
 
   const canvasRef = useRef(null);
   const [canvasUtils, setCanvasUtils] = useState(null);
@@ -78,24 +78,24 @@ export default function Home() {
     });
   };
 
-  // ดึงข้อมูลแผนที่จาก Firestore
-  const fetchMapsFromFirestore = async () => {
+  // ดึงข้อมูลแผนที่จาก Firestore เฉพาะแผนที่ที่เลือก และเพิ่มลงใน allLoadedMaps
+  const fetchMapsFromFirestore = async (mapSrc) => {
     setIsLoadingMaps(true);
     setLoadError(null);
     try {
       const mapsRef = collection(dbfs, "maps");
-      const querySnapshot = await getDocs(mapsRef);
+      const q = query(mapsRef, where("mapSrc", "==", mapSrc));
+      const querySnapshot = await getDocs(q);
       const mapsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
       if (mapsData.length === 0) {
-        throw new Error("No maps found in Firestore.");
+        throw new Error("No map found in Firestore for the selected mapSrc.");
       }
 
       const loadedMapsData = [];
-      mapManager.maps = [];
       for (const map of mapsData) {
         try {
           await checkImageLoad(map.mapSrc);
@@ -104,7 +104,7 @@ export default function Home() {
             id: map.id,
             src: map.mapSrc,
             name: map.mapName,
-            index: loadedMapsData.length - 1,
+            index: mapManager.maps.length,
           });
         } catch (error) {
           console.error(
@@ -114,15 +114,28 @@ export default function Home() {
         }
       }
 
-      setMaps(mapsData);
+      // อัปเดต state
+      setMaps(loadedMapsData);
       setLoadedMaps(loadedMapsData);
+
+      // เพิ่มแผนที่ใหม่ลงใน allLoadedMaps โดยไม่ซ้ำ
+      setAllLoadedMaps((prev) => {
+        const existingMapIds = new Set(prev.map((map) => map.id));
+        const newMaps = loadedMapsData.filter(
+          (map) => !existingMapIds.has(map.id)
+        );
+        return [...prev, ...newMaps];
+      });
+
+      mapManager.loadMaps(loadedMapsData); // อัปเดต mapManager.maps
       setIsLoadingMaps(false);
       console.log("Loaded maps:", loadedMapsData);
 
       if (loadedMapsData.length > 0) {
+        setSelectedMapId(loadedMapsData[0].id); // อัปเดต selectedMapId
         Swal.fire({
-          title: "Maps Loaded",
-          text: `${loadedMapsData.length} map(s) have been loaded.`,
+          title: "Map Loaded",
+          text: `Map ${loadedMapsData[0].mapName} has been loaded.`,
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -134,11 +147,11 @@ export default function Home() {
       console.error("Error fetching maps from Firestore: ", error);
       setMaps([]);
       setLoadedMaps([]);
-      setLoadError("Failed to load maps. Please try again later.");
+      setLoadError("Failed to load map. Please try again later.");
       setIsLoadingMaps(false);
       Swal.fire({
         title: "Error",
-        text: error.message || "Failed to load maps from Firestore.",
+        text: error.message || "Failed to load map from Firestore.",
         icon: "error",
         timer: 1500,
         showConfirmButton: false,
@@ -161,22 +174,15 @@ export default function Home() {
   // จัดการการเลือกแผนที่ (โหลดเฉพาะภาพแผนที่)
   const fetchPointsAndListenRealtime = async () => {
     try {
-      const mapSelect = document.getElementById("map-select");
-      if (!mapSelect) {
-        console.log("Map select element not found");
-        return;
-      }
-
-      const currentMapId = mapSelect.value;
-      if (!currentMapId) {
+      if (!selectedMapId) {
         console.log("Please select a map first");
         canvasUtils?.resetCanvas();
         return;
       }
 
-      const selectedMap = maps.find((map) => map.id === currentMapId);
+      const selectedMap = allLoadedMaps.find((map) => map.id === selectedMapId);
       if (!selectedMap) {
-        console.log("No map found for this mapId:", currentMapId);
+        console.log("No map found for this mapId:", selectedMapId);
         canvasUtils?.resetCanvas();
         return;
       }
@@ -190,10 +196,14 @@ export default function Home() {
         showConfirmButton: false,
       });
 
+      // อัปเดต state maps และ loadedMaps เพื่อให้สอดคล้องกับแผนที่ที่เลือก
+      setMaps([selectedMap]);
+      setLoadedMaps([selectedMap]);
+
       // โหลดเฉพาะภาพแผนที่ลง canvas
       loadMapToCanvas(
         selectedMap.mapSrc,
-        mapManager.maps.findIndex((map) => map.id === selectedMap.id)
+        allLoadedMaps.findIndex((map) => map.id === selectedMap.id)
       );
     } catch (error) {
       console.error("Error loading map:", error);
@@ -204,8 +214,7 @@ export default function Home() {
   // จัดการการแสดงจุดและวงกลมเมื่อกด "Show Points"
   const handleShowPoints = () => {
     setShowPoints(true);
-    const mapSelect = document.getElementById("map-select");
-    if (!mapSelect || !mapSelect.value) {
+    if (!selectedMapId) {
       Swal.fire({
         title: "No Map Selected",
         text: "Please select a map first.",
@@ -216,8 +225,7 @@ export default function Home() {
       return;
     }
 
-    const currentMapId = mapSelect.value;
-    const selectedMap = maps.find((map) => map.id === currentMapId);
+    const selectedMap = allLoadedMaps.find((map) => map.id === selectedMapId);
     if (!selectedMap) {
       console.log("No map found for this mapId");
       canvasUtils?.resetCanvas();
@@ -335,17 +343,29 @@ export default function Home() {
   };
 
   // ฟังก์ชันสำหรับปุ่ม Delete Map
-  const handleDeleteMap = () => {
-    const mapSelect = document.getElementById("map-select");
-    if (!mapSelect || !mapSelect.value) {
+  const handleDeleteMap = async () => {
+    if (!selectedMapId) {
       canvasUtils.alert("Warning", "Please select a map to delete.", "warning");
       return;
     }
 
-    const currentMapId = mapSelect.value;
-    const selectedMap = maps.find((map) => map.id === currentMapId);
+    const selectedMap = allLoadedMaps.find((map) => map.id === selectedMapId);
     if (!selectedMap) {
       canvasUtils.alert("Error", "Selected map not found.", "error");
+      return;
+    }
+
+    // เพิ่มการยืนยันก่อนลบ
+    const confirmation = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to remove ${selectedMap.mapName} from the selector? This will not affect Firestore data.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, keep it",
+    });
+
+    if (!confirmation.isConfirmed) {
       return;
     }
 
@@ -357,14 +377,15 @@ export default function Home() {
     mapManager.deleteMap(selectedIndex, canvasUtils);
 
     // อัปเดต state
-    const updatedMaps = maps.filter((map) => map.id !== currentMapId);
-    const updatedLoadedMaps = loadedMaps.filter(
-      (map) => map.id !== currentMapId
+    const updatedAllLoadedMaps = allLoadedMaps.filter(
+      (map) => map.id !== selectedMapId
     );
-    setMaps(updatedMaps);
-    setLoadedMaps(updatedLoadedMaps);
+    setAllLoadedMaps(updatedAllLoadedMaps);
+    setMaps([]);
+    setLoadedMaps([]);
     setSelectedPoints([]);
     setShowPoints(false);
+    setSelectedMapId(""); // รีเซ็ต selectedMapId
 
     // หยุดการฟังข้อมูลเรียลไทม์
     listenersRef.current.forEach(({ ref, listener }) => {
@@ -373,54 +394,71 @@ export default function Home() {
     listenersRef.current = [];
 
     // อัปเดต UI
-    if (updatedLoadedMaps.length > 0) {
-      const nextMap = updatedLoadedMaps[0];
-      mapSelect.value = nextMap.id;
+    if (updatedAllLoadedMaps.length > 0) {
+      const nextMap = updatedAllLoadedMaps[0];
+      setSelectedMapId(nextMap.id);
+      setMaps([nextMap]);
+      setLoadedMaps([nextMap]);
       loadMapToCanvas(
         nextMap.mapSrc,
-        mapManager.maps.findIndex((map) => map.id === nextMap.id)
+        updatedAllLoadedMaps.findIndex((map) => map.id === nextMap.id)
       );
     } else {
-      mapSelect.value = "";
       canvasUtils.resetCanvas();
     }
+
+    Swal.fire({
+      title: "Deleted",
+      text: `${selectedMap.mapName} has been removed from the selector.`,
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
   };
 
   // จัดการการคลิกตัวอย่างแผนที่
   const handleSampleMapClick = async (mapSrc) => {
-    const mapSelect = document.getElementById("map-select");
-    if (!mapSelect) return;
-
     // Normalize mapSrc เพื่อให้ตรงกัน
     const normalizeSrc = (src) => {
-      return src.replace(/^\/+/, "").replace(/\/+/g, "/");
+      return src.trim().replace(/\/+/g, "/");
     };
 
     const normalizedMapSrc = normalizeSrc(mapSrc);
     console.log("Sample map clicked, normalized src:", normalizedMapSrc);
 
-    let matchedMap = maps.find(
+    // ตรวจสอบว่าแผนที่มีอยู่ใน allLoadedMaps หรือยัง
+    const matchedMapInAll = allLoadedMaps.find(
       (map) => normalizeSrc(map.mapSrc) === normalizedMapSrc
     );
-    if (!matchedMap) {
-      console.log("Map not found, fetching from Firestore...");
-      await fetchMapsFromFirestore();
-      matchedMap = maps.find(
-        (map) => normalizeSrc(map.mapSrc) === normalizedMapSrc
-      );
+
+    if (matchedMapInAll) {
+      console.log("Map already loaded:", matchedMapInAll);
+      setSelectedMapId(matchedMapInAll.id);
+      setMaps([matchedMapInAll]);
+      setLoadedMaps([matchedMapInAll]);
+      setShowPoints(false);
+      fetchPointsAndListenRealtime();
+      return;
     }
+
+    // ถ้ายังไม่มี ให้โหลดแผนที่ใหม่
+    await fetchMapsFromFirestore(mapSrc);
+
+    const matchedMap = mapManager.maps.find(
+      (map) => normalizeSrc(map.src) === normalizedMapSrc
+    );
 
     if (matchedMap) {
       console.log("Matched map found:", matchedMap);
-      mapSelect.value = matchedMap.id;
+      setSelectedMapId(matchedMap.id);
       setShowPoints(false);
       fetchPointsAndListenRealtime();
     } else {
-      console.log("No matching map found in Firestore for mapSrc:", mapSrc);
+      console.error("No matching map found in Firestore for mapSrc:", mapSrc);
       setSelectedPoints([]);
       setShowPoints(false);
       canvasUtils?.resetCanvas();
-      mapSelect.value = "";
+      setSelectedMapId("");
       Swal.fire({
         title: "Error",
         text: "Selected map not found in Firestore. Please check the map source.",
@@ -457,49 +495,47 @@ export default function Home() {
   // เรียกเมื่อคอมโพเนนต์โหลด
   useEffect(() => {
     fetchSampleMaps();
-    const timer = setTimeout(() => {
-      setIsAppLoading(false);
-    }, 3000);
-    return () => clearTimeout(timer);
+    initializeCanvasAndManagers();
   }, []);
 
-  // เริ่มต้น canvas เมื่อหน้าโหลดหายไป
-  useEffect(() => {
-    if (!isAppLoading) {
-      initializeCanvasAndManagers();
-    }
-  }, [isAppLoading]);
-
-  // อัปเดตการแสดงวงกลมและจุด
+  // อัปเดตการแสดงวงกลมและจุดเมื่อ showCircles หรือ showPoints เปลี่ยนแปลง
   useEffect(() => {
     if (canvasUtils) {
-      canvasUtils.showCircles = showCircles;
-      if (showPoints && trilaterationUtils) {
-        const mapSelect = document.getElementById("map-select");
-        if (mapSelect && mapSelect.value) {
-          const selectedMap = maps.find((map) => map.id === mapSelect.value);
-          if (selectedMap) {
-            trilaterationUtils.refreshMap(selectedMap.mapIndex, showPoints);
-          }
+      canvasUtils.showCircles = showCircles; // อัปเดตค่า showCircles ใน canvasUtils
+      if (showPoints && trilaterationUtils && selectedMapId) {
+        const selectedMap = allLoadedMaps.find(
+          (map) => map.id === selectedMapId
+        );
+        if (selectedMap) {
+          trilaterationUtils.refreshMap(selectedMap.mapIndex, true); // รีเฟรช canvas เพื่อให้การซ่อน/แสดงวงกลมมีผล
         }
       }
     }
-  }, [showCircles, showPoints, canvasUtils, trilaterationUtils, maps]);
+  }, [
+    showCircles,
+    showPoints,
+    canvasUtils,
+    trilaterationUtils,
+    selectedMapId,
+    allLoadedMaps,
+  ]);
 
   // อัปเดต UI เมื่อ loadedMaps เปลี่ยนแปลง
   useEffect(() => {
-    const mapSelect = document.getElementById("map-select");
-    if (mapSelect && loadedMaps.length > 0) {
-      if (!mapSelect.value || !maps.find((map) => map.id === mapSelect.value)) {
-        mapSelect.value = loadedMaps[0].id;
-        const selectedMap = maps.find((map) => map.id === loadedMaps[0].id);
-        if (selectedMap) {
-          loadMapToCanvas(
-            selectedMap.mapSrc,
-            mapManager.maps.findIndex((map) => map.id === selectedMap.id)
-          );
-        }
+    if (loadedMaps.length > 0) {
+      setSelectedMapId(loadedMaps[0].id);
+      const selectedMap = allLoadedMaps.find(
+        (map) => map.id === loadedMaps[0].id
+      );
+      if (selectedMap) {
+        loadMapToCanvas(
+          selectedMap.mapSrc,
+          allLoadedMaps.findIndex((map) => map.id === selectedMap.id)
+        );
       }
+    } else {
+      setSelectedMapId("");
+      canvasUtils?.resetCanvas();
     }
   }, [loadedMaps]);
 
@@ -530,11 +566,6 @@ export default function Home() {
       listenersRef.current = [];
     };
   }, []);
-
-  // แสดงหน้าโหลดเมื่อ isAppLoading เป็น true
-  if (isAppLoading) {
-    return <Loading />;
-  }
 
   return (
     <>
@@ -594,7 +625,7 @@ export default function Home() {
                 <input
                   type="checkbox"
                   id="showCircleCheckbox"
-                  checked={showCircles}
+                  checked={!showCircles} // ถ้า showCircles เป็น false จะติ๊ก checkbox
                   onChange={(e) => setShowCircles(!e.target.checked)}
                 />
                 <span className="checkmark"></span>
@@ -606,7 +637,7 @@ export default function Home() {
               {isLoadingMaps ? (
                 <div className="loading-maps">
                   <div className="loading-spinner"></div>
-                  <span>Loading maps...</span>
+                  <span>Loading map...</span>
                 </div>
               ) : loadError ? (
                 <div className="error-message">
@@ -622,10 +653,14 @@ export default function Home() {
                     <select
                       id="map-select"
                       className="map-select"
-                      onChange={fetchPointsAndListenRealtime}
+                      value={selectedMapId}
+                      onChange={(e) => {
+                        setSelectedMapId(e.target.value);
+                        fetchPointsAndListenRealtime();
+                      }}
                     >
                       <option value="">-- Please Select Map --</option>
-                      {loadedMaps.map((map) => (
+                      {allLoadedMaps.map((map) => (
                         <option key={map.id} value={map.id}>
                           {map.mapName}
                         </option>
@@ -634,14 +669,14 @@ export default function Home() {
                     <button
                       className="action-btn show-points-btn"
                       onClick={handleShowPoints}
-                      disabled={!document.getElementById("map-select")?.value}
+                      disabled={!selectedMapId}
                     >
                       Show Points
                     </button>
                     <button
                       className="action-btn delete-map-btn"
                       onClick={handleDeleteMap}
-                      disabled={!document.getElementById("map-select")?.value}
+                      disabled={!selectedMapId}
                     >
                       Delete Map
                     </button>

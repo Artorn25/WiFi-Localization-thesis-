@@ -667,10 +667,10 @@ export default function Map() {
               <button id="editPoint">✏️ Update Point Name</button>
             </div>
             <div className="controls-group">
-              <button id="confirmSave">💾 Confirm Save to Firestore</button>
-              <select id="point1Select"></select>
-              <select id="point2Select"></select>
-              <button id="ShowDistance">📏 Show Distance</button>
+              <button id="confirmSave">💾 Confirm Save </button>
+              {/* <select id="point1Select"></select> */}
+              {/* <select id="point2Select"></select> */}
+              {/* <button id="ShowDistance">📏 Show Distance</button> */}
             </div>
           </div>
           <div id="distanceDisplay"></div>
