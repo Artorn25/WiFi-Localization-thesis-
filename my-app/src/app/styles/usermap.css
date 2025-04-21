@@ -214,12 +214,6 @@
   color: #4a5568;
 }
 
-/* ส่วนเลือกแผนที่ */
-/* .map-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-} */
 .map-selector {
   display: flex;
   align-items: center;
@@ -274,6 +268,16 @@
 
 .show-points-btn:hover {
   background-color: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.delete-map-btn {
+  background-color: #e53e3e;
+  color: white;
+}
+
+.delete-map-btn:hover {
+  background-color: #c53030;
   transform: translateY(-1px);
 }
 

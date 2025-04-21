@@ -1,16 +1,23 @@
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(10px) scale(0.95); 
   }
-  
-  .report-box-animation {
-    animation: fadeIn 0.3s ease-out forwards;
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
   }
-  
-  @media (max-width: 640px) {
-    .report-box-responsive {
-      width: 90%;
-      right: 5%;
-      bottom: 2rem;
-    }
+}
+
+.report-box-animation {
+  animation: fadeIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@media (max-width: 640px) {
+  .report-box-responsive {
+    width: calc(100% - 2rem);
+    right: 1rem;
+    bottom: 1rem;
+    max-width: 100%;
   }
+}
