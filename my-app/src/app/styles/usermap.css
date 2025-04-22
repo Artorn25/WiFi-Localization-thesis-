@@ -370,16 +370,8 @@
   }
 }
 
-/* Popup */
-.popup-overlay {
-  /* ... (คงเดิม) ... */
-}
 
-.popup {
-  /* ... (คงเดิม) ... */
-}
-
-.popup-buttons {
+/* .popup-buttons {
   display: flex;
   gap: 10px;
   justify-content: center;
@@ -404,16 +396,11 @@
 .popup-close-btn:hover {
   background-color: #4f46e5;
 }
-
 .popup-cancel-btn {
-  background-color: #e2e8f0;
-  color: #4a5568;
+  background-color: #e53e3e;
+  color: white;
   border: none;
-}
-
-.popup-cancel-btn:hover {
-  background-color: #cbd5e0;
-}
+} */
 canvas {
   /* width: 100%; */
   align-self: center;

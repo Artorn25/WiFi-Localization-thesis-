@@ -32,6 +32,10 @@ export class MapManager {
     const { value: mapName } = await Swal.fire({
       title: "Enter a name for this map",
       input: "text",
+      inputAttributes: {
+        style: "width: 80%; margin: 0 auto;", // ปรับขนาดและจัดกลาง
+        size: "20" // กำหนดความยาวของ input field
+      },
       placeholder: "Map name",
       showCancelButton: true,
       allowOutsideClick: false,
@@ -76,7 +80,7 @@ export class MapManager {
       mapSelect.appendChild(option);
     });
   }
-  
+
   deleteMap(selectedIndex, canvasUtils) {
     console.log("Deleting map with index:", selectedIndex);
     if (this.maps.length === 0) {

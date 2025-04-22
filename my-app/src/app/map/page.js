@@ -657,17 +657,6 @@ export default function Map() {
               <button id="delete-map" ref={deleteMapRef}>
                 Delete Map
               </button>
-              {/* <div className="upload-btn-wrapper">
-                <button className="btn-upload">
-                  Upload Map
-                  <input
-                    type="file"
-                    id="map-upload"
-                    ref={mapUploadRef}
-                    accept="image/*"
-                  />
-                </button>
-              </div> */}
               <input
                 type="text"
                 id="pointName"

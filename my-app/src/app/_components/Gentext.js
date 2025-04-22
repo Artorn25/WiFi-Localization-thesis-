@@ -6,6 +6,29 @@ export default function GenText() {
   const fullText = "WiFi Localization System";
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
+  const [fontSize, setFontSize] = useState("2rem"); // Default font size
+
+  useEffect(() => {
+    // Responsive font size adjustment
+    const handleResize = () => {
+      if (window.innerWidth < 480) {
+        setFontSize("1.2rem");
+      } else if (window.innerWidth < 768) {
+        setFontSize("1.5rem");
+      } else {
+        setFontSize("2rem");
+      }
+    };
+
+    // Set initial size
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     let timeout;
@@ -16,21 +39,18 @@ export default function GenText() {
         timeout = setTimeout(() => {
           setDisplayText((prev) => prev + fullText[currentIndex]);
           setCurrentIndex((prev) => prev + 1);
-        }, 100); // ความเร็วในการพิมพ์ (100ms ต่อตัวอักษร)
+        }, 100);
       } else {
-        // รอ 3 วินาทีหลังพิมพ์เสร็จก่อนลบ
         resetTimeout = setTimeout(() => {
           setIsTyping(false);
         }, 3000);
       }
     } else {
       if (displayText.length > 0) {
-        // เอฟเฟกต์ลบตัวอักษร
         timeout = setTimeout(() => {
           setDisplayText((prev) => prev.slice(0, -1));
-        }, 50); // ความเร็วในการลบ (50ms ต่อตัวอักษร)
+        }, 50);
       } else {
-        // เริ่มพิมพ์ใหม่
         setCurrentIndex(0);
         setIsTyping(true);
       }
@@ -45,9 +65,9 @@ export default function GenText() {
   return (
     <div className="loading-container">
       <div className="text-animation-container">
-        <p className="animated-text">
+        <p className="animated-text" style={{ fontSize }}>
           {displayText}
-          <span className="cursor" />
+          <span className="cursor" style={{ height: fontSize }} />
         </p>
       </div>
     </div>

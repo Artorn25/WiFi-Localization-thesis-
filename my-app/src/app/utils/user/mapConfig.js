@@ -64,6 +64,7 @@ export class MapManager {
     }));
   }
 
+  // ลบฟังก์ชัน updateMapSelect ออก เนื่องจากจัดการใน React แล้ว
   updateMapSelect() {
     // ไม่ต้องใช้แล้ว เนื่องจากจัดการใน Home.jsx ผ่าน React state
   }

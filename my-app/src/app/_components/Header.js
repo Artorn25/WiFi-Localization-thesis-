@@ -17,8 +17,8 @@ export default function Header() {
   const navItems = [
     { path: "/", name: "Home" },
     { path: "/map", name: "Interactive Map" },
-    { path: "/wifi", name: "WiFi Hotspots" },
-    { path: "/dashboard", name: "Analytics" },
+    { path: "/wifi", name: "WiFi Routes" },
+    { path: "/dashboard", name: "DashBoard" },
   ];
 
   return (
