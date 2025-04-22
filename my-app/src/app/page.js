@@ -99,7 +99,10 @@ export default function Home() {
       for (const map of mapsData) {
         try {
           await checkImageLoad(map.mapSrc);
-          loadedMapsData.push(map);
+          loadedMapsData.push({
+            ...map,
+            mapIndex: allLoadedMaps.length + loadedMapsData.length, // เพิ่ม mapIndex
+          });
           mapManager.maps.push({
             id: map.id,
             src: map.mapSrc,
@@ -114,18 +117,16 @@ export default function Home() {
         }
       }
 
-      // อัปเดต state
-      setMaps(loadedMapsData);
-      setLoadedMaps(loadedMapsData);
-
       // เพิ่มแผนที่ใหม่ลงใน allLoadedMaps โดยไม่ซ้ำ
       setAllLoadedMaps((prev) => {
         const existingMapIds = new Set(prev.map((map) => map.id));
-        const newMaps = loadedMapsData.filter(
-          (map) => !existingMapIds.has(map.id)
-        );
+        const newMaps = loadedMapsData.filter((map) => !existingMapIds.has(map.id));
         return [...prev, ...newMaps];
       });
+
+      // อัปเดต state
+      setMaps(loadedMapsData);
+      setLoadedMaps(loadedMapsData);
 
       mapManager.loadMaps(loadedMapsData); // อัปเดต mapManager.maps
       setIsLoadingMaps(false);
@@ -166,7 +167,7 @@ export default function Home() {
       return;
     }
 
-    console.log("Attempting to load map with src:", mapSrc);
+    console.log("Attempting to load map with src:", mapSrc, "index:", selectedIndex);
     canvasUtils.resetCanvas(); // ล้าง canvas ก่อนวาด
     canvasUtils.drawImageImmediately(mapSrc);
   };
@@ -187,6 +188,12 @@ export default function Home() {
         return;
       }
 
+      console.log("Selected map:", selectedMap);
+
+      // อัปเดต state maps และ loadedMaps เพื่อให้สอดคล้องกับแผนที่ที่เลือก
+      setMaps([selectedMap]);
+      setLoadedMaps([selectedMap]);
+
       // แสดงการแจ้งเตือนเมื่อเลือกแผนที่
       Swal.fire({
         title: "Map Selected",
@@ -196,20 +203,26 @@ export default function Home() {
         showConfirmButton: false,
       });
 
-      // อัปเดต state maps และ loadedMaps เพื่อให้สอดคล้องกับแผนที่ที่เลือก
-      setMaps([selectedMap]);
-      setLoadedMaps([selectedMap]);
-
       // โหลดเฉพาะภาพแผนที่ลง canvas
-      loadMapToCanvas(
-        selectedMap.mapSrc,
-        allLoadedMaps.findIndex((map) => map.id === selectedMap.id)
-      );
+      const selectedIndex = allLoadedMaps.findIndex((map) => map.id === selectedMap.id);
+      loadMapToCanvas(selectedMap.mapSrc, selectedIndex);
+
+      // หากมีการแสดงจุดอยู่ ให้รีเฟรชจุดด้วย
+      if (showPoints && trilaterationUtils) {
+        trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+      }
     } catch (error) {
       console.error("Error loading map:", error);
       canvasUtils?.resetCanvas();
     }
   };
+
+  // ใช้ useEffect เพื่อจัดการการเปลี่ยน selectedMapId
+  useEffect(() => {
+    if (selectedMapId) {
+      fetchPointsAndListenRealtime();
+    }
+  }, [selectedMapId]);
 
   // จัดการการแสดงจุดและวงกลมเมื่อกด "Show Points"
   const handleShowPoints = () => {
@@ -397,12 +410,6 @@ export default function Home() {
     if (updatedAllLoadedMaps.length > 0) {
       const nextMap = updatedAllLoadedMaps[0];
       setSelectedMapId(nextMap.id);
-      setMaps([nextMap]);
-      setLoadedMaps([nextMap]);
-      loadMapToCanvas(
-        nextMap.mapSrc,
-        updatedAllLoadedMaps.findIndex((map) => map.id === nextMap.id)
-      );
     } else {
       canvasUtils.resetCanvas();
     }
@@ -434,10 +441,6 @@ export default function Home() {
     if (matchedMapInAll) {
       console.log("Map already loaded:", matchedMapInAll);
       setSelectedMapId(matchedMapInAll.id);
-      setMaps([matchedMapInAll]);
-      setLoadedMaps([matchedMapInAll]);
-      setShowPoints(false);
-      fetchPointsAndListenRealtime();
       return;
     }
 
@@ -452,7 +455,6 @@ export default function Home() {
       console.log("Matched map found:", matchedMap);
       setSelectedMapId(matchedMap.id);
       setShowPoints(false);
-      fetchPointsAndListenRealtime();
     } else {
       console.error("No matching map found in Firestore for mapSrc:", mapSrc);
       setSelectedPoints([]);
@@ -503,41 +505,23 @@ export default function Home() {
     if (canvasUtils) {
       canvasUtils.showCircles = showCircles; // อัปเดตค่า showCircles ใน canvasUtils
       if (showPoints && trilaterationUtils && selectedMapId) {
-        const selectedMap = allLoadedMaps.find(
-          (map) => map.id === selectedMapId
-        );
+        const selectedMap = allLoadedMaps.find((map) => map.id === selectedMapId);
         if (selectedMap) {
           trilaterationUtils.refreshMap(selectedMap.mapIndex, true); // รีเฟรช canvas เพื่อให้การซ่อน/แสดงวงกลมมีผล
         }
       }
     }
-  }, [
-    showCircles,
-    showPoints,
-    canvasUtils,
-    trilaterationUtils,
-    selectedMapId,
-    allLoadedMaps,
-  ]);
+  }, [showCircles, showPoints, canvasUtils, trilaterationUtils, selectedMapId, allLoadedMaps]);
 
-  // อัปเดต UI เมื่อ loadedMaps เปลี่ยนแปลง
+  // ทำความสะอาด listeners เมื่อคอมโพเนนต์ unmount
   useEffect(() => {
-    if (loadedMaps.length > 0) {
-      setSelectedMapId(loadedMaps[0].id);
-      const selectedMap = allLoadedMaps.find(
-        (map) => map.id === loadedMaps[0].id
-      );
-      if (selectedMap) {
-        loadMapToCanvas(
-          selectedMap.mapSrc,
-          allLoadedMaps.findIndex((map) => map.id === selectedMap.id)
-        );
-      }
-    } else {
-      setSelectedMapId("");
-      canvasUtils?.resetCanvas();
-    }
-  }, [loadedMaps]);
+    return () => {
+      listenersRef.current.forEach(({ ref, listener }) => {
+        off(ref, "value", listener);
+      });
+      listenersRef.current = [];
+    };
+  }, []);
 
   // จัดการป๊อปอัป
   useEffect(() => {
@@ -556,16 +540,6 @@ export default function Home() {
       clearTimeout(closeTimer);
     };
   }, [autoRedirect]);
-
-  // ทำความสะอาด listeners เมื่อคอมโพเนนต์ unmount
-  useEffect(() => {
-    return () => {
-      listenersRef.current.forEach(({ ref, listener }) => {
-        off(ref, "value", listener);
-      });
-      listenersRef.current = [];
-    };
-  }, []);
 
   return (
     <>
@@ -654,10 +628,7 @@ export default function Home() {
                       id="map-select"
                       className="map-select"
                       value={selectedMapId}
-                      onChange={(e) => {
-                        setSelectedMapId(e.target.value);
-                        fetchPointsAndListenRealtime();
-                      }}
+                      onChange={(e) => setSelectedMapId(e.target.value)}
                     >
                       <option value="">-- Please Select Map --</option>
                       {allLoadedMaps.map((map) => (

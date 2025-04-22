@@ -1,46 +1,75 @@
-import "@styles/homepage.css";
+"use client";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-// import SearchForm from "./SearchForm"; // นำเข้า Client Component
+import "@styles/header.css";
 
 export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const navItems = [
+    { path: "/", name: "Home" },
+    { path: "/map", name: "Interactive Map" },
+    { path: "/wifi", name: "WiFi Hotspots" },
+    { path: "/dashboard", name: "Analytics" },
+  ];
+
   return (
-    <>
-      <div className="sidebar oswald-bold">
-        
-        <ul className="menu-list">
-        <div className="sidebar-logo">
-          <Image
-            src="/logo.png"
-            alt="Website Logo"
-            width={50} // ปรับขนาดตามต้องการ
-            height={50}
-          />
-        </div>
-          <li>
-            <Link href="/">Home</Link>
-          </li>
-          <li>
-            <Link href="/map">Maps</Link>
-          </li>
-          <li>
-            <Link href="/wifi">Free Wifi</Link>
-          </li>
-          {/* <li>
-            <Link href="/wifi-router">Wifi Router</Link>
-          </li> */}
-          <li>
-            <Link href="/dashboard">Dashboard</Link>
-          </li>
-          {/* <li>
-            <Link href="/setting">Setting</Link>
-          </li> */}
-          {/* <li>
-            <Link href="/feedback">Feedback</Link>
-          </li> */}
-          {/* <SearchForm /> ใช้ Client Component ที่สร้างขึ้น */}
-        </ul>
+    <header className="header">
+      <div className="header-container">
+        <Link
+          href="/"
+          className="logo-wrapper"
+          onClick={() => setMenuOpen(false)}
+        >
+          <div className="logo-3d">
+            <Image
+              src="/logo.png"
+              alt="WiFi Localization Logo"
+              width={40}
+              height={40}
+              priority
+              className="logo-image"
+            />
+          </div>
+          <span className="logo-text">WiFi Localization</span>
+        </Link>
+
+        <button
+          className={`menu-toggle ${menuOpen ? "open" : ""}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className="toggle-bar"></span>
+          <span className="toggle-bar"></span>
+          <span className="toggle-bar"></span>
+        </button>
+
+        <nav className={`nav-menu ${menuOpen ? "open" : ""}`}>
+          <ul className="nav-list">
+            {navItems.map((item) => (
+              <li key={item.path}>
+                <Link
+                  href={item.path}
+                  className={`nav-link ${
+                    pathname === item.path ? "active" : ""
+                  }`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-    </>
+    </header>
   );
 }

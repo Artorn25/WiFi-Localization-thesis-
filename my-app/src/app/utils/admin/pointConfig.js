@@ -23,10 +23,11 @@ export class PointManager {
     if (this.pointsPerMap[""]) {
       delete this.pointsPerMap[""];
     }
+    console.log("PointManager initialized");
   }
 
-  // ฟังก์ชันตรวจสอบชื่อจุดซ้ำใน Firestore
   async checkDuplicatePointName(pointName) {
+    console.log("Checking duplicate point name:", pointName);
     try {
       const pointsRef = collection(dbfs, "points");
       const q = query(pointsRef, where("ssid", "==", pointName));
@@ -39,6 +40,7 @@ export class PointManager {
   }
 
   async validatePoint(pointName) {
+    console.log("Validating point name:", pointName);
     if (!pointName) {
       this.canvasUtils.alert(
         "Warning",
@@ -48,7 +50,6 @@ export class PointManager {
       return false;
     }
 
-    // ตรวจสอบชื่อซ้ำใน Firestore
     const isDuplicate = await this.checkDuplicatePointName(pointName);
     if (isDuplicate) {
       this.canvasUtils.alert(
@@ -59,7 +60,6 @@ export class PointManager {
       return false;
     }
 
-    // ตรวจสอบชื่อซ้ำในหน่วยความจำท้องถิ่น
     for (const mapIndex in this.pointsPerMap) {
       if (
         this.pointsPerMap[mapIndex].some((point) => point.name === pointName)
@@ -76,6 +76,7 @@ export class PointManager {
   }
 
   addMarkerAndPoint(x, y, name, selectedIndex) {
+    console.log("addMarkerAndPoint called with:", { x, y, name, selectedIndex });
     if (!this.markerCoordinatesPerMap[selectedIndex])
       this.markerCoordinatesPerMap[selectedIndex] = [];
     this.markerCoordinatesPerMap[selectedIndex].push({ x, y });
@@ -84,9 +85,8 @@ export class PointManager {
   }
 
   async addPoint(x, y, name, selectedIndex) {
-    console.log("Adding point:", { name, selectedIndex });
+    console.log("Adding point:", { x, y, name, selectedIndex });
 
-    // ตรวจสอบชื่อจุด
     if (!name || name.trim() === "") {
       console.warn("Empty point name");
       this.canvasUtils.alert(
@@ -97,7 +97,6 @@ export class PointManager {
       throw new Error("ALREADY_HANDLED");
     }
 
-    // ตรวจสอบว่า selectedIndex ถูกต้อง
     if (
       selectedIndex === undefined ||
       selectedIndex === null ||
@@ -111,7 +110,7 @@ export class PointManager {
       );
       throw new Error("ALREADY_HANDLED");
     }
-    // ตรวจสอบชื่อซ้ำใน Firestore
+
     const isDuplicate = await this.checkDuplicatePointName(name);
     if (isDuplicate) {
       this.canvasUtils.alert(
@@ -122,7 +121,6 @@ export class PointManager {
       throw new Error("ALREADY_HANDLED");
     }
 
-    // ตรวจสอบชื่อซ้ำในหน่วยความจำ
     if (
       this.pointsPerMap[selectedIndex]?.some((point) => point.name === name)
     ) {
@@ -134,7 +132,6 @@ export class PointManager {
       throw new Error("ALREADY_HANDLED");
     }
 
-    // สร้างจุดใหม่
     const color = this.drawMode ? "blue" : "red";
     if (!this.pointsPerMap[selectedIndex]) {
       this.pointsPerMap[selectedIndex] = [];
@@ -151,12 +148,13 @@ export class PointManager {
       data: [],
     };
 
+    console.log("New point created:", newPoint);
+
     this.pointsPerMap[selectedIndex].push(newPoint);
     this.points = this.pointsPerMap[selectedIndex];
     this.startRealTimeUpdate(newPoint, selectedIndex);
     this.updatePointSelects();
 
-    // แสดง alert เมื่อเพิ่มจุดสำเร็จ
     this.canvasUtils.alert(
       "Success",
       `Point "${name}" added successfully at (${x.toFixed(2)}, ${y.toFixed(
@@ -167,8 +165,8 @@ export class PointManager {
   }
 
   async savePointToFirestore(x, y, name, color) {
+    console.log("Saving point to Firestore:", { x, y, name, color });
     try {
-      // ตรวจสอบชื่อซ้ำก่อนบันทึก
       const isDuplicate = await this.checkDuplicatePointName(name);
       if (isDuplicate) {
         throw new Error("Point name already exists in Firestore.");
@@ -183,7 +181,7 @@ export class PointManager {
           scaleX: this.canvasUtils.scaleX,
           scaleY: this.canvasUtils.scaleY,
         },
-        mapIndex: document.getElementById("map-select").value,
+        mapIndex: document.getElementById("map-select")?.value,
         ssid: name,
         updatedAt: serverTimestamp(),
       });
@@ -194,6 +192,7 @@ export class PointManager {
   }
 
   async saveMapDataToFirestore(mapData) {
+    console.log("Saving map data to Firestore:", mapData);
     try {
       if (!mapData || !mapData.mapName) {
         throw new Error("Invalid map data");
@@ -229,6 +228,7 @@ export class PointManager {
   }
 
   showDistance(index1, index2) {
+    console.log("Showing distance between points:", { index1, index2 });
     if (index1 === index2) {
       this.canvasUtils.alert(
         "Error",
@@ -243,15 +243,19 @@ export class PointManager {
       const dx = (point2.x - point1.x) * this.canvasUtils.scaleX;
       const dy = (point2.y - point1.y) * this.canvasUtils.scaleY;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      document.getElementById(
-        "distanceDisplay"
-      ).innerText = `Distance between ${point1.name} and ${
-        point2.name
-      }: ${distance.toFixed(2)} meters`;
+      const distanceDisplay = document.getElementById("distanceDisplay");
+      if (distanceDisplay) {
+        distanceDisplay.innerText = `Distance between ${point1.name} and ${
+          point2.name
+        }: ${distance.toFixed(2)} meters`;
+      } else {
+        console.warn("Element distanceDisplay not found");
+      }
     }
   }
 
   deletePoint(selectedPointName, mapIndex) {
+    console.log("Deleting point:", { selectedPointName, mapIndex });
     if (!selectedPointName) {
       this.canvasUtils.alert(
         "Info",
@@ -290,17 +294,30 @@ export class PointManager {
   }
 
   updatePointSelects() {
-    const selects = [
+    console.log("Updating point selects, pointsPerMap:", this.pointsPerMap);
+    const selectIds = [
       "pointSelect",
       "point1Select",
       "point2Select",
       "editPointSelect",
-    ].map((id) => document.getElementById(id));
+    ];
+    const selects = selectIds
+      .map((id) => ({ id, element: document.getElementById(id) }))
+      .filter(({ id, element }) => {
+        if (!element) {
+          console.warn(`Element with id ${id} not found`);
+          return false;
+        }
+        return true;
+      })
+      .map(({ element }) => element);
+
     selects.forEach((select) => (select.innerHTML = ""));
 
-    this.pointsPerMap.forEach((points) => {
+    this.pointsPerMap.forEach((points, mapIndex) => {
       if (points) {
         points.forEach((point) => {
+          console.log("Adding point to selects:", point);
           const option = document.createElement("option");
           option.value = point.name;
           option.textContent = point.name;
@@ -313,10 +330,12 @@ export class PointManager {
   }
 
   startRealTimeUpdate(point, selectedIndex) {
+    console.log("Starting real-time update for point:", point, "mapIndex:", selectedIndex);
     const routerSSID = point.name;
     const listener = onValue(
       dbRef,
       (snapshot) => {
+        console.log("Firebase snapshot received for SSID:", routerSSID, snapshot.val());
         if (snapshot.exists()) {
           const nodes = snapshot.val();
           const allData = [];
@@ -358,7 +377,7 @@ export class PointManager {
           }
 
           const currentSelectedIndex =
-            document.getElementById("map-select").value;
+            document.getElementById("map-select")?.value;
           if (currentSelectedIndex && currentSelectedIndex === selectedIndex) {
             this.trilaterationUtils.refreshMap(currentSelectedIndex);
           } else {
@@ -375,7 +394,7 @@ export class PointManager {
           point.data = [];
 
           const currentSelectedIndex =
-            document.getElementById("map-select").value;
+            document.getElementById("map-select")?.value;
           if (currentSelectedIndex && currentSelectedIndex === selectedIndex) {
             this.trilaterationUtils.refreshMap(currentSelectedIndex);
           }
@@ -395,6 +414,7 @@ export class PointManager {
   }
 
   stopRealTimeUpdates() {
+    console.log("Stopping real-time updates");
     this.listeners.forEach(({ pointName, listener }) => {
       off(dbRef, "value", listener);
       console.log(`Stopped listening for point: ${pointName}`);
@@ -403,7 +423,8 @@ export class PointManager {
   }
 
   updatePointData(pointName, data) {
-    const selectedIndex = document.getElementById("map-select").value;
+    console.log("Updating point data for:", pointName, "with data:", data);
+    const selectedIndex = document.getElementById("map-select")?.value;
     if (selectedIndex && this.pointsPerMap[selectedIndex]) {
       this.pointsPerMap[selectedIndex].forEach((point) => {
         if (point.name === pointName) {
@@ -414,6 +435,7 @@ export class PointManager {
   }
 
   async editPoint(selectedPointName, newPointName, mapIndex) {
+    console.log("Editing point:", { selectedPointName, newPointName, mapIndex });
     if (
       this.canvasUtils.checkCondition.NotEqual(
         selectedPointName,
@@ -426,7 +448,6 @@ export class PointManager {
     )
       return;
 
-    // ตรวจสอบชื่อซ้ำใน Firestore
     const isDuplicate = await this.checkDuplicatePointName(newPointName);
     if (isDuplicate) {
       this.canvasUtils.alert(

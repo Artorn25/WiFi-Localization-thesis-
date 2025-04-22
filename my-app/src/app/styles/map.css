@@ -3,22 +3,58 @@
 
 :root {
   --primary-color: #6366f1;
-  --primary-gradient: linear-gradient(135deg, #60a5fa, #2563eb);
+  --primary-gradient: linear-gradient(
+    135deg,
+    #93c5fd,
+    #60a5fa,
+    #2563eb
+  ); /* UPDATE MAP NAME */
   --secondary-color: #34d399;
+  --secondary-gradient: linear-gradient(
+    135deg,
+    #6ee7b7,
+    #34d399,
+    #059669
+  ); /* CONFIRM SAVE */
   --accent-color: #f87171;
+  --accent-gradient: linear-gradient(
+    135deg,
+    #fda4af,
+    #f87171,
+    #dc2626
+  ); /* DELETE MAP, DELETE POINT */
+  --upload-gradient: linear-gradient(
+    135deg,
+    #a78bfa,
+    #8b5cf6,
+    #6d28d9
+  ); /* UPLOAD MAP */
+  --reset-gradient: linear-gradient(
+    135deg,
+    #a5b4fc,
+    #818cf8,
+    #4f46e5
+  ); /* RESET */
+  --edit-gradient: linear-gradient(
+    135deg,
+    #facc15,
+    #eab308,
+    #ca8a04
+  ); /* UPDATE POINT NAME */
   --background-color: #f8fafc;
   --card-color: #ffffff;
   --text-color: #0f172a;
   --border-color: #e2e8f0;
-  --radius: 16px;
-  --shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
-  --transition: all 0.25s ease;
+  --radius: 10px;
+  --shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -26,19 +62,21 @@
   }
 }
 
-body {
-  font-family: "Outfit", sans-serif;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  margin: 0;
-  padding: 0;
-  animation: fadeInUp 0.4s ease;
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(3.5);
+    opacity: 0;
+  }
 }
 
 .container {
   max-width: 100%;
   margin: auto;
-  padding: 1rem;
+  padding: 0.8rem;
   animation: fadeInUp 0.5s ease;
 }
 
@@ -46,106 +84,230 @@ body {
   background-color: var(--card-color);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 1.5rem;
+  padding: 1.2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.2rem;
   width: 100%;
   box-sizing: border-box;
 }
 
 canvas {
-  /* width: 100%; */
   align-self: center;
   justify-self: center;
   height: auto;
   max-width: 100%;
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: fadeInUp 0.7s ease;
 }
 
 #map-controls {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
-  margin-top: 1rem;
+  gap: 1rem;
+  margin-top: 0.8rem;
 }
 
 @media (min-width: 640px) {
   #map-controls {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
 
 .controls-group {
   display: contents;
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
 }
 
 button,
 .btn-upload {
-  padding: 0.8rem 1rem;
-  font-size: 0.95rem;
+  position: relative;
+  overflow: hidden;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #fff;
   background: var(--primary-gradient);
   border: none;
   border-radius: var(--radius);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.2);
+  box-shadow: var(--shadow);
   cursor: pointer;
   transition: var(--transition);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   animation: fadeInUp 0.9s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 button:hover,
 .btn-upload:hover {
-  transform: scale(1.03);
-  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.3);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+  filter: brightness(1.08);
 }
 
-#delete-map,
+button:active,
+.btn-upload:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow);
+}
+
+/* Ripple Effect */
+button::after,
+.btn-upload::after {
+  content: "";
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+button:active::after,
+.btn-upload:active::after {
+  animation: ripple 0.5s ease-out;
+}
+
+/* ปุ่ม Update Map Name */
+#updateMapName {
+  background: var(--primary-gradient);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+#updateMapName:hover {
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+}
+
+/* ปุ่ม Delete Map */
+#delete-map {
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 12px rgba(251, 113, 133, 0.25);
+}
+
+#delete-map:hover {
+  box-shadow: 0 6px 16px rgba(251, 113, 133, 0.35);
+}
+
+#delete-map::before {
+  content: "🗑️";
+  margin-right: 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* ปุ่ม Upload Map */
+.btn-upload {
+  background: var(--upload-gradient);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.btn-upload:hover {
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
+}
+
+.btn-upload::before {
+  content: "📤";
+  margin-right: 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* ปุ่ม Reset */
+#resetPoints {
+  background: var(--reset-gradient);
+  box-shadow: 0 4px 12px rgba(129, 140, 248, 0.25);
+}
+
+#resetPoints:hover {
+  box-shadow: 0 6px 16px rgba(129, 140, 248, 0.35);
+}
+
+#resetPoints::before {
+  content: "🔄";
+  margin-right: 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* ปุ่ม Delete Point */
 #DeletePoint {
-  background: linear-gradient(135deg, #fb7185, #f43f5e);
-  box-shadow: 0 5px 15px rgba(251, 113, 133, 0.3);
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 12px rgba(251, 113, 133, 0.25);
 }
 
-#ShowDistance {
-  background: linear-gradient(135deg, var(--secondary-color), #059669);
-  box-shadow: 0 5px 15px rgba(52, 211, 153, 0.3);
+#DeletePoint:hover {
+  box-shadow: 0 6px 16px rgba(251, 113, 133, 0.35);
+}
+
+#DeletePoint::before {
+  content: "🗑️";
+  margin-right: 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* ปุ่ม Update Point Name */
+#editPoint {
+  background: var(--edit-gradient);
+  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.25);
+}
+
+#editPoint:hover {
+  box-shadow: 0 6px 16px rgba(250, 204, 21, 0.35);
+}
+
+#editPoint::before {
+  content: "✏️";
+  margin-right: 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* ปุ่ม Confirm Save */
+#confirmSave {
+  background: var(--secondary-gradient);
+  box-shadow: 0 4px 12px rgba(52, 211, 153, 0.25);
+}
+
+#confirmSave:hover {
+  box-shadow: 0 6px 16px rgba(52, 211, 153, 0.35);
+}
+
+#confirmSave::before {
+  content: "💾";
+  margin-right: 0.4rem;
+  font-size: 0.9rem;
 }
 
 input[type="text"],
 select,
 .autocomplete-input {
   width: 100%;
-  padding: 0.8rem 1rem;
-  font-size: 0.95rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
   border-radius: var(--radius);
   border: 1.5px solid var(--border-color);
   background-color: #fff;
   transition: var(--transition);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.03);
   animation: fadeInUp 1s ease;
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
 }
 
 input:focus,
 select:focus,
 .autocomplete-input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 2.5px rgba(99, 102, 241, 0.2);
   outline: none;
 }
 
 label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
   font-weight: 600;
   color: var(--text-color);
 }
@@ -157,14 +319,14 @@ label {
   border-radius: var(--radius);
   z-index: 999;
   width: 100%;
-  max-height: 200px;
+  max-height: 180px;
   overflow-y: auto;
   box-shadow: var(--shadow);
   animation: fadeInUp 0.3s ease;
 }
 
 .autocomplete-suggestion {
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.9rem;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -189,7 +351,7 @@ label {
 }
 
 #map-sample-container {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   text-align: center;
   animation: fadeInUp 1s ease;
 }
@@ -197,7 +359,7 @@ label {
 .map-samples {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.8rem;
   justify-content: center;
 }
 
@@ -205,7 +367,7 @@ label {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   width: 100%;
-  max-width: 300px;
+  max-width: 280px;
   aspect-ratio: 2 / 1;
   object-fit: cover;
   cursor: pointer;
@@ -214,15 +376,15 @@ label {
 }
 
 .map-sample:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  transform: scale(1.04);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 #tooltip {
   background: #ffffff;
   border: 1px solid var(--border-color);
-  padding: 0.75rem 1rem;
-  font-size: 0.85rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.8rem;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   display: none;
@@ -233,27 +395,27 @@ label {
 
 @media (max-width: 768px) {
   .container {
-    padding: 0.5rem;
+    padding: 0.4rem;
   }
 
   #map-container {
-    padding: 1rem;
+    padding: 0.8rem;
   }
 
   button,
   .btn-upload {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
   }
 
   input[type="text"],
   select,
   .autocomplete-input {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
   }
 
   .map-sample {
-    max-width: 250px;
+    max-width: 220px;
   }
 }

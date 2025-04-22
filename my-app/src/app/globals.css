@@ -15,15 +15,6 @@
   font-style: normal;
 }
 
-:root {
-  --primary-color: #f36f21;
-  --secondary-color: #ff5722;
-  --dark-color: #333;
-  --light-color: #f5f5f5;
-  --white-color: #fff;
-  --transition-duration: 0.3s;
-}
-
 body,
 html {
   margin: 0;

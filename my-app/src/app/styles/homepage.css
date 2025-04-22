@@ -4,388 +4,285 @@
   padding: 0 15px;
 }
 
-nav {
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 10px 0;
-  position: sticky;
-  top: 0;
-  z-index: 800;
+.canvas-wrapper {
+  margin: 20px 0;
 }
 
-.nav-content .logo svg {
-  fill: var(--primary-color);
+.controls-container {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
 
-.search-bar input {
-  max-width: 300px;
-  border-color: orange;
-  font-size: 12px;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+.control-item {
+  margin-bottom: 15px;
 }
 
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  /* padding: 15px; */
-  /* border-bottom: 1px solid #eee; */
-  /* margin-right: -170; */
-  padding: 0;
-}
-
-.logo-text {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.search-bar button {
-  margin-left: 10px;
-  background-color: var(--primary-color);
-  font-size: 10px;
-  color: var(--white-color);
+.checkbox-control {
+  display: block;
+  position: relative;
+  padding-left: 30px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  user-select: none;
 }
 
-.search-bar button:hover {
-  background-color: var(--white-color);
-  color: var(--primary-color);
-}
-
-.nav-links {
-  display: flex;
-  gap: 20px;
-  a {
-    text-decoration: none;
-    color: var(--dark-color);
-    font-weight: 500;
-    padding: 5px 10px;
-    transition: color var(--transition-duration) ease;
-  }
-  a:hover {
-    color: var(--secondary-color);
-    text-decoration: underline;
-  }
-}
-
-.sidebar {
-  width: 100%; /* ความกว้างเต็มหน้าจอ */
-  background-color: white; /* สีพื้นหลัง */
-  color: var(--white-color); /* สีข้อความ */
-  padding: 10px 20px; /* Padding ด้านบนและล่าง */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* เงา */
-  z-index: 1000; /* ให้อยู่ด้านบน */
-}
-
-.menu-list {
-  list-style: none; /* ลบจุดหน้าข้อความ */
-  padding: 0;
-  margin: 0;
-  display: flex; /* ทำให้เมนูแสดงผลในแนวนอน */
-  gap: 20px; /* ระยะห่างระหว่างรายการ */
-  justify-content: center; /* จัดเมนูให้อยู่กลาง */
-}
-
-.menu-list li {
-  padding: 10px 0; /* ปรับ padding */
-}
-
-.menu-list li a {
-  color: #333; /* สีข้อความ */
-  text-decoration: none; /* ลบขีดเส้นใต้ */
-  font-size: 16px; /* ขนาดฟอนต์ */
-  transition: color 0.3s ease; /* เพิ่มเอฟเฟกต์เมื่อ hover */
-}
-
-.menu-list li a:hover {
-  color: orange; /* สีเมื่อ hover */
-}
-
-.sidebar.open {
-  transform: translateX(0); /* เลื่อน sidebar ออกมา */
-}
-
-header {
-  text-align: center;
-  padding: 100px 0;
-  background: linear-gradient(to bottom right, var(--primary-color), #ff8c42);
-  color: var(--white-color);
-  h1 {
-    margin: 0;
-    font-size: 3em;
-    font-weight: 700;
-  }
-  .subtitle {
-    font-size: 1.5em;
-    margin-top: 10px;
-    color: rgba(255, 255, 255, 0.8);
-  }
-  .subtitle span {
-    font-weight: 700;
-  }
-  .cta-button {
-    margin-top: 30px;
-    padding: 15px 30px;
-    background-color: var(--white-color);
-    color: var(--primary-color);
-    border: none;
-    font-size: 1.2em;
-    font-weight: 700;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color var(--transition-duration) ease,
-      color var(--transition-duration) ease;
-  }
-  .cta-button:hover {
-    background-color: var(--secondary-color);
-    transform: scale(1.1);
-    color: var(--white-color);
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
-  }
-}
-
-.nav-item:hover {
-  background-color: #bcc1c7;
-  border-radius: 5px;
-  font-weight: 700;
-}
-
-.togglebtn {
-  display: flex; /* ใช้ Flexbox เพื่อจัดให้อยู่ตรงกลาง */
-  justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
-  align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
-  width: 50px; /* ขนาดปุ่ม */
-  height: 50px; /* ขนาดปุ่ม */
-  background-color: #f8f9fa; /* สีพื้นหลัง */
-  border: none; /* ไม่มีเส้นขอบ */
-}
-
-.navbar-toggler-icon {
-  display: flex; /* ใช้ Flexbox */
-  justify-content: center; /* จัดให้อยู่ตรงกลางแนวนอน */
-  align-items: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
-  height: 100%; /* ให้ span มีความสูงเต็มปุ่ม */
-
-  img {
-    width: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
-    height: 40px; /* ปรับขนาดให้ใหญ่ขึ้น */
-    /* หรือใช้ max-width และ max-height */
-    max-width: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
-    max-height: none; /* อนุญาตให้รูปภาพมีขนาดใหญ่กว่าขนาดปุ่ม */
-    animation: bounce 1s infinite;
-  }
-}
-
-.togglebtn:hover {
-  background-color: rgb(114, 114, 113);
-  border-radius: none;
-}
-
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px); /* ยกภาพขึ้น */
-  }
-}
-
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
-  margin-top: 40px;
-}
-
-.feature-card {
+.checkbox-control input {
+  position: absolute;
   opacity: 0;
-  transform: translateY(50px);
-  transition: opacity var(--transition-duration) ease-out,
-    transform var(--transition-duration) ease-out;
-  text-align: center;
-  justify-content: center;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #eee;
+  border-radius: 4px;
+}
+
+.checkbox-control:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+.checkbox-control input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+.checkbox-label {
+  margin-left: 5px;
+}
+
+.loading-maps {
+  display: flex;
   align-items: center;
-  h3 {
-    margin: 0 0 10px;
-    font-size: 1.5em;
-    color: var(--dark-color);
-  }
-  img {
-    width: 100%;
-    border-radius: 8px;
-  }
-  p {
-    margin: 0 0 20px;
-    color: #666;
-  }
-}
-
-.feature-card.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.feature-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  gap: 10px;
 }
 
 .loading-spinner {
   border: 4px solid #f3f3f3;
   border-radius: 50%;
-  border-top: 4px solid var(--primary-color);
+  border-top: 4px solid #3498db;
   width: 30px;
   height: 30px;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@media (max-width: 768px) {
-  .nav-content,
-  .feature-grid {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .nav-links {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #e74c3c;
 }
 
-@media (max-width: 480px) {
-  .search-bar input {
-    max-width: 200px;
-  }
-
-  header h1 {
-    font-size: 2.5em;
-  }
-
-  header .subtitle {
-    font-size: 1.2em;
-  }
-
-  .background-image {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    /* animation: gradientBackground 10s ease infinite; */
-    z-index: 1;
-    opacity: 0.7;
-  }
-
-  @keyframes gradientBackground {
-    0% {
-      background-color: #ff7e5f;
-    }
-
-    50% {
-      background-color: #feb47b;
-    }
-
-    100% {
-      background-color: #ff7e5f;
-    }
-  }
+.error-icon {
+  font-size: 1.2em;
 }
 
-.search-input {
-  border-radius: 20px 0 0 20px;
-  padding: 0.6rem 1rem;
-  border: 1px solid #ffc107;
-  outline: none;
-  transition: all 0.3s ease;
+.map-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.search-input:focus {
-  border-color: #ffb300;
-  box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+.selector-label {
+  font-weight: 500;
 }
 
-.search-button {
-  border-radius: 0 20px 20px 0;
-  padding: 0.6rem 1.5rem;
-  background-color: #ffc107;
-  border: 1px solid #ffc107;
-  color: #fff;
-  transition: background-color 0.3s ease;
+.select-btn-group {
+  display: flex;
+  gap: 10px;
 }
 
-.search-button:hover {
-  background-color: #ffb300;
-  border-color: #ffb300;
+.map-select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  flex-grow: 1;
 }
+
+.action-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.show-points-btn {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.show-points-btn:hover {
+  background-color: #27ae60;
+}
+
+.show-points-btn:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.delete-map-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.delete-map-btn:hover {
+  background-color: #c0392b;
+}
+
+.delete-map-btn:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.map-sample-container {
+  margin-top: 30px;
+}
+
+.sample-maps-title {
+  margin-bottom: 15px;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.map-samples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.map-sample-item {
+  position: relative;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.map-sample-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.map-image-wrapper {
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+
+.map-sample-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.map-sample-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-name {
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+.click-hint {
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+.no-maps-message {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+}
+
 /* Popup Styles */
 .popup-overlay {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  left: auto;
-  bottom: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
+  background: rgba(0, 0, 0, 0.3); /* Add a subtle backdrop */
   animation: fadeIn 0.3s ease-out;
 }
 
 .popup {
   background: white;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 8px;
-  width: 280px;
+  width: 100%;
+  max-width: 600px; /* Increased width */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
+  box-sizing: border-box;
 }
 
 .popup-title {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
   color: #2d3748;
 }
 
-.popup-message {
-  font-size: 0.9rem;
-  color: #4a5568;
-  margin-bottom: 1rem;
+.popup-content {
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.popup-list {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.popup-list li {
+  margin-bottom: 0.5rem;
 }
 
 .popup-buttons {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .popup-close-btn {
   background: #3182ce;
   color: white;
   border: none;
-  padding: 0.4rem 0.8rem;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1;
+  max-width: 150px;
+  text-align: center;
+  order: 2; /* Move to the right */
 }
 
 .popup-close-btn:hover {
@@ -396,25 +293,24 @@ header {
   background: #e2e8f0;
   color: #4a5568;
   border: none;
-  padding: 0.4rem 0.8rem;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
   flex: 1;
+  max-width: 150px;
+  text-align: center;
+  order: 1; /* Keep on the left */
 }
 
 .popup-cancel-btn:hover {
   background: #cbd5e0;
 }
 
-.popup-cancel-btn.active {
-  background: #f56565;
-  color: white;
-}
-
-.popup-cancel-btn.active:hover {
-  background: #c53030;
+.countdown-text {
+  margin-top: 1.25rem;
+  text-align: center;
 }
 
 .countdown {
@@ -433,93 +329,58 @@ header {
   }
 }
 
-.loading-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: white;
-  z-index: 9999;
+@media (max-width: 768px) {
+  .map-samples-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .select-btn-group {
+    flex-direction: column;
+  }
+  
+  .popup {
+    max-width: 90%;
+    padding: 1rem;
+  }
+  
+  .popup-title {
+    font-size: 1.1rem;
+  }
+  
+  .popup-content {
+    font-size: 0.9rem;
+  }
+  
+  .popup-close-btn,
+  .popup-cancel-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    max-width: 120px;
+  }
 }
 
-.loading-animation {
-  width: 200px;
-  height: 200px;
-}
-
-.loading-text {
-  margin-top: 20px;
-  font-size: 1.2rem;
-  color: #333;
-}
-
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-.popup {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 600px;
-  width: 90%;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-.popup-title {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: #333;
-}
-.popup-content {
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-.popup-list {
-  margin: 0.5rem 0;
-  padding-left: 1.5rem;
-}
-.popup-list li {
-  margin-bottom: 0.5rem;
-}
-.countdown-text {
-  margin-top: 1rem;
-  font-weight: bold;
-}
-.countdown {
-  color: #0066cc;
-  font-weight: bold;
-}
-.popup-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-}
-.popup-close-btn {
-  padding: 0.5rem 1rem;
-  background: #0066cc;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.popup-cancel-btn {
-  padding: 0.5rem 1rem;
-  background: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
+@media (max-width: 480px) {
+  .popup {
+    max-width: 95%;
+    padding: 0.8rem;
+  }
+  
+  .popup-title {
+    font-size: 1rem;
+  }
+  
+  .popup-content {
+    font-size: 0.85rem;
+  }
+  
+  .popup-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .popup-close-btn,
+  .popup-cancel-btn {
+    max-width: 100%;
+    order: initial; /* Reset order for vertical stacking */
+  }
 }
