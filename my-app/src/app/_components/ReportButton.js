@@ -31,7 +31,7 @@ export default function ReportButton() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/report", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_LOCALHOST}/api/report`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
