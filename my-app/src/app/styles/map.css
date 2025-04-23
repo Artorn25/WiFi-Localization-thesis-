@@ -102,7 +102,29 @@ canvas {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: fadeInUp 0.7s ease;
 }
+#map-show {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto;
+  /* max-width: 800px; */
+  /* width: 90%; */
+  /* padding: 20px; */
+  /* border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); */
+}
 
+/* สไตล์สำหรับฟอร์มและปุ่ม */
+#map-show form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 #map-controls {
   display: grid;
   grid-template-columns: 1fr;

@@ -446,11 +446,9 @@ export default function Map() {
           });
 
           if (hoveredPoint) {
-            tooltip.innerText = `Name: ${
-              hoveredPoint.name
-            }\nDistance: ${hoveredPoint.distance.toFixed(2)} m\nRSSI: ${
-              hoveredPoint.rssi
-            } dBm`;
+            tooltip.innerText = `Name: ${hoveredPoint.name
+              }\nDistance: ${hoveredPoint.distance.toFixed(2)} m\nRSSI: ${hoveredPoint.rssi
+              } dBm`;
             tooltip.style.display = "block";
             tooltip.style.left = `${event.pageX + 10}px`;
             tooltip.style.top = `${event.pageY + 10}px`;
@@ -517,9 +515,8 @@ export default function Map() {
 
             let pointsHtml = "<ul>";
             selectedPointData.forEach((point, index) => {
-              pointsHtml += `<li>Point ${index + 1}: Name: ${
-                point.name
-              }, X: ${point.x.toFixed(2)}, Y: ${point.y.toFixed(2)}</li>`;
+              pointsHtml += `<li>Point ${index + 1}: Name: ${point.name
+                }, X: ${point.x.toFixed(2)}, Y: ${point.y.toFixed(2)}</li>`;
             });
             pointsHtml += "</ul>";
 
@@ -606,19 +603,19 @@ export default function Map() {
 
       Object.entries(elements).forEach(([key, element]) => {
         if (element) {
-          element.removeEventListener("click", () => {});
-          element.removeEventListener("change", () => {});
+          element.removeEventListener("click", () => { });
+          element.removeEventListener("change", () => { });
         }
       });
 
       const mapSamples = document.querySelectorAll(".map-sample");
       mapSamples.forEach((img) => {
-        img.removeEventListener("click", () => {});
+        img.removeEventListener("click", () => { });
       });
 
       if (canvas) {
-        canvas.removeEventListener("click", () => {});
-        canvas.removeEventListener("mousemove", () => {});
+        canvas.removeEventListener("click", () => { });
+        canvas.removeEventListener("mousemove", () => { });
       }
     };
   }, []);
@@ -633,7 +630,7 @@ export default function Map() {
             width="1000px"
             height="400px"
           ></canvas>
-          <div id="map-controls">
+          <div id="map-show" >
             <form action="">
               <input
                 type="checkbox"
@@ -645,6 +642,8 @@ export default function Map() {
               <label htmlFor="showCircleCheckbox">Hide circle area</label>
               <br />
             </form>
+          </div>
+          <div id="map-controls">
             <div className="controls-group">
               <label htmlFor="mapName">Map Name:</label>
               <select id="map-select" ref={mapSelectRef}>
