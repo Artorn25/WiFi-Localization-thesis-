@@ -72,7 +72,7 @@ export default function Ais() {
 
   return (
     <>
-      <div className="container">
+      <div className="ais-container">
         <h1>AIS WiFi</h1>
         <div className="content">
           <svg
