@@ -67,7 +67,6 @@ export default function Home() {
     }
   };
 
-  // ตรวจสอบการโหลดรูปภาพ
   const checkImageLoad = (mapSrc) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
