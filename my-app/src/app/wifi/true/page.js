@@ -4,7 +4,7 @@ import "@styles/true.css";
 const TrueWifi = () => {
   return (
     <div className="main">
-      <div className="container">
+      <div className="true-container">
         <div className="wifiIcon"></div>
         <h1>True WiFi</h1>
         <div className="content">

@@ -20,7 +20,7 @@
 }
 
 /* Container */
-.container {
+.wifi-container {
   background-color: white;
   border-radius: 20px;
   box-shadow: var(--shadow);

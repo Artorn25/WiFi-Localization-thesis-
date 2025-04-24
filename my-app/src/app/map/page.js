@@ -446,9 +446,11 @@ export default function Map() {
           });
 
           if (hoveredPoint) {
-            tooltip.innerText = `Name: ${hoveredPoint.name
-              }\nDistance: ${hoveredPoint.distance.toFixed(2)} m\nRSSI: ${hoveredPoint.rssi
-              } dBm`;
+            tooltip.innerText = `Name: ${
+              hoveredPoint.name
+            }\nDistance: ${hoveredPoint.distance.toFixed(2)} m\nRSSI: ${
+              hoveredPoint.rssi
+            } dBm`;
             tooltip.style.display = "block";
             tooltip.style.left = `${event.pageX + 10}px`;
             tooltip.style.top = `${event.pageY + 10}px`;
@@ -515,8 +517,9 @@ export default function Map() {
 
             let pointsHtml = "<ul>";
             selectedPointData.forEach((point, index) => {
-              pointsHtml += `<li>Point ${index + 1}: Name: ${point.name
-                }, X: ${point.x.toFixed(2)}, Y: ${point.y.toFixed(2)}</li>`;
+              pointsHtml += `<li>Point ${index + 1}: Name: ${
+                point.name
+              }, X: ${point.x.toFixed(2)}, Y: ${point.y.toFixed(2)}</li>`;
             });
             pointsHtml += "</ul>";
 
@@ -603,19 +606,19 @@ export default function Map() {
 
       Object.entries(elements).forEach(([key, element]) => {
         if (element) {
-          element.removeEventListener("click", () => { });
-          element.removeEventListener("change", () => { });
+          element.removeEventListener("click", () => {});
+          element.removeEventListener("change", () => {});
         }
       });
 
       const mapSamples = document.querySelectorAll(".map-sample");
       mapSamples.forEach((img) => {
-        img.removeEventListener("click", () => { });
+        img.removeEventListener("click", () => {});
       });
 
       if (canvas) {
-        canvas.removeEventListener("click", () => { });
-        canvas.removeEventListener("mousemove", () => { });
+        canvas.removeEventListener("click", () => {});
+        canvas.removeEventListener("mousemove", () => {});
       }
     };
   }, []);
@@ -623,14 +626,14 @@ export default function Map() {
   return (
     <>
       <div id="map-container">
-        <div className="container">
+        <div className="map-container">
           <canvas
             id="myCanvas"
             ref={canvasRef}
             width="1000px"
             height="400px"
           ></canvas>
-          <div id="map-show" >
+          <div id="map-show">
             <form action="">
               <input
                 type="checkbox"
@@ -702,7 +705,7 @@ export default function Map() {
         }}
       ></div>
       <div id="map-sample-container" className="container">
-        <h3>Example Maps</h3>
+        <h3>Example Maps to use</h3>
         <div className="map-samples">
           <NextImage
             src="/map/map1.png"

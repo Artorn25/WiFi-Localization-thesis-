@@ -1,57 +1,6 @@
 /* 💠 Premium SaaS UI — Ultra Refined with Soft Pastels & Superior Responsiveness */
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap");
 
-:root {
-  --primary-color: #6366f1;
-  /* --primary-gradient: linear-gradient(
-    135deg,
-    #93c5fd,
-    #60a5fa,
-    #2563eb
-  ); 
-  UPDATE MAP NAME */
-  --secondary-color: #34d399;
-  --secondary-gradient: linear-gradient(
-    135deg,
-    #6ee7b7,
-    #34d399,
-    #059669
-  ); /* CONFIRM SAVE */
-  --accent-color: #f87171;
-  --accent-gradient: linear-gradient(
-    135deg,
-    #fda4af,
-    #f87171,
-    #dc2626
-  ); /* DELETE MAP, DELETE POINT */
-  --upload-gradient: linear-gradient(
-    135deg,
-    #a78bfa,
-    #8b5cf6,
-    #6d28d9
-  ); /* UPLOAD MAP */
-  --reset-gradient: linear-gradient(
-    135deg,
-    #a5b4fc,
-    #818cf8,
-    #4f46e5
-  ); /* RESET */
-  --edit-gradient: linear-gradient(
-    135deg,
-    #facc15,
-    #eab308,
-    #ca8a04
-  ); /* UPDATE POINT NAME */
-  --background-color: #f8fafc;
-  --card-color: #ffffff;
-  --text-color: #0f172a;
-  --border-color: #e2e8f0;
-  --radius: 10px;
-  --shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
-  --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
-  /* --transition: all 0.3s ease; */
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -74,7 +23,7 @@
   }
 }
 
-.container {
+.map-container {
   max-width: 100%;
   margin: auto;
   padding: 0.8rem;

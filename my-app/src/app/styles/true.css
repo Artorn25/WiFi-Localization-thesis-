@@ -9,7 +9,7 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.container {
+.true-container {
   background-color: rgba(255, 255, 255, 0.95);
   padding: 3rem;
   border-radius: 20px;
@@ -21,11 +21,11 @@
   transition: transform 0.3s ease;
 }
 
-.container:hover {
+.true-container:hover {
   transform: translateY(-5px);
 }
 
-.container::before {
+.true-container::before {
   content: "";
   position: absolute;
   top: -50%;

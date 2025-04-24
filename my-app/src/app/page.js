@@ -318,13 +318,13 @@ export default function Home() {
             ]);
             if (trilaterationUtils)
               trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
-            }
-          },
-          (error) => {
-            console.error("Error listening to Firebase:", error);
-            canvasUtils.alert(
-              "Error",
-              "Failed to fetch real-time data from Firebase.",
+          }
+        },
+        (error) => {
+          console.error("Error listening to Firebase:", error);
+          canvasUtils.alert(
+            "Error",
+            "Failed to fetch real-time data from Firebase.",
             "error"
           );
         }
@@ -590,7 +590,7 @@ export default function Home() {
 
       <div id="map-container">
         <GenText />
-        <div className="container">
+        <div className="home-container">
           <div className="canvas-wrapper">
             <canvas
               id="myCanvas"

@@ -7,7 +7,7 @@ export default function FreeWiFi() {
   return (
     <>
       <div className="freerouter">
-        <div className="container">
+        <div className="wifi-container">
           <h1>Free WiFi Options</h1>
           <div className="wifi-options">
             <div className="wifi-option" id="bu-wifi">

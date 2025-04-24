@@ -111,7 +111,7 @@ export default function Bu() {
         <p className="wifi-speed">Up to 1 Gbps Speed</p>
       </header>
 
-      <div className="container">
+      <div className="bu-container">
         <div className="content">
           <p>
             Welcome to BU WiFi, your gateway to seamless, high-speed internet
