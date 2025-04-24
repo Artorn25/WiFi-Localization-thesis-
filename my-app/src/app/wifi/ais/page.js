@@ -7,10 +7,13 @@ export default function Ais() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("android");
   const images = [
-    { src: "/api/placeholder/200/200" },
-    { src: "/api/placeholder/200/200" },
-    { src: "/api/placeholder/200/200" },
-    { src: "/api/placeholder/200/200" },
+    { src: "/wifia1.jpg" },
+    { src: "/wifia2.jpg" },
+    { src: "/wifia3.jpg" },
+    { src: "/wifia4.jpg" },
+    { src: "/wifia5.jpg" },
+    { src: "/wifia6.jpg" },
+    { src: "/wifia7.jpg" },
   ];
 
   useEffect(() => {

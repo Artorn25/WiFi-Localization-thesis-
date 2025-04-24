@@ -3,12 +3,13 @@
 
 :root {
   --primary-color: #6366f1;
-  --primary-gradient: linear-gradient(
+  /* --primary-gradient: linear-gradient(
     135deg,
     #93c5fd,
     #60a5fa,
     #2563eb
-  ); /* UPDATE MAP NAME */
+  ); 
+  UPDATE MAP NAME */
   --secondary-color: #34d399;
   --secondary-gradient: linear-gradient(
     135deg,
@@ -48,7 +49,7 @@
   --radius: 10px;
   --shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
+  /* --transition: all 0.3s ease; */
 }
 
 @keyframes fadeInUp {
@@ -102,7 +103,29 @@ canvas {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: fadeInUp 0.7s ease;
 }
+#map-show {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto;
+  /* max-width: 800px; */
+  /* width: 90%; */
+  /* padding: 20px; */
+  /* border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); */
+}
 
+/* สไตล์สำหรับฟอร์มและปุ่ม */
+#map-show form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 #map-controls {
   display: grid;
   grid-template-columns: 1fr;
