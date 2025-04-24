@@ -371,36 +371,6 @@
 }
 
 
-/* .popup-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.popup-close-btn,
-.popup-cancel-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.popup-close-btn {
-  background-color: #6366f1;
-  color: white;
-  border: none;
-}
-
-.popup-close-btn:hover {
-  background-color: #4f46e5;
-}
-.popup-cancel-btn {
-  background-color: #e53e3e;
-  color: white;
-  border: none;
-} */
 canvas {
   /* width: 100%; */
   align-self: center;

@@ -21,14 +21,14 @@ export default function Home() {
   const [autoRedirect, setAutoRedirect] = useState(true);
   const [maps, setMaps] = useState([]);
   const [loadedMaps, setLoadedMaps] = useState([]);
-  const [allLoadedMaps, setAllLoadedMaps] = useState([]); // เก็บแผนที่ทั้งหมดที่เคยโหลด
+  const [allLoadedMaps, setAllLoadedMaps] = useState([]);
   const [selectedPoints, setSelectedPoints] = useState([]);
   const [showCircles, setShowCircles] = useState(true);
   const [showPoints, setShowPoints] = useState(false);
   const [isLoadingMaps, setIsLoadingMaps] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [sampleMaps, setSampleMaps] = useState([]);
-  const [selectedMapId, setSelectedMapId] = useState(""); // state สำหรับจัดการ dropdown
+  const [selectedMapId, setSelectedMapId] = useState("");
 
   const canvasRef = useRef(null);
   const [canvasUtils, setCanvasUtils] = useState(null);
@@ -36,6 +36,11 @@ export default function Home() {
   const [trilaterationUtils, setTrilaterationUtils] = useState(null);
   const [mapManager] = useState(new MapManager());
   const listenersRef = useRef([]);
+
+  // Normalize mapSrc เพื่อป้องกันปัญหาการเปรียบเทียบ
+  const normalizeSrc = (src) => {
+    return src.trim().replace(/\/+/g, "/").toLowerCase();
+  };
 
   // ดึงข้อมูลตัวอย่างแผนที่จาก Firestore
   const fetchSampleMaps = async () => {
@@ -78,13 +83,14 @@ export default function Home() {
     });
   };
 
-  // ดึงข้อมูลแผนที่จาก Firestore เฉพาะแผนที่ที่เลือก และเพิ่มลงใน allLoadedMaps
+  // ดึงข้อมูลแผนที่จาก Firestore
   const fetchMapsFromFirestore = async (mapSrc) => {
     setIsLoadingMaps(true);
     setLoadError(null);
+    const normalizedMapSrc = normalizeSrc(mapSrc);
     try {
       const mapsRef = collection(dbfs, "maps");
-      const q = query(mapsRef, where("mapSrc", "==", mapSrc));
+      const q = query(mapsRef, where("mapSrc", "==", normalizedMapSrc));
       const querySnapshot = await getDocs(q);
       const mapsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -127,12 +133,12 @@ export default function Home() {
         return [...prev, ...newMaps];
       });
 
-      mapManager.loadMaps(loadedMapsData); // อัปเดต mapManager.maps
+      mapManager.loadMaps(loadedMapsData);
       setIsLoadingMaps(false);
       console.log("Loaded maps:", loadedMapsData);
 
       if (loadedMapsData.length > 0) {
-        setSelectedMapId(loadedMapsData[0].id); // อัปเดต selectedMapId
+        setSelectedMapId(loadedMapsData[0].id);
         Swal.fire({
           title: "Map Loaded",
           text: `Map ${loadedMapsData[0].mapName} has been loaded.`,
@@ -167,27 +173,38 @@ export default function Home() {
     }
 
     console.log("Attempting to load map with src:", mapSrc);
-    canvasUtils.resetCanvas(); // ล้าง canvas ก่อนวาด
+    canvasUtils.resetCanvas();
     canvasUtils.drawImageImmediately(mapSrc);
   };
 
-  // จัดการการเลือกแผนที่ (โหลดเฉพาะภาพแผนที่)
-  const fetchPointsAndListenRealtime = async () => {
+  // จัดการการเลือกแผนที่
+  const fetchPointsAndListenRealtime = async (newMapId) => {
     try {
-      if (!selectedMapId) {
+      if (!newMapId) {
         console.log("Please select a map first");
         canvasUtils?.resetCanvas();
         return;
       }
 
-      const selectedMap = allLoadedMaps.find((map) => map.id === selectedMapId);
+      const selectedMap = allLoadedMaps.find((map) => map.id === newMapId);
       if (!selectedMap) {
-        console.log("No map found for this mapId:", selectedMapId);
+        console.log("No map found for this mapId:", newMapId);
         canvasUtils?.resetCanvas();
         return;
       }
 
-      // แสดงการแจ้งเตือนเมื่อเลือกแผนที่
+      console.log("Selected Map ID:", newMapId, "Selected Map:", selectedMap);
+      // อัปเดต state maps และ loadedMaps
+      setMaps([selectedMap]);
+      setLoadedMaps([selectedMap]);
+
+      // โหลดภาพแผนที่ลง canvas
+      loadMapToCanvas(
+        selectedMap.mapSrc,
+        allLoadedMaps.findIndex((map) => map.id === selectedMap.id)
+      );
+
+      // แสดงการแจ้งเตือนเมื่อเลือกแผนที่ (เรียกหลังจากอัปเดต state)
       Swal.fire({
         title: "Map Selected",
         text: `Map ${selectedMap.mapName} has been selected.`,
@@ -195,16 +212,6 @@ export default function Home() {
         timer: 1500,
         showConfirmButton: false,
       });
-
-      // อัปเดต state maps และ loadedMaps เพื่อให้สอดคล้องกับแผนที่ที่เลือก
-      setMaps([selectedMap]);
-      setLoadedMaps([selectedMap]);
-
-      // โหลดเฉพาะภาพแผนที่ลง canvas
-      loadMapToCanvas(
-        selectedMap.mapSrc,
-        allLoadedMaps.findIndex((map) => map.id === selectedMap.id)
-      );
     } catch (error) {
       console.error("Error loading map:", error);
       canvasUtils?.resetCanvas();
@@ -232,14 +239,12 @@ export default function Home() {
       return;
     }
 
-    // หยุดการฟังข้อมูลเรียลไทม์ที่มีอยู่
     listenersRef.current.forEach(({ ref, listener }) => {
       off(ref, "value", listener);
     });
     listenersRef.current = [];
 
     try {
-      // เตรียมข้อมูลจุด
       const initialPoints = selectedMap.points?.length
         ? selectedMap.points.map((point) => ({
             ...point,
@@ -252,7 +257,6 @@ export default function Home() {
       pointManager.points = initialPoints;
       setSelectedPoints(initialPoints);
 
-      // ตั้งค่าการฟังข้อมูลเรียลไทม์
       const dataRef = dbRef;
       const listener = onValue(
         dataRef,
@@ -296,7 +300,6 @@ export default function Home() {
               ...pointManager.pointsPerMap[selectedMap.mapIndex],
             ]);
 
-            // อัปเดต canvas เพื่อแสดงจุดและวงกลม
             if (trilaterationUtils) {
               trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
             }
@@ -313,16 +316,15 @@ export default function Home() {
             setSelectedPoints([
               ...pointManager.pointsPerMap[selectedMap.mapIndex],
             ]);
-            if (trilaterationUtils) {
+            if (trilaterationUtils)
               trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
             }
-          }
-        },
-        (error) => {
-          console.error("Error listening to Firebase:", error);
-          canvasUtils.alert(
-            "Error",
-            "Failed to fetch real-time data from Firebase.",
+          },
+          (error) => {
+            console.error("Error listening to Firebase:", error);
+            canvasUtils.alert(
+              "Error",
+              "Failed to fetch real-time data from Firebase.",
             "error"
           );
         }
@@ -330,7 +332,6 @@ export default function Home() {
 
       listenersRef.current.push({ ref: dataRef, listener });
 
-      // อัปเดต canvas ครั้งแรก
       if (trilaterationUtils) {
         trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
       }
@@ -355,7 +356,6 @@ export default function Home() {
       return;
     }
 
-    // เพิ่มการยืนยันก่อนลบ
     const confirmation = await Swal.fire({
       title: "Are you sure?",
       text: `Do you want to remove ${selectedMap.mapName} from the selector? This will not affect Firestore data.`,
@@ -373,10 +373,8 @@ export default function Home() {
       (map) => map.id === selectedMap.id
     );
 
-    // ลบแผนที่จาก MapManager
     mapManager.deleteMap(selectedIndex, canvasUtils);
 
-    // อัปเดต state
     const updatedAllLoadedMaps = allLoadedMaps.filter(
       (map) => map.id !== selectedMapId
     );
@@ -385,15 +383,13 @@ export default function Home() {
     setLoadedMaps([]);
     setSelectedPoints([]);
     setShowPoints(false);
-    setSelectedMapId(""); // รีเซ็ต selectedMapId
+    setSelectedMapId("");
 
-    // หยุดการฟังข้อมูลเรียลไทม์
     listenersRef.current.forEach(({ ref, listener }) => {
       off(ref, "value", listener);
     });
     listenersRef.current = [];
 
-    // อัปเดต UI
     if (updatedAllLoadedMaps.length > 0) {
       const nextMap = updatedAllLoadedMaps[0];
       setSelectedMapId(nextMap.id);
@@ -418,15 +414,9 @@ export default function Home() {
 
   // จัดการการคลิกตัวอย่างแผนที่
   const handleSampleMapClick = async (mapSrc) => {
-    // Normalize mapSrc เพื่อให้ตรงกัน
-    const normalizeSrc = (src) => {
-      return src.trim().replace(/\/+/g, "/");
-    };
-
     const normalizedMapSrc = normalizeSrc(mapSrc);
     console.log("Sample map clicked, normalized src:", normalizedMapSrc);
 
-    // ตรวจสอบว่าแผนที่มีอยู่ใน allLoadedMaps หรือยัง
     const matchedMapInAll = allLoadedMaps.find(
       (map) => normalizeSrc(map.mapSrc) === normalizedMapSrc
     );
@@ -434,15 +424,11 @@ export default function Home() {
     if (matchedMapInAll) {
       console.log("Map already loaded:", matchedMapInAll);
       setSelectedMapId(matchedMapInAll.id);
-      setMaps([matchedMapInAll]);
-      setLoadedMaps([matchedMapInAll]);
-      setShowPoints(false);
-      fetchPointsAndListenRealtime();
+      fetchPointsAndListenRealtime(matchedMapInAll.id);
       return;
     }
 
-    // ถ้ายังไม่มี ให้โหลดแผนที่ใหม่
-    await fetchMapsFromFirestore(mapSrc);
+    await fetchMapsFromFirestore(normalizedMapSrc);
 
     const matchedMap = mapManager.maps.find(
       (map) => normalizeSrc(map.src) === normalizedMapSrc
@@ -451,8 +437,7 @@ export default function Home() {
     if (matchedMap) {
       console.log("Matched map found:", matchedMap);
       setSelectedMapId(matchedMap.id);
-      setShowPoints(false);
-      fetchPointsAndListenRealtime();
+      fetchPointsAndListenRealtime(matchedMap.id);
     } else {
       console.error("No matching map found in Firestore for mapSrc:", mapSrc);
       setSelectedPoints([]);
@@ -498,16 +483,16 @@ export default function Home() {
     initializeCanvasAndManagers();
   }, []);
 
-  // อัปเดตการแสดงวงกลมและจุดเมื่อ showCircles หรือ showPoints เปลี่ยนแปลง
+  // อัปเดตการแสดงวงกลมและจุดเมื่อ showCircles หรือ showPoints เปลี่ยน
   useEffect(() => {
     if (canvasUtils) {
-      canvasUtils.showCircles = showCircles; // อัปเดตค่า showCircles ใน canvasUtils
+      canvasUtils.showCircles = showCircles;
       if (showPoints && trilaterationUtils && selectedMapId) {
         const selectedMap = allLoadedMaps.find(
           (map) => map.id === selectedMapId
         );
         if (selectedMap) {
-          trilaterationUtils.refreshMap(selectedMap.mapIndex, true); // รีเฟรช canvas เพื่อให้การซ่อน/แสดงวงกลมมีผล
+          trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
         }
       }
     }
@@ -520,24 +505,20 @@ export default function Home() {
     allLoadedMaps,
   ]);
 
-  // อัปเดต UI เมื่อ loadedMaps เปลี่ยนแปลง
+  // อัปเดตแผนที่เมื่อ selectedMapId เปลี่ยน
   useEffect(() => {
-    if (loadedMaps.length > 0) {
-      setSelectedMapId(loadedMaps[0].id);
-      const selectedMap = allLoadedMaps.find(
-        (map) => map.id === loadedMaps[0].id
-      );
+    if (selectedMapId && canvasUtils) {
+      const selectedMap = allLoadedMaps.find((map) => map.id === selectedMapId);
       if (selectedMap) {
+        setMaps([selectedMap]);
+        setLoadedMaps([selectedMap]);
         loadMapToCanvas(
           selectedMap.mapSrc,
           allLoadedMaps.findIndex((map) => map.id === selectedMap.id)
         );
       }
-    } else {
-      setSelectedMapId("");
-      canvasUtils?.resetCanvas();
     }
-  }, [loadedMaps]);
+  }, [selectedMapId, canvasUtils, allLoadedMaps]);
 
   // จัดการป๊อปอัป
   useEffect(() => {
@@ -625,7 +606,7 @@ export default function Home() {
                 <input
                   type="checkbox"
                   id="showCircleCheckbox"
-                  checked={!showCircles} // ถ้า showCircles เป็น false จะติ๊ก checkbox
+                  checked={!showCircles}
                   onChange={(e) => setShowCircles(!e.target.checked)}
                 />
                 <span className="checkmark"></span>
@@ -655,8 +636,9 @@ export default function Home() {
                       className="map-select"
                       value={selectedMapId}
                       onChange={(e) => {
-                        setSelectedMapId(e.target.value);
-                        fetchPointsAndListenRealtime();
+                        const newMapId = e.target.value;
+                        setSelectedMapId(newMapId);
+                        fetchPointsAndListenRealtime(newMapId);
                       }}
                     >
                       <option value="">-- Please Select Map --</option>

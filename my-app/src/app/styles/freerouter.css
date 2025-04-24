@@ -1,11 +1,11 @@
 /* กำหนดสีและตัวแปร */
-:root {
-  --primary-color: #ff6f61; /* สีส้มหลัก */
-  --secondary-color: #ff8c42; /* สีส้มรอง */
-  --text-color: #333; /* สีข้อความ */
-  --background-color: #f9f9f9; /* สีพื้นหลัง */
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* เงา */
-}
+/* :root {
+  --primary-color: #ff6f61; 
+  --secondary-color: #ff8c42; 
+  --text-color: #333; 
+  --background-color: #f9f9f9; 
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+} */
 
 /* พื้นหลังและจัดวาง */
 .freerouter {
@@ -142,7 +142,7 @@ h1::after {
 .back-button {
   display: inline-block;
   background-color: var(--primary-color);
-  color: white;
+  /* color: white; */
   padding: 12px 25px;
   border-radius: 30px;
   text-decoration: none;

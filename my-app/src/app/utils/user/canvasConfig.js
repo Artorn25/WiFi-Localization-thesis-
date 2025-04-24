@@ -45,6 +45,8 @@ export class CanvasUtils {
   }
 
   drawImageImmediately(imgSrc) {
+    console.log("Attempting to draw image with src:", imgSrc);
+    this.img = new Image(); // สร้าง Image ใหม่ทุกครั้ง
     this.img.src = imgSrc;
     if (this.img.complete && this.img.naturalWidth !== 0) {
       console.log("Drawing cached image:", imgSrc);
@@ -144,6 +146,7 @@ export class CanvasUtils {
     this.canvas.height = FIXED_CANVAS_HEIGHT;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.circles = [];
+    this.img = new Image(); // รีเซ็ตภาพเพื่อป้องกันการแคช
   }
 
   showCircleTooltip(event) {
@@ -190,7 +193,7 @@ export class CanvasUtils {
       confirmButtonText: "OK",
     });
   }
-  
+
   clearCircles() {
     this.circles = [];
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

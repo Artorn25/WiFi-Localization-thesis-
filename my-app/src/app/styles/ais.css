@@ -70,7 +70,7 @@ h1::after {
 .tab-button {
   background-color: var(--primary-color);
   border: none;
-  color: white;
+  /* color: white; */
   padding: 12px 24px;
   text-align: center;
   text-decoration: none;
@@ -155,7 +155,7 @@ h1::after {
   display: inline-block;
   padding: 12px 24px;
   background-color: var(--accent-color);
-  color: white;
+  /* color: white; */
   text-decoration: none;
   border-radius: 30px;
   transition: all 0.3s ease;
