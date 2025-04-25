@@ -82,14 +82,31 @@ export default function Home() {
     });
   };
 
-  // ดึงข้อมูลแผนที่จาก Firestore
-  const fetchMapsFromFirestore = async (mapSrc) => {
+  // ดึงข้อมูลแผนที่จาก Firestore โดยใช้ mapId
+  const fetchMapsFromFirestore = async (mapId) => {
     setIsLoadingMaps(true);
     setLoadError(null);
-    const normalizedMapSrc = normalizeSrc(mapSrc);
+
+    // ตรวจสอบว่า mapId นี้มีอยู่ใน allLoadedMaps แล้วหรือไม่
+    const existingMap = allLoadedMaps.find((map) => map.id === mapId);
+    if (existingMap) {
+      setIsLoadingMaps(false);
+      setSelectedMapId(existingMap.id);
+      fetchPointsAndListenRealtime(existingMap.id);
+      Swal.fire({
+        title: "Map Already Loaded",
+        text: `Map ${existingMap.mapName} is already loaded.`,
+        icon: "info",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     try {
       const mapsRef = collection(dbfs, "maps");
-      const q = query(mapsRef, where("mapSrc", "==", normalizedMapSrc));
+      // ดึงเฉพาะ map ที่มี id ตรงกับ mapId
+      const q = query(mapsRef, where("__name__", "==", mapId));
       const querySnapshot = await getDocs(q);
       const mapsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -97,7 +114,7 @@ export default function Home() {
       }));
 
       if (mapsData.length === 0) {
-        throw new Error("No map found in Firestore for the selected mapSrc.");
+        throw new Error("No map found in Firestore for the selected mapId.");
       }
 
       const loadedMapsData = [];
@@ -123,7 +140,7 @@ export default function Home() {
       setMaps(loadedMapsData);
       setLoadedMaps(loadedMapsData);
 
-      // เพิ่มแผนที่ใหม่ลงใน allLoadedMaps โดยไม่ซ้ำ
+      // เพิ่มแผนที่ใหม่ลงใน allLoadedMaps โดยไม่ซ้ำ (ใช้ id ในการตรวจสอบ)
       setAllLoadedMaps((prev) => {
         const existingMapIds = new Set(prev.map((map) => map.id));
         const newMaps = loadedMapsData.filter(
@@ -412,45 +429,28 @@ export default function Home() {
   };
 
   // จัดการการคลิกตัวอย่างแผนที่
-  const handleSampleMapClick = async (mapSrc) => {
-    const normalizedMapSrc = normalizeSrc(mapSrc);
-    console.log("Sample map clicked, normalized src:", normalizedMapSrc);
+  const handleSampleMapClick = async (mapId) => {
+    console.log("Sample map clicked, mapId:", mapId);
 
-    const matchedMapInAll = allLoadedMaps.find(
-      (map) => normalizeSrc(map.mapSrc) === normalizedMapSrc
-    );
+    // ตรวจสอบว่า mapId นี้มีอยู่ใน allLoadedMaps หรือไม่
+    const matchedMapInAll = allLoadedMaps.find((map) => map.id === mapId);
 
     if (matchedMapInAll) {
       console.log("Map already loaded:", matchedMapInAll);
       setSelectedMapId(matchedMapInAll.id);
       fetchPointsAndListenRealtime(matchedMapInAll.id);
-      return;
-    }
-
-    await fetchMapsFromFirestore(normalizedMapSrc);
-
-    const matchedMap = mapManager.maps.find(
-      (map) => normalizeSrc(map.src) === normalizedMapSrc
-    );
-
-    if (matchedMap) {
-      console.log("Matched map found:", matchedMap);
-      setSelectedMapId(matchedMap.id);
-      fetchPointsAndListenRealtime(matchedMap.id);
-    } else {
-      console.error("No matching map found in Firestore for mapSrc:", mapSrc);
-      setSelectedPoints([]);
-      setShowPoints(false);
-      canvasUtils?.resetCanvas();
-      setSelectedMapId("");
       Swal.fire({
-        title: "Error",
-        text: "Selected map not found in Firestore. Please check the map source.",
-        icon: "error",
+        title: "Map Selected",
+        text: `Map ${matchedMapInAll.mapName} is already loaded and selected.`,
+        icon: "info",
         timer: 1500,
         showConfirmButton: false,
       });
+      return;
     }
+
+    // ถ้าไม่มีใน allLoadedMaps ให้ดึงจาก Firestore โดยใช้ mapId
+    await fetchMapsFromFirestore(mapId);
   };
 
   // เริ่มต้น Canvas และ Managers
@@ -675,7 +675,7 @@ export default function Home() {
                   <div
                     key={map.id}
                     className="map-sample-item"
-                    onClick={() => handleSampleMapClick(map.mapSrc)}
+                    onClick={() => handleSampleMapClick(map.id)} // เปลี่ยนจาก map.mapSrc เป็น map.id
                   >
                     <div className="map-image-wrapper">
                       <NextImage

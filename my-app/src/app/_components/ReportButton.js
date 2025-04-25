@@ -83,7 +83,7 @@ export default function ReportButton() {
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-2">
               <svg
-                className="w-5 h-5 text-blue-600"
+                className="w-5 h-5 text-red-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -112,7 +112,7 @@ export default function ReportButton() {
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 mb-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none overflow-hidden placeholder-gray-400"
+              className="w-full border border-gray-300 rounded-lg p-3 mb-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none overflow-hidden placeholder-gray-400"
               rows="1"
               placeholder="Describe the problem you encountered..."
               required
@@ -125,7 +125,7 @@ export default function ReportButton() {
               </span>
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
+                className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -151,7 +151,7 @@ export default function ReportButton() {
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-3 px-4 rounded-full shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
+          className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-3 px-4 rounded-full shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
           aria-label="Open report form"
         >
           <svg

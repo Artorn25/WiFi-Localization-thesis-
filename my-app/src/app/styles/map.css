@@ -150,7 +150,13 @@ button:active::after,
 
 /* ปุ่ม Update Map Name */
 #updateMapName {
-  background: var(--primary-gradient);
+  background: #020024;
+  background: linear-gradient(
+    90deg,
+    rgba(2, 0, 36, 1) 0%,
+    rgba(9, 9, 121, 1) 35%,
+    rgba(0, 212, 255, 1) 100%
+  );
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
 }
 
@@ -160,7 +166,13 @@ button:active::after,
 
 /* ปุ่ม Delete Map */
 #delete-map {
-  background: var(--accent-gradient);
+  background: #e67777;
+  background: linear-gradient(
+    90deg,
+    rgba(230, 119, 119, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(230, 62, 21, 1) 100%
+  );
   box-shadow: 0 4px 12px rgba(251, 113, 133, 0.25);
 }
 
@@ -171,7 +183,7 @@ button:active::after,
 #delete-map::before {
   content: "🗑️";
   margin-right: 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 /* ปุ่ม Upload Map */
@@ -187,12 +199,18 @@ button:active::after,
 .btn-upload::before {
   content: "📤";
   margin-right: 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 /* ปุ่ม Reset */
 #resetPoints {
-  background: var(--reset-gradient);
+  background: #ba47d1;
+  background: linear-gradient(
+    90deg,
+    rgba(186, 71, 209, 1) 0%,
+    rgba(253, 29, 171, 1) 50%,
+    rgba(252, 69, 151, 1) 100%
+  );
   box-shadow: 0 4px 12px rgba(129, 140, 248, 0.25);
 }
 
@@ -203,12 +221,18 @@ button:active::after,
 #resetPoints::before {
   content: "🔄";
   margin-right: 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 /* ปุ่ม Delete Point */
 #DeletePoint {
-  background: var(--accent-gradient);
+  background: #e67777;
+  background: linear-gradient(
+    90deg,
+    rgba(230, 119, 119, 1) 0%,
+    rgba(253, 29, 29, 1) 50%,
+    rgba(230, 62, 21, 1) 100%
+  );
   box-shadow: 0 4px 12px rgba(251, 113, 133, 0.25);
 }
 
@@ -219,13 +243,20 @@ button:active::after,
 #DeletePoint::before {
   content: "🗑️";
   margin-right: 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 /* ปุ่ม Update Point Name */
 #editPoint {
-  background: var(--edit-gradient);
+  background: #f0f059;
+  background: linear-gradient(
+    90deg,
+    rgba(240, 240, 89, 1) 0%,
+    rgba(245, 201, 42, 1) 50%,
+    rgba(252, 197, 69, 1) 100%
+  );
   box-shadow: 0 4px 12px rgba(250, 204, 21, 0.25);
+  font-size: 0.75rem;
 }
 
 #editPoint:hover {
@@ -235,12 +266,18 @@ button:active::after,
 #editPoint::before {
   content: "✏️";
   margin-right: 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 /* ปุ่ม Confirm Save */
 #confirmSave {
-  background: var(--secondary-gradient);
+  background: #6fed95;
+  background: linear-gradient(
+    90deg,
+    rgba(111, 237, 149, 1) 0%,
+    rgba(66, 214, 128, 1) 50%,
+    rgba(57, 209, 15, 1) 100%
+  );
   box-shadow: 0 4px 12px rgba(52, 211, 153, 0.25);
 }
 
@@ -251,7 +288,7 @@ button:active::after,
 #confirmSave::before {
   content: "💾";
   margin-right: 0.4rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 input[type="text"],
@@ -259,7 +296,7 @@ select,
 .autocomplete-input {
   width: 100%;
   padding: 0.7rem 0.9rem;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   border-radius: var(--radius);
   border: 1.5px solid var(--border-color);
   background-color: #fff;
@@ -356,7 +393,7 @@ label {
   background: #ffffff;
   border: 1px solid var(--border-color);
   padding: 0.6rem 0.9rem;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   display: none;
@@ -377,14 +414,14 @@ label {
   button,
   .btn-upload {
     padding: 0.5rem 0.8rem;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
 
   input[type="text"],
   select,
   .autocomplete-input {
     padding: 0.5rem 0.7rem;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
 
   .map-sample {
