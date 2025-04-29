@@ -586,7 +586,7 @@ export default function Home() {
         </div>
       )}
 
-      <div id="map-container">
+      <div >
         <GenText />
         <div className="home-container">
           <div className="canvas-wrapper">

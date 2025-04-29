@@ -52,6 +52,33 @@ canvas {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: fadeInUp 0.7s ease;
 }
+
+#myCanvas,
+#myCanvas3D {
+  border: 1px solid #000;
+  display: block;
+  margin: 0 auto;
+}
+
+#show3DMap {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #3085d6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#show3DMap:hover {
+  background-color: #2674b8;
+}
+
+#distanceDisplay {
+  margin-top: 10px;
+  font-size: 1rem;
+}
+
 #map-show {
   display: flex;
   flex-direction: column;
@@ -88,7 +115,71 @@ canvas {
   margin-top: 0.4rem;
 }
 
-button,
+/* Checkbox ที่ปรับแล้ว */
+.checkbox-control {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-control input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #fff;
+  border: 2px solid #6366f1;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.checkbox-control:hover input ~ .checkmark {
+  background-color: #f1f1f1;
+}
+
+.checkbox-control input:checked ~ .checkmark {
+  background-color: #6366f1;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-control input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-control .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-label {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+/* button, */
 .btn-upload {
   position: relative;
   overflow: hidden;
@@ -124,8 +215,6 @@ button:active,
   box-shadow: var(--shadow);
 }
 
-/* Ripple Effect */
-/* button::after, */
 .btn-upload::after {
   content: "";
   position: absolute;
@@ -286,7 +375,7 @@ button:active,
 }
 
 input[type="text"],
-select,
+.select,
 .autocomplete-input {
   width: 100%;
   padding: 0.7rem 0.9rem;
@@ -301,19 +390,19 @@ select,
 }
 
 input:focus,
-select:focus,
+.select:focus,
 .autocomplete-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2.5px rgba(99, 102, 241, 0.2);
   outline: none;
 }
 
-label {
+/* label {
   display: block;
   margin-bottom: 0.2rem;
   font-weight: 600;
   color: var(--text-color);
-}
+} */
 
 .autocomplete-suggestions {
   position: absolute;
@@ -405,14 +494,14 @@ label {
     padding: 0.8rem;
   }
 
-  button,
+  /* button, */
   .btn-upload {
     padding: 0.5rem 0.8rem;
     font-size: 0.75rem;
   }
 
   input[type="text"],
-  select,
+  .select,
   .autocomplete-input {
     padding: 0.5rem 0.7rem;
     font-size: 0.75rem;

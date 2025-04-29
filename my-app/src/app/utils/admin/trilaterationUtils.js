@@ -8,9 +8,15 @@ export class TrilaterationUtils {
   }
 
   calculateTrilateration(point1, point2, point3) {
-    const x1 = point1.x, y1 = point1.y, d1 = point1.distance / this.canvasUtils.scaleX;
-    const x2 = point2.x, y2 = point2.y, d2 = point2.distance / this.canvasUtils.scaleX;
-    const x3 = point3.x, y3 = point3.y, d3 = point3.distance / this.canvasUtils.scaleX;
+    const x1 = point1.x,
+      y1 = point1.y,
+      d1 = point1.distance / this.canvasUtils.scaleX;
+    const x2 = point2.x,
+      y2 = point2.y,
+      d2 = point2.distance / this.canvasUtils.scaleX;
+    const x3 = point3.x,
+      y3 = point3.y,
+      d3 = point3.distance / this.canvasUtils.scaleX;
 
     const A = 2 * (x2 - x1);
     const B = 2 * (y2 - y1);
@@ -34,80 +40,142 @@ export class TrilaterationUtils {
     return this.macToNodeIndex[mac];
   }
 
-  refreshMap(selectedIndex) {
+  refreshMap(selectedIndex, use3D = false) {
     if (!selectedIndex || !this.mapManager.maps[selectedIndex]) {
       console.log("Skipping refreshMap: Invalid selectedIndex or map not found");
       return;
     }
 
-    this.canvasUtils.ctx.clearRect(0, 0, this.canvasUtils.canvas.width, this.canvasUtils.canvas.height);
-    this.canvasUtils.ctx.drawImage(this.canvasUtils.img, 0, 0, this.canvasUtils.canvas.width, this.canvasUtils.canvas.height);
+    const canvases = [
+      { utils: this.canvasUtils, is3D: false },
+      { utils: this.canvasUtils3D, is3D: true },
+    ];
 
-    this.canvasUtils.circles = [];
-    this.trilaterationPositions = {};
+    canvases.forEach(({ utils, is3D }) => {
+      if (!utils) {
+        console.warn("CanvasUtils not available for rendering");
+        return;
+      }
 
-    this.pointManager.points = this.pointManager.pointsPerMap[selectedIndex] || [];
-    this.pointManager.markerCoordinates = this.pointManager.markerCoordinatesPerMap[selectedIndex] || [];
+      if (is3D && !use3D && utils.canvas.style.display === "none") return;
+      if (!is3D && use3D && utils.canvas.style.display === "none") return;
 
-    this.pointManager.points.forEach((point) => {
-      this.canvasUtils.drawPoint(point.x, point.y, point.name, point.color);
-      if (point.data && Array.isArray(point.data)) {
-        console.log(`Drawing circles for point ${point.name}:`, point.data);
-        point.data.forEach((data) => {
-          if (data.distance && data.rssi && data.mac) {
-            if (data.distance <= 0) {
-              console.log(`Skipping circle for point ${point.name}: Distance is ${data.distance}`);
+      utils.ctx.clearRect(0, 0, utils.canvas.width, utils.canvas.height);
+      utils.ctx.drawImage(
+        utils.img,
+        0,
+        0,
+        utils.canvas.width,
+        utils.canvas.height
+      );
+
+      utils.circles = [];
+      this.trilaterationPositions = {};
+
+      this.pointManager.points = this.pointManager.pointsPerMap[selectedIndex] || [];
+      this.pointManager.markerCoordinates =
+        this.pointManager.markerCoordinatesPerMap[selectedIndex] || [];
+
+      // วาด marker จาก markerCoordinatesPerMap
+      this.pointManager.markerCoordinates.forEach((marker) => {
+        utils.drawMarker(marker.x, marker.y, "blue");
+      });
+
+      // วาดจุดและวงกลม
+      this.pointManager.points.forEach((point) => {
+        utils.drawPoint(point.x, point.y, point.name, point.color);
+        if (point.data && Array.isArray(point.data)) {
+          console.log(`Drawing circles for point ${point.name}:`, point.data);
+          point.data.forEach((data) => {
+            if (data.distance && data.rssi && data.mac) {
+              if (data.distance <= 0) {
+                console.log(
+                  `Skipping circle for point ${point.name}: Distance is ${data.distance}`
+                );
+              } else {
+                utils.drawCircle(
+                  point.x,
+                  point.y,
+                  data.distance,
+                  data.rssi,
+                  data.mac
+                );
+              }
             } else {
-              this.canvasUtils.drawCircle(point.x, point.y, data.distance, data.rssi, data.mac);
+              console.log(
+                `Skipping circle for point ${point.name}: Invalid data`,
+                data
+              );
             }
-          } else {
-            console.log(`Skipping circle for point ${point.name}: Invalid data`, data);
-          }
-        });
-      } else {
-        console.log(`No data for point ${point.name}`);
-      }
-    });
-
-    const macGroups = {};
-    this.pointManager.points.forEach((point) => {
-      if (point.data && Array.isArray(point.data)) {
-        point.data.forEach((data) => {
-          if (data.mac && data.distance) {
-            if (!macGroups[data.mac]) macGroups[data.mac] = [];
-            macGroups[data.mac].push({
-              x: point.x,
-              y: point.y,
-              radius: data.distance / this.canvasUtils.scaleX,
-              name: point.name,
-              mac: data.mac,
-              distance: data.distance,
-            });
-          }
-        });
-      }
-    });
-
-    Object.keys(macGroups).forEach((mac) => {
-      const circlesInNode = macGroups[mac];
-      const nodeIndex = this.assignNodeIndex(mac);
-      const nodeName = `Node ${nodeIndex}`;
-
-      if (
-        circlesInNode &&
-        Array.isArray(circlesInNode) &&
-        circlesInNode.length >= 3 &&
-        circlesInNode[0] && circlesInNode[1] && circlesInNode[2] &&
-        circlesInNode[0].x !== undefined && circlesInNode[0].y !== undefined && circlesInNode[0].distance !== undefined &&
-        circlesInNode[1].x !== undefined && circlesInNode[1].y !== undefined && circlesInNode[1].distance !== undefined &&
-        circlesInNode[2].x !== undefined && circlesInNode[2].y !== undefined && circlesInNode[2].distance !== undefined
-      ) {
-        const position = this.calculateTrilateration(circlesInNode[0], circlesInNode[1], circlesInNode[2]);
-        if (position) {
-          this.trilaterationPositions[mac] = { x: position.x, y: position.y, name: nodeName };
-          this.canvasUtils.drawIntersectionPoint(position.x, position.y, nodeName, mac);
+          });
+        } else {
+          console.log(`No data for point ${point.name}`);
         }
-      }
+      });
+
+      // จัดกลุ่มวงกลมตาม MAC สำหรับ trilateration
+      const macGroups = {};
+      this.pointManager.points.forEach((point) => {
+        if (point.data && Array.isArray(point.data)) {
+          point.data.forEach((data) => {
+            if (data.mac && data.distance) {
+              if (!macGroups[data.mac]) macGroups[data.mac] = [];
+              macGroups[data.mac].push({
+                x: point.x,
+                y: point.y,
+                radius: data.distance / utils.scaleX,
+                name: point.name,
+                mac: data.mac,
+                distance: data.distance,
+              });
+            }
+          });
+        }
+      });
+
+      // วาดจุด trilateration
+      Object.keys(macGroups).forEach((mac) => {
+        const circlesInNode = macGroups[mac];
+        const nodeIndex = this.assignNodeIndex(mac);
+        const nodeName = `Node ${nodeIndex}`;
+
+        if (
+          circlesInNode &&
+          Array.isArray(circlesInNode) &&
+          circlesInNode.length >= 3 &&
+          circlesInNode[0] &&
+          circlesInNode[1] &&
+          circlesInNode[2] &&
+          circlesInNode[0].x !== undefined &&
+          circlesInNode[0].y !== undefined &&
+          circlesInNode[0].distance !== undefined &&
+          circlesInNode[1].x !== undefined &&
+          circlesInNode[1].y !== undefined &&
+          circlesInNode[1].distance !== undefined &&
+          circlesInNode[2].x !== undefined &&
+          circlesInNode[2].y !== undefined &&
+          circlesInNode[2].distance !== undefined
+        ) {
+          const position = this.calculateTrilateration(
+            circlesInNode[0],
+            circlesInNode[1],
+            circlesInNode[2]
+          );
+          if (position) {
+            this.trilaterationPositions[mac] = {
+              x: position.x,
+              y: position.y,
+              name: nodeName,
+            };
+            utils.drawIntersectionPoint(
+              position.x,
+              position.y,
+              nodeName,
+              mac
+            );
+          }
+        }
+      });
     });
   }
 

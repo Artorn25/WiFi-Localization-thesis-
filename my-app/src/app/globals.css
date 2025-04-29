@@ -5,13 +5,6 @@
 
 :root {
   --primary-color: #6366f1;
-  /* --primary-gradient: linear-gradient(
-    135deg,
-    #93c5fd,
-    #60a5fa,
-    #2563eb
-  ); 
-  UPDATE MAP NAME */
   --secondary-color: #34d399;
   --secondary-gradient: linear-gradient(
     135deg,
@@ -51,7 +44,6 @@
   --radius: 10px;
   --shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
   --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
-  /* --transition: all 0.3s ease; */
 }
 
 .mukta-medium {

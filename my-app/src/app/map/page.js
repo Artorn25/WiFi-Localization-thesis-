@@ -12,6 +12,7 @@ import "@styles/map.css";
 
 export default function Map() {
   const canvasRef = useRef(null);
+  const canvas3DRef = useRef(null);
   const updateMapNameRef = useRef(null);
   const mapSelectRef = useRef(null);
   const mapUploadRef = useRef(null);
@@ -22,18 +23,21 @@ export default function Map() {
   const editPointRef = useRef(null);
   const confirmSaveRef = useRef(null);
   const showCircleCheckboxRef = useRef(null);
+  const show3DMapRef = useRef(null);
 
   useEffect(() => {
     console.log("Map component useEffect started");
     const canvas = canvasRef.current;
+    const canvas3D = canvas3DRef.current;
     const tooltip = document.getElementById("tooltip");
 
-    if (!canvas || !tooltip) {
-      console.warn("Canvas or tooltip element not found");
+    if (!canvas || !canvas3D || !tooltip) {
+      console.warn("Canvas, 3D canvas, or tooltip element not found");
       return;
     }
 
     const canvasUtils = new CanvasUtils(canvas, tooltip);
+    const canvasUtils3D = new CanvasUtils(canvas3D, tooltip);
     const mapManager = new MapManager(mapSelectRef);
     const pointManager = new PointManager(canvasUtils);
     const trilaterationUtils = new TrilaterationUtils(
@@ -41,6 +45,7 @@ export default function Map() {
       pointManager,
       mapManager
     );
+    trilaterationUtils.canvasUtils3D = canvasUtils3D;
 
     pointManager.trilaterationUtils = trilaterationUtils;
 
@@ -49,6 +54,195 @@ export default function Map() {
 
     const setupListeners = () => {
       console.log("Setting up event listeners");
+
+      const handleCanvasClick =
+        (canvasInstance, canvasUtilsInstance, is3D) => async (event) => {
+          console.log(`${is3D ? "3D" : "2D"} Canvas clicked, event:`, event);
+          const pointName = document.getElementById("pointName")?.value.trim();
+          console.log("Point name:", pointName, "maps:", mapManager.maps);
+          if (mapManager.maps.length === 0) {
+            mapManager.alert(
+              "Info",
+              "Please upload or select a map before adding points.",
+              "question"
+            );
+            return;
+          }
+
+          const selectedIndex = mapSelectRef.current?.value;
+          console.log("Selected index:", selectedIndex);
+
+          if (!selectedIndex || !mapManager.maps[selectedIndex]) {
+            mapManager.alert(
+              "Warning",
+              "Please select a valid map before adding a point.",
+              "warning"
+            );
+            return;
+          }
+
+          if (!pointName) {
+            mapManager.alert(
+              "Warning",
+              "Please enter a name for the point before clicking on the map.",
+              "warning"
+            );
+            return;
+          }
+
+          const rect = canvasInstance.getBoundingClientRect();
+          const pixelX = event.clientX - rect.left;
+          const pixelY = event.clientY - rect.top;
+          const { x, y } = canvasUtilsInstance.toCartesian(pixelX, pixelY);
+          console.log(`${is3D ? "3D" : "2D"} Canvas coordinates:`, {
+            pixelX,
+            pixelY,
+            x,
+            y,
+          });
+
+          try {
+            if (pointManager.drawMode) {
+              console.log(
+                `Adding marker and point on ${is3D ? "3D" : "2D"} canvas`
+              );
+              await pointManager.addMarkerAndPoint(
+                x,
+                y,
+                pointName,
+                selectedIndex
+              );
+            } else {
+              console.log(`Adding point only on ${is3D ? "3D" : "2D"} canvas`);
+              await pointManager.addPoint(x, y, pointName, selectedIndex);
+            }
+
+            document.getElementById("pointName").value = "";
+            console.log("Refreshing map with index:", selectedIndex);
+            trilaterationUtils.refreshMap(
+              selectedIndex,
+              canvas3D.style.display !== "none"
+            );
+          } catch (error) {
+            console.error(
+              `Error adding point on ${is3D ? "3D" : "2D"} canvas:`,
+              error
+            );
+            if (error.message !== "ALREADY_HANDLED") {
+              mapManager.alert(
+                "Error",
+                "Failed to add point. Please try again.",
+                "error"
+              );
+            }
+          }
+        };
+
+      const handleCanvasMouseMove =
+        (canvasInstance, canvasUtilsInstance, is3D) => (event) => {
+          const rect = canvasInstance.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+
+          const hoveredPoint = pointManager.points.find((point) => {
+            const dx = point.x - x;
+            const dy = point.y - y;
+            return Math.sqrt(dx * dx + dy * dy) < 5;
+          });
+
+          if (hoveredPoint) {
+            tooltip.innerText = `Name: ${
+              hoveredPoint.name
+            }\nDistance: ${hoveredPoint.distance.toFixed(2)} m\nRSSI: ${
+              hoveredPoint.rssi
+            } dBm`;
+            tooltip.style.display = "block";
+            tooltip.style.left = `${event.pageX + 10}px`;
+            tooltip.style.top = `${event.pageY + 10}px`;
+          } else {
+            canvasUtilsInstance.showCircleTooltip(event);
+          }
+        };
+
+      if (mapSelectRef.current) {
+        mapSelectRef.current.addEventListener("change", async (event) => {
+          const selectedIndex = event.target.value;
+          console.log("Map selected:", {
+            selectedIndex,
+            maps: mapManager.maps,
+          });
+          if (mapManager.maps.length === 0) {
+            mapManager.alert(
+              "Warning",
+              "No maps available. Please upload or select a map.",
+              "warning"
+            );
+            canvasUtils.resetCanvas();
+            canvas3D.style.display = "none";
+            show3DMapRef.current.style.display = "none";
+            return;
+          }
+          if (selectedIndex) {
+            if (!mapManager.maps[selectedIndex]) {
+              mapManager.alert(
+                "Error",
+                "Selected map is not available. Please select another map.",
+                "error"
+              );
+              return;
+            }
+            pointManager.stopRealTimeUpdates();
+            canvasUtils.img.src = mapManager.maps[selectedIndex].src;
+            canvasUtils3D.img.src = mapManager.maps[selectedIndex].src.replace(
+              ".png",
+              "_3D.png"
+            );
+            pointManager.points =
+              pointManager.pointsPerMap[selectedIndex] || [];
+            pointManager.markerCoordinates =
+              pointManager.markerCoordinatesPerMap[selectedIndex] || [];
+            try {
+              trilaterationUtils.refreshMap(selectedIndex);
+              trilaterationUtils.startRealTimeUpdate();
+              show3DMapRef.current.style.display = "block";
+            } catch (error) {
+              console.error("Error refreshing map after map change:", error);
+              mapManager.alert(
+                "Error",
+                "Failed to refresh map. Please try again.",
+                "error"
+              );
+            }
+          } else {
+            pointManager.stopRealTimeUpdates();
+            canvasUtils.resetCanvas();
+            canvas3D.style.display = "none";
+            show3DMapRef.current.style.display = "none";
+          }
+        });
+      } else {
+        console.warn("Element map-select not found");
+      }
+
+      if (show3DMapRef.current) {
+        show3DMapRef.current.addEventListener("click", () => {
+          console.log("Show 3D map clicked");
+          if (canvas3D.style.display === "none") {
+            canvas.style.display = "none";
+            canvas3D.style.display = "block";
+            show3DMapRef.current.textContent = "Show 2D Map";
+            trilaterationUtils.refreshMap(mapSelectRef.current.value, true);
+          } else {
+            canvas.style.display = "block";
+            canvas3D.style.display = "none";
+            show3DMapRef.current.textContent = "Show 3D Map";
+            trilaterationUtils.refreshMap(mapSelectRef.current.value, false);
+          }
+        });
+      } else {
+        console.warn("Element show3DMap not found");
+      }
+
       if (updateMapNameRef.current) {
         updateMapNameRef.current.addEventListener("click", () => {
           const mapSelect = mapSelectRef.current;
@@ -106,57 +300,6 @@ export default function Map() {
         console.warn("Element updateMapName not found");
       }
 
-      if (mapSelectRef.current) {
-        mapSelectRef.current.addEventListener("change", async (event) => {
-          const selectedIndex = event.target.value;
-          console.log("Map selected:", {
-            selectedIndex,
-            maps: mapManager.maps,
-          });
-          if (mapManager.maps.length === 0) {
-            mapManager.alert(
-              "Warning",
-              "No maps available. Please upload or select a map.",
-              "warning"
-            );
-            canvasUtils.resetCanvas();
-            return;
-          }
-          if (selectedIndex) {
-            if (!mapManager.maps[selectedIndex]) {
-              mapManager.alert(
-                "Error",
-                "Selected map is not available. Please select another map.",
-                "error"
-              );
-              return;
-            }
-            pointManager.stopRealTimeUpdates();
-            canvasUtils.img.src = mapManager.maps[selectedIndex].src;
-            pointManager.points =
-              pointManager.pointsPerMap[selectedIndex] || [];
-            pointManager.markerCoordinates =
-              pointManager.markerCoordinatesPerMap[selectedIndex] || [];
-            try {
-              trilaterationUtils.refreshMap(selectedIndex);
-              trilaterationUtils.startRealTimeUpdate();
-            } catch (error) {
-              console.error("Error refreshing map after map change:", error);
-              mapManager.alert(
-                "Error",
-                "Failed to refresh map. Please try again.",
-                "error"
-              );
-            }
-          } else {
-            pointManager.stopRealTimeUpdates();
-            canvasUtils.resetCanvas();
-          }
-        });
-      } else {
-        console.warn("Element map-select not found");
-      }
-
       if (mapUploadRef.current) {
         mapUploadRef.current.addEventListener("change", (event) => {
           const file = event.target.files[0];
@@ -176,8 +319,13 @@ export default function Map() {
                   if (index !== null) {
                     mapSelectRef.current.value = index;
                     canvasUtils.img.src = e.target.result;
+                    canvasUtils3D.img.src = e.target.result.replace(
+                      ".png",
+                      "_3D.png"
+                    );
                     trilaterationUtils.refreshMap(index);
                     trilaterationUtils.startRealTimeUpdate();
+                    show3DMapRef.current.style.display = "block";
                   } else {
                     mapManager.alert(
                       "Warning",
@@ -220,8 +368,10 @@ export default function Map() {
                 if (index !== null) {
                   mapSelectRef.current.value = index;
                   canvasUtils.img.src = mapSrc;
+                  canvasUtils3D.img.src = mapSrc.replace(".png", "_3D.png");
                   trilaterationUtils.refreshMap(index);
                   trilaterationUtils.startRealTimeUpdate();
+                  show3DMapRef.current.style.display = "block";
                 } else {
                   mapManager.alert(
                     "Warning",
@@ -260,17 +410,25 @@ export default function Map() {
           mapManager.deleteMap(selectedIndex, canvasUtils);
           pointManager.stopRealTimeUpdates();
           trilaterationUtils.refreshMap(mapSelect.value);
+          canvas3D.style.display = "none";
+          show3DMapRef.current.style.display = "none";
 
           if (mapManager.maps.length > 0) {
             mapSelect.value = "0";
             const newIndex = mapSelect.value;
             canvasUtils.img.src = mapManager.maps[newIndex].src;
+            canvasUtils3D.img.src = mapManager.maps[newIndex].src.replace(
+              ".png",
+              "_3D.png"
+            );
             pointManager.points = pointManager.pointsPerMap[newIndex] || [];
             pointManager.markerCoordinates =
               pointManager.markerCoordinatesPerMap[newIndex] || [];
             trilaterationUtils.refreshMap(newIndex);
+            show3DMapRef.current.style.display = "block";
           } else {
             canvasUtils.resetCanvas();
+            canvas3D.style.display = "none";
           }
 
           console.log("Map deleted, maps:", mapManager.maps);
@@ -292,13 +450,13 @@ export default function Map() {
             return;
           }
           canvasUtils.resetCanvas();
+          canvasUtils3D.resetCanvas();
           pointManager.stopRealTimeUpdates();
           pointManager.points = [];
           pointManager.markerCoordinates = [];
           pointManager.pointsPerMap[selectedIndex] = [];
           pointManager.markerCoordinatesPerMap[selectedIndex] = [];
           trilaterationUtils.refreshMap(selectedIndex);
-
           console.log("Points reset, maps:", mapManager.maps);
         });
       } else {
@@ -358,108 +516,35 @@ export default function Map() {
           }
           pointManager.editPoint(selectedPointName, newPointName, mapIndex);
           trilaterationUtils.refreshMap(mapIndex);
-          document.getElementById("newPointName").value = "";
         });
       } else {
         console.warn("Element editPoint not found");
       }
 
       if (canvas) {
-        canvas.addEventListener("click", async (event) => {
-          console.log("Canvas clicked, event:", event);
-          const pointName = document.getElementById("pointName")?.value.trim();
-          console.log("Point name:", pointName, "maps:", mapManager.maps);
-          if (mapManager.maps.length === 0) {
-            mapManager.alert(
-              "Info",
-              "Please upload or select a map before adding points.",
-              "question"
-            );
-            return;
-          }
-
-          const selectedIndex = mapSelectRef.current?.value;
-          console.log("Selected index:", selectedIndex);
-
-          if (!selectedIndex || !mapManager.maps[selectedIndex]) {
-            mapManager.alert(
-              "Warning",
-              "Please select a valid map before adding a point.",
-              "warning"
-            );
-            return;
-          }
-
-          if (!pointName) {
-            mapManager.alert(
-              "Warning",
-              "Please enter a name for the point before clicking on the map.",
-              "warning"
-            );
-            return;
-          }
-
-          const rect = canvas.getBoundingClientRect();
-          const pixelX = event.clientX - rect.left;
-          const pixelY = event.clientY - rect.top;
-          const { x, y } = canvasUtils.toCartesian(pixelX, pixelY);
-          console.log("Canvas coordinates:", { pixelX, pixelY, x, y });
-
-          try {
-            if (pointManager.drawMode) {
-              console.log("Adding marker and point");
-              await pointManager.addMarkerAndPoint(
-                x,
-                y,
-                pointName,
-                selectedIndex
-              );
-            } else {
-              console.log("Adding point only");
-              await pointManager.addPoint(x, y, pointName, selectedIndex);
-            }
-
-            document.getElementById("pointName").value = "";
-            console.log("Refreshing map with index:", selectedIndex);
-            trilaterationUtils.refreshMap(selectedIndex);
-          } catch (error) {
-            console.error("Error adding point:", error);
-            if (error.message !== "ALREADY_HANDLED") {
-              mapManager.alert(
-                "Error",
-                "Failed to add point. Please try again.",
-                "error"
-              );
-            }
-          }
-        });
-
-        canvas.addEventListener("mousemove", (event) => {
-          const rect = canvas.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
-
-          const hoveredPoint = pointManager.points.find((point) => {
-            const dx = point.x - x;
-            const dy = point.y - y;
-            return Math.sqrt(dx * dx + dy * dy) < 5;
-          });
-
-          if (hoveredPoint) {
-            tooltip.innerText = `Name: ${
-              hoveredPoint.name
-            }\nDistance: ${hoveredPoint.distance.toFixed(2)} m\nRSSI: ${
-              hoveredPoint.rssi
-            } dBm`;
-            tooltip.style.display = "block";
-            tooltip.style.left = `${event.pageX + 10}px`;
-            tooltip.style.top = `${event.pageY + 10}px`;
-          } else {
-            canvasUtils.showCircleTooltip(event);
-          }
-        });
+        canvas.addEventListener(
+          "click",
+          handleCanvasClick(canvas, canvasUtils, false)
+        );
+        canvas.addEventListener(
+          "mousemove",
+          handleCanvasMouseMove(canvas, canvasUtils, false)
+        );
       } else {
         console.warn("Canvas element not found");
+      }
+
+      if (canvas3D) {
+        canvas3D.addEventListener(
+          "click",
+          handleCanvasClick(canvas3D, canvasUtils3D, true)
+        );
+        canvas3D.addEventListener(
+          "mousemove",
+          handleCanvasMouseMove(canvas3D, canvasUtils3D, true)
+        );
+      } else {
+        console.warn("3D Canvas element not found");
       }
 
       if (showCircleCheckboxRef.current) {
@@ -475,6 +560,7 @@ export default function Map() {
             return;
           }
           canvasUtils.showCircles = !event.target.checked;
+          canvasUtils3D.showCircles = !event.target.checked;
           if (!canvasUtils.showCircles) {
             mapManager.alert(
               "Info",
@@ -492,12 +578,17 @@ export default function Map() {
         confirmSaveRef.current.addEventListener("click", async () => {
           console.log("Confirm save clicked");
           try {
+            const selectedIndex = mapSelectRef.current?.value;
             const selectedMapData = {
-              mapIndex: mapSelectRef.current?.value,
-              mapName: mapManager.maps[mapSelectRef.current?.value]?.name,
-              mapSrc: mapManager.maps[mapSelectRef.current?.value]?.src,
-              points:
-                pointManager.pointsPerMap[mapSelectRef.current?.value] || [],
+              mapIndex: selectedIndex,
+              mapName: mapManager.maps[selectedIndex]?.name,
+              mapSrc: mapManager.maps[selectedIndex]?.src,
+              // เพิ่ม mapSrc3D โดยแทนที่ .png ด้วย _3D.png
+              mapSrc3D: mapManager.maps[selectedIndex]?.src.replace(
+                ".png",
+                "_3D.png"
+              ),
+              points: pointManager.pointsPerMap[selectedIndex] || [],
             };
 
             if (!selectedMapData.mapIndex || !selectedMapData.mapName) {
@@ -528,6 +619,8 @@ export default function Map() {
               html: `
                 <div style="text-align: left;">
                   <p><strong>Map Name:</strong> ${selectedMapData.mapName}</p>
+                  <p><strong>2D Map Source:</strong> ${selectedMapData.mapSrc}</p>
+                  <p><strong>3D Map Source:</strong> ${selectedMapData.mapSrc3D}</p>
                   <p><strong>Points:</strong></p>
                   ${pointsHtml}
                 </div>
@@ -602,6 +695,7 @@ export default function Map() {
         editPoint: editPointRef.current,
         confirmSave: confirmSaveRef.current,
         showCircleCheckbox: showCircleCheckboxRef.current,
+        show3DMap: show3DMapRef.current,
       };
 
       Object.entries(elements).forEach(([key, element]) => {
@@ -620,6 +714,11 @@ export default function Map() {
         canvas.removeEventListener("click", () => {});
         canvas.removeEventListener("mousemove", () => {});
       }
+
+      if (canvas3D) {
+        canvas3D.removeEventListener("click", () => {});
+        canvas3D.removeEventListener("mousemove", () => {});
+      }
     };
   }, []);
 
@@ -633,8 +732,15 @@ export default function Map() {
             width="1000px"
             height="400px"
           ></canvas>
+          <canvas
+            id="myCanvas3D"
+            ref={canvas3DRef}
+            width="1000px"
+            height="400px"
+            style={{ display: "none" }}
+          ></canvas>
           <div id="map-show">
-            <form action="">
+            <label className="checkbox-control">
               <input
                 type="checkbox"
                 id="showCircleCheckbox"
@@ -642,14 +748,14 @@ export default function Map() {
                 name="showCircle"
                 value="show"
               />
-              <label htmlFor="showCircleCheckbox">Hide circle area</label>
-              <br />
-            </form>
+              <span className="checkmark"></span>
+              <span className="checkbox-label">Hide circle area</span>
+            </label>
           </div>
           <div id="map-controls">
             <div className="controls-group">
               <label htmlFor="mapName">Map Name:</label>
-              <select id="map-select" ref={mapSelectRef}>
+              <select className="select" id="map-select" ref={mapSelectRef}>
                 <option value="">Select Map</option>
               </select>
               <input type="text" id="mapName" placeholder="Enter map name" />
@@ -667,11 +773,11 @@ export default function Map() {
               <button id="resetPoints" ref={resetPointsRef}>
                 Reset
               </button>
-              <select id="pointSelect"></select>
+              <select className="select" id="pointSelect"></select>
               <button id="DeletePoint" ref={deletePointRef}>
                 Delete Point
               </button>
-              <select id="editPointSelect"></select>
+              <select className="select" id="editPointSelect"></select>
               <input
                 type="text"
                 id="newPointName"
@@ -679,6 +785,13 @@ export default function Map() {
               />
               <button id="editPoint" ref={editPointRef}>
                 Update Point Name
+              </button>
+              <button
+                id="show3DMap"
+                ref={show3DMapRef}
+                style={{ display: "none" }}
+              >
+                Show 3D Map
               </button>
             </div>
             <div className="controls-group">
@@ -728,4 +841,3 @@ export default function Map() {
     </>
   );
 }
-

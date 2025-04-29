@@ -79,8 +79,11 @@ export class PointManager {
     console.log("addMarkerAndPoint called with:", { x, y, name, selectedIndex });
     if (!this.markerCoordinatesPerMap[selectedIndex])
       this.markerCoordinatesPerMap[selectedIndex] = [];
-    this.markerCoordinatesPerMap[selectedIndex].push({ x, y });
+    this.markerCoordinatesPerMap[selectedIndex].push({ x, y, name });
     this.canvasUtils.drawMarker(x, y, "blue");
+    if (this.trilaterationUtils.canvasUtils3D) {
+      this.trilaterationUtils.canvasUtils3D.drawMarker(x, y, "blue");
+    }
     this.addPoint(x, y, name, selectedIndex);
   }
 
@@ -138,6 +141,10 @@ export class PointManager {
     }
 
     this.canvasUtils.drawPoint(x, y, name, color);
+    if (this.trilaterationUtils.canvasUtils3D) {
+      this.trilaterationUtils.canvasUtils3D.drawPoint(x, y, name, color);
+    }
+
     const newPoint = {
       x,
       y,
@@ -201,10 +208,14 @@ export class PointManager {
       const mapsRef = collection(dbfs, "maps");
       const mapDocRef = doc(mapsRef, mapData.mapName);
 
+      // สร้าง mapSrc3D จาก mapSrc โดยแทนที่ .png ด้วย _3D.png
+      const mapSrc3D = mapData.mapSrc.replace(".png", "_3D.png");
+
       const dataToSave = {
         mapIndex: mapData.mapIndex,
         mapName: mapData.mapName,
         mapSrc: mapData.mapSrc,
+        mapSrc3D: mapSrc3D, // เพิ่มฟิลด์ mapSrc3D
         points: mapData.points.map((point) => ({
           name: point.name,
           x: point.x,
@@ -281,16 +292,34 @@ export class PointManager {
       this.listeners.splice(listenerIndex, 1);
     }
 
+    const pointToDelete = this.pointsPerMap[mapIndex].find(
+      (point) => point.name === selectedPointName
+    );
+
     this.pointsPerMap[mapIndex] = this.pointsPerMap[mapIndex].filter(
       (point) => point.name !== selectedPointName
     );
+
     if (this.markerCoordinatesPerMap[mapIndex]) {
       this.markerCoordinatesPerMap[mapIndex] = this.markerCoordinatesPerMap[
         mapIndex
-      ].filter((marker) => marker.name !== selectedPointName);
+      ].filter((marker) => {
+        if (marker.name) {
+          return marker.name !== selectedPointName;
+        }
+        return !(
+          pointToDelete &&
+          Math.abs(marker.x - pointToDelete.x) < 0.001 &&
+          Math.abs(marker.y - pointToDelete.y) < 0.001
+        );
+      });
     }
+
     this.points = this.pointsPerMap[mapIndex];
+    this.markerCoordinates = this.markerCoordinatesPerMap[mapIndex] || [];
     this.updatePointSelects();
+
+    this.trilaterationUtils.refreshMap(mapIndex);
   }
 
   updatePointSelects() {
