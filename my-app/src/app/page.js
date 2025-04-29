@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import NextImage from "next/image";
-import "@styles/usermap.css";
 import "@styles/homepage.css";
 import {
   CanvasUtils,

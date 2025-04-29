@@ -33,8 +33,8 @@ export class MapManager {
       title: "Enter a name for this map",
       input: "text",
       inputAttributes: {
-        style: "width: 80%; margin: 0 auto;", // ปรับขนาดและจัดกลาง
-        size: "20" // กำหนดความยาวของ input field
+        style: "width: 80%; margin: 0 auto;", 
+        size: "20" 
       },
       placeholder: "Map name",
       showCancelButton: true,

@@ -202,6 +202,7 @@
 //     }
 //   }
 // }
+
 import Swal from "sweetalert2";
 
 const FIXED_CANVAS_WIDTH = 1000;
@@ -245,14 +246,13 @@ export class CanvasUtils {
       offsetX = (this.canvas.width - drawWidth) / 2;
       offsetY = 0;
     }
-
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
   }
 
   drawImageImmediately(imgSrc) {
     console.log("Attempting to draw image with src:", imgSrc);
-    this.img = new Image(); // สร้าง Image ใหม่ทุกครั้ง
+    this.img = new Image();
     this.img.src = imgSrc;
     if (this.img.complete && this.img.naturalWidth !== 0) {
       console.log("Drawing cached image:", imgSrc);
@@ -293,9 +293,8 @@ export class CanvasUtils {
   drawPoint(x, y, name, color = "black", showPoints = false) {
     if (!showPoints) return;
     const { pixelX, pixelY } = this.toCanvas(x, y);
-    
-    // Draw router image
-    const routerSize = 20; // Adjust size as needed
+
+    const routerSize = 20;
     if (this.routerImg.complete && this.routerImg.naturalWidth !== 0) {
       this.ctx.drawImage(
         this.routerImg,
@@ -305,13 +304,11 @@ export class CanvasUtils {
         routerSize
       );
     } else {
-      // Fallback to circle if router image fails to load
       this.ctx.fillStyle = color;
       this.ctx.beginPath();
       this.ctx.arc(pixelX, pixelY, 5, 0, 2 * Math.PI);
       this.ctx.fill();
       this.routerImg.onload = () => {
-        // Redraw canvas when router image loads
         this.initializeCanvas();
         this.drawPoint(x, y, name, color, showPoints);
       };

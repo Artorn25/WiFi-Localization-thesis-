@@ -708,18 +708,18 @@ export default function Map() {
         <h3>Example Maps to use</h3>
         <div className="map-samples">
           <NextImage
-            src="/map/map1.png"
+            src="/map/floor4.png"
             alt="Sample Map 1"
             className="map-sample"
-            data-map-src="/map/map1.png"
+            data-map-src="/map/floor4.png"
             width={400}
             height={200}
           />
           <NextImage
-            src="/map/map2.png"
+            src="/map/floor1.png"
             alt="Sample Map 2"
             className="map-sample"
-            data-map-src="/map/map2.png"
+            data-map-src="/map/floor1.png"
             width={400}
             height={200}
           />
@@ -728,3 +728,4 @@ export default function Map() {
     </>
   );
 }
+

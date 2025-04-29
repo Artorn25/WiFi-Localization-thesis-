@@ -58,12 +58,6 @@ canvas {
   align-items: center;
   justify-content: center;
   margin: 20px auto;
-  /* max-width: 800px; */
-  /* width: 90%; */
-  /* padding: 20px; */
-  /* border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); */
 }
 
 /* สไตล์สำหรับฟอร์มและปุ่ม */
@@ -75,6 +69,7 @@ canvas {
   justify-content: center;
   margin-bottom: 20px;
 }
+
 #map-controls {
   display: grid;
   grid-template-columns: 1fr;
@@ -130,7 +125,7 @@ button:active,
 }
 
 /* Ripple Effect */
-button::after,
+/* button::after, */
 .btn-upload::after {
   content: "";
   position: absolute;
@@ -143,7 +138,7 @@ button::after,
   pointer-events: none;
 }
 
-button:active::after,
+/* button:active::after, */
 .btn-upload:active::after {
   animation: ripple 0.5s ease-out;
 }
@@ -224,7 +219,6 @@ button:active::after,
   font-size: 0.75rem;
 }
 
-/* ปุ่ม Delete Point */
 #DeletePoint {
   background: #e67777;
   background: linear-gradient(
