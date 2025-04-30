@@ -759,10 +759,10 @@ export default function Map() {
                 <option value="">Select Map</option>
               </select>
               <input type="text" id="mapName" placeholder="Enter map name" />
-              <button id="updateMapName" ref={updateMapNameRef}>
+              <button className="button" id="updateMapName" ref={updateMapNameRef}>
                 Update Map Name
               </button>
-              <button id="delete-map" ref={deleteMapRef}>
+              <button className="button" id="delete-map" ref={deleteMapRef}>
                 Delete Map
               </button>
               <input
@@ -770,11 +770,11 @@ export default function Map() {
                 id="pointName"
                 placeholder="Enter point name"
               />
-              <button id="resetPoints" ref={resetPointsRef}>
+              <button className="button" id="resetPoints" ref={resetPointsRef}>
                 Reset
               </button>
               <select className="select" id="pointSelect"></select>
-              <button id="DeletePoint" ref={deletePointRef}>
+              <button className="button" id="DeletePoint" ref={deletePointRef}>
                 Delete Point
               </button>
               <select className="select" id="editPointSelect"></select>
@@ -783,10 +783,10 @@ export default function Map() {
                 id="newPointName"
                 placeholder="Enter new point name"
               />
-              <button id="editPoint" ref={editPointRef}>
+              <button className="button" id="editPoint" ref={editPointRef}>
                 Update Point Name
               </button>
-              <button
+              <button className="button"
                 id="show3DMap"
                 ref={show3DMapRef}
                 style={{ display: "none" }}
@@ -795,7 +795,7 @@ export default function Map() {
               </button>
             </div>
             <div className="controls-group">
-              <button id="confirmSave" ref={confirmSaveRef}>
+              <button className="button" id="confirmSave" ref={confirmSaveRef}>
                 Confirm Save
               </button>
             </div>

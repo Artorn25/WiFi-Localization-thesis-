@@ -1,6 +1,7 @@
 export class TrilaterationUtils {
   constructor(canvasUtils, pointManager, mapManager) {
     this.canvasUtils = canvasUtils;
+    this.canvasUtils3D = null;
     this.pointManager = pointManager;
     this.mapManager = mapManager;
     this.macToNodeIndex = {};
@@ -41,29 +42,36 @@ export class TrilaterationUtils {
   }
 
   refreshMap(selectedIndex, showPoints = false) {
-    if (!selectedIndex || !this.mapManager.maps[selectedIndex]) {
+    console.log("refreshMap called with selectedIndex:", selectedIndex);
+    console.log("mapManager.maps:", this.mapManager.maps);
+
+    // ตรวจสอบว่า selectedIndex มีอยู่ใน mapManager.maps หรือไม่
+    if (selectedIndex === undefined || selectedIndex === null || !this.mapManager.maps[selectedIndex]) {
       console.log(
         "Skipping refreshMap: Invalid selectedIndex or map not found"
       );
       return;
     }
 
-    // ล้าง canvas และวาดภาพแผนที่เสมอ
-    this.canvasUtils.ctx.clearRect(
+    const activeCanvasUtils = this.canvasUtils3D && this.canvasUtils3D.canvas.style.display !== "none"
+      ? this.canvasUtils3D
+      : this.canvasUtils;
+
+    activeCanvasUtils.ctx.clearRect(
       0,
       0,
-      this.canvasUtils.canvas.width,
-      this.canvasUtils.canvas.height
+      activeCanvasUtils.canvas.width,
+      activeCanvasUtils.canvas.height
     );
-    this.canvasUtils.ctx.drawImage(
-      this.canvasUtils.img,
+    activeCanvasUtils.ctx.drawImage(
+      activeCanvasUtils.img,
       0,
       0,
-      this.canvasUtils.canvas.width,
-      this.canvasUtils.canvas.height
+      activeCanvasUtils.canvas.width,
+      activeCanvasUtils.canvas.height
     );
 
-    this.canvasUtils.circles = [];
+    activeCanvasUtils.circles = [];
     this.trilaterationPositions = {};
 
     this.pointManager.points =
@@ -71,10 +79,11 @@ export class TrilaterationUtils {
     this.pointManager.markerCoordinates =
       this.pointManager.markerCoordinatesPerMap[selectedIndex] || [];
 
-    // วาดจุดและวงเฉพาะเมื่อ showPoints เป็น true
+    console.log("refreshMap - points to draw:", this.pointManager.points);
+
     if (showPoints) {
       this.pointManager.points.forEach((point) => {
-        this.canvasUtils.drawPoint(
+        activeCanvasUtils.drawPoint(
           point.x,
           point.y,
           point.name,
@@ -90,7 +99,7 @@ export class TrilaterationUtils {
                   `Skipping circle for point ${point.name}: Distance is ${data.distance}`
                 );
               } else {
-                this.canvasUtils.drawCircle(
+                activeCanvasUtils.drawCircle(
                   point.x,
                   point.y,
                   data.distance,
@@ -120,7 +129,7 @@ export class TrilaterationUtils {
               macGroups[data.mac].push({
                 x: point.x,
                 y: point.y,
-                radius: data.distance / this.canvasUtils.scaleX,
+                radius: data.distance / activeCanvasUtils.scaleX,
                 name: point.name,
                 mac: data.mac,
                 distance: data.distance,
@@ -163,7 +172,7 @@ export class TrilaterationUtils {
               y: position.y,
               name: nodeName,
             };
-            this.canvasUtils.drawIntersectionPoint(
+            activeCanvasUtils.drawIntersectionPoint(
               position.x,
               position.y,
               nodeName,
@@ -188,8 +197,8 @@ export class TrilaterationUtils {
   }
 
   startAutoRefresh(interval = 1000) {
-    this.stopAutoRefresh(); // ยืนยันว่ายังไม่มี interval ทำงานอยู่
-    
+    this.stopAutoRefresh();
+
     this.refreshInterval = setInterval(() => {
       const mapSelect = document.getElementById("map-select");
       if (mapSelect?.value) {
@@ -202,7 +211,7 @@ export class TrilaterationUtils {
       }
     }, interval);
   }
-  
+
   stopAutoRefresh() {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);

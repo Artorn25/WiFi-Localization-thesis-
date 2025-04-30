@@ -1,6 +1,3 @@
-/* 💠 Premium SaaS UI — Ultra Refined with Soft Pastels & Superior Responsiveness */
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap");
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -31,6 +28,10 @@
 }
 
 #map-container {
+  max-width: 100%;
+  margin: auto;
+  padding: 0.8rem;
+  animation: fadeInUp 0.5s ease;
   background-color: var(--card-color);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -397,13 +398,6 @@ input:focus,
   outline: none;
 }
 
-/* label {
-  display: block;
-  margin-bottom: 0.2rem;
-  font-weight: 600;
-  color: var(--text-color);
-} */
-
 .autocomplete-suggestions {
   position: absolute;
   background: white;
@@ -494,7 +488,6 @@ input:focus,
     padding: 0.8rem;
   }
 
-  /* button, */
   .btn-upload {
     padding: 0.5rem 0.8rem;
     font-size: 0.75rem;
@@ -510,4 +503,11 @@ input:focus,
   .map-sample {
     max-width: 220px;
   }
+}
+
+.button {
+  text-align: center;
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  color: #fff;
 }

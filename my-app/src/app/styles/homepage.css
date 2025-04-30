@@ -369,7 +369,7 @@
 /* ส่วน controls */
 .controls-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -575,4 +575,24 @@ canvas {
   border: 1px solid var(--border-color);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   animation: fadeInUp 0.7s ease;
+}
+
+.show-3d-map-btn {
+  background-color: #f7ad45;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.show-3d-map-btn:hover {
+  background-color: #bb3e00;
+}
+
+.show-3d-map-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
