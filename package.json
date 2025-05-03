@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "chartjs-plugin-streaming": "^2.0.0",
     "next": "^15.3.0-canary.33",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

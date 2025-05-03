@@ -24,97 +24,167 @@ export default function Dashboard() {
   const [nodes, setNodes] = useState({
     "Node-807D3A47F90B": null,
     "Node-C45BBE4305AC": null,
-    "Node-C45BBECE5D54": null
+    "Node-C45BBECE5D54": null,
   });
+  const [chartHistory, setChartHistory] = useState({
+    distance: {
+      labels: [],
+      router1: [],
+      router2: [],
+      router3: [],
+    },
+    rssi: {
+      labels: [],
+      router1: [],
+      router2: [],
+      router3: [],
+    },
+  });
+  const [currentNode, setCurrentNode] = useState("Node-807D3A47F90B");
+
   const [connectionStatus, setConnectionStatus] = useState("Unknown");
 
-  function updateCharts(data) {
+  function updateCharts(history) {
+    // ทำลายกราฟเก่าถ้ามี
     if (distanceChart) distanceChart.destroy();
     if (rssiChart) rssiChart.destroy();
 
-    distanceChart = new Chart(document.getElementById("distanceChart"), {
-      type: "bar",
+    // สร้างกราฟ Distance (เส้น)
+    const distanceCtx = document
+      .getElementById("distanceChart")
+      .getContext("2d");
+    distanceChart = new Chart(distanceCtx, {
+      type: "line",
       data: {
-        labels: ["Log Model"],
+        labels: history.distance.labels,
         datasets: [
           {
-            label: "Router 1",
-            data: [
-              data.Router1?.Log?.distance || 0,
-              data.Router1?.ITU?.distance || 0,
-              data.Router1?.FSPL?.distance || 0,
-            ],
-            backgroundColor: "rgba(54, 162, 235, 0.5)",
+            label: "Router 1 Distance",
+            data: history.distance.router1,
+            borderColor: "rgba(54, 162, 235, 1)",
+            backgroundColor: "rgba(54, 162, 235, 0.1)",
+            tension: 0.1,
+            fill: true,
           },
           {
-            label: "Router 2",
-            data: [
-              data.Router2?.Log?.distance || 0,
-              data.Router2?.ITU?.distance || 0,
-              data.Router2?.FSPL?.distance || 0,
-            ],
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
+            label: "Router 2 Distance",
+            data: history.distance.router2,
+            borderColor: "rgba(255, 99, 132, 1)",
+            backgroundColor: "rgba(255, 99, 132, 0.1)",
+            tension: 0.1,
+            fill: true,
           },
+          {
+            label: 'Router 3 Distance',
+            data: history.distance.router3,
+            borderColor: 'rgba(75, 192, 192, 1)', // เปลี่ยนสีให้แตกต่าง
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            tension: 0.1,
+            fill: true
+          }
         ],
       },
       options: {
         responsive: true,
         scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Time'
+            },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 10
+            }
+          },
           y: {
-            beginAtZero: true,
+            beginAtZero: false,
             title: {
               display: true,
               text: "Distance (m)",
             },
           },
         },
+        animation: {
+          duration: 0, // ปิด animation เพื่อให้อัปเดตทันที
+        },
+        plugins: {
+          streaming: false // ไม่จำเป็นต้องใช้ plugin เพิ่มเติม
+          },
       },
     });
 
-    rssiChart = new Chart(document.getElementById("rssiChart"), {
+    // สร้างกราฟ RSSI (เส้น)
+    const rssiCtx = document.getElementById("rssiChart").getContext("2d");
+    rssiChart = new Chart(rssiCtx, {
       type: "line",
       data: {
-        labels: ["Router 1", "Router 2"],
+        labels: history.rssi.labels,
         datasets: [
           {
-            label: "RSSI (dBm)",
-            data: [data.Router1?.rssi || 0, data.Router2?.rssi || 0],
-            borderColor: "rgb(75, 192, 192)",
+            label: 'Router 1 RSSI',
+            data: history.rssi.router1,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
             tension: 0.1,
+            fill: true
           },
+          {
+            label: 'Router 2 RSSI',
+            data: history.rssi.router2,
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            tension: 0.1,
+            fill: true
+          },
+          {
+            label: 'Router 3 RSSI',
+            data: history.rssi.router3,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            tension: 0.1,
+            fill: true
+          }
         ],
       },
       options: {
         responsive: true,
         scales: {
           y: {
+            beginAtZero: false,
             title: {
               display: true,
               text: "RSSI (dBm)",
             },
           },
         },
+        animation: {
+          duration: 0, // ปิด animation เพื่อให้อัปเดตทันที
+        },
       },
     });
   }
+  useEffect(() => {
+    updateCharts(chartHistory);
+  }, [chartHistory]);
 
-  function updateDataTable(data) {
+  function updateDataTable() {
     const tableBody = document.getElementById("dataTableBody");
     if (!tableBody) return;
     tableBody.innerHTML = "";
-
+  
     const models = ["Log", "ITU", "FSPL"];
-    const routers = ["Router1", "Router2"];
-
+    const routers = ["Router-1", "Router-2", "Router-3"];
+  
     models.forEach((model) => {
       routers.forEach((router) => {
         const row = tableBody.insertRow();
         row.insertCell(0).textContent = model;
         row.insertCell(1).textContent = router;
-        row.insertCell(2).textContent = data[router]?.ssid || "N/A";
-        row.insertCell(3).textContent = data[router]?.rssi || "N/A";
-        row.insertCell(4).textContent =
-          data[router]?.[model]?.[`distance`] || "N/A";
+        row.insertCell(2).textContent = nodes[currentNode]?.[router]?.ssid || "N/A";
+        row.insertCell(3).textContent = nodes[currentNode]?.[router]?.rssi || "N/A";
+        row.insertCell(4).textContent = nodes[currentNode]?.[router]?.distance || "N/A";
       });
     });
   }
@@ -130,36 +200,94 @@ export default function Dashboard() {
     onValue(connectionRef, (snap) => {
       setConnectionStatus(snap.val() ? "Connected" : "Disconnected");
     });
-
+  
     const dbRef = ref(database, "Data");
     onValue(dbRef, (snapshot) => {
       if (snapshot.exists()) {
         const allData = snapshot.val();
+        const nodeData = allData[currentNode]; // ใช้ currentNode แทนการ hardcode
+  
         setNodes({
           "Node-807D3A47F90B": allData["Node-807D3A47F90B"],
           "Node-C45BBE4305AC": allData["Node-C45BBE4305AC"],
           "Node-C45BBECE5D54": allData["Node-C45BBECE5D54"]
         });
-      } else {
-        console.log("No data available");
+  
+        // สร้าง timestamp สำหรับ label
+        const now = new Date();
+        const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+  
+        setChartHistory((prev) => {
+          const newHistory = { ...prev };
+          
+          // จำกัดจำนวนข้อมูลที่เก็บไว้
+          if (newHistory.distance.labels.length >= 20) {
+            newHistory.distance.labels.shift();
+            newHistory.distance.router1.shift();
+            newHistory.distance.router2.shift();
+            newHistory.distance.router3.shift();
+            newHistory.rssi.labels.shift();
+            newHistory.rssi.router1.shift();
+            newHistory.rssi.router2.shift();
+            newHistory.rssi.router3.shift();
+          }
+  
+          // เพิ่มข้อมูลใหม่จาก Node ปัจจุบัน
+          newHistory.distance.labels.push(timeLabel);
+          newHistory.distance.router1.push(nodeData?.["Router-1"]?.distance || 0);
+          newHistory.distance.router2.push(nodeData?.["Router-2"]?.distance || 0);
+          newHistory.distance.router3.push(nodeData?.["Router-3"]?.distance || 0);
+          
+          newHistory.rssi.labels.push(timeLabel);
+          newHistory.rssi.router1.push(nodeData?.["Router-1"]?.rssi || 0);
+          newHistory.rssi.router2.push(nodeData?.["Router-2"]?.rssi || 0);
+          newHistory.rssi.router3.push(nodeData?.["Router-3"]?.rssi || 0);
+  
+          return newHistory;
+        });
       }
     });
-  }, []);
+  }, [currentNode]); // เพิ่ม currentNode เป็น dependency
+  const RouterInfo = ({ routerData, routerName }) => {
+    const bgColor = routerName === "Router-1" ? "bg-blue-50" : 
+                   routerName === "Router-2" ? "bg-red-50" : "bg-green-50";
+                   
+    const textColor = routerName === "Router-1" ? "text-blue-500" :
+                     routerName === "Router-2" ? "text-red-500" : "text-green-500";
 
-  const ssid_1 = nodes["Node-807D3A47F90B"]?.["Router-1"]?.ssid || "Not available";
-  const rssi_1 = nodes["Node-807D3A47F90B"]?.["Router-1"]?.rssi || "Not available";
-  const ssid_2 = nodes["Node-807D3A47F90B"]?.["Router-2"]?.ssid || "Not available";
-  const rssi_2 = nodes["Node-807D3A47F90B"]?.["Router-2"]?.rssi || "Not available";
-  const distance_1_Log = nodes["Node-807D3A47F90B"]?.["Router-1"]?.distance || "Not available";
-  const distance_2_Log = nodes["Node-807D3A47F90B"]?.["Router-2"]?.distance || "Not available";
+    return (
+      <div className={`p-4 rounded-lg ${bgColor}`}>
+        <h4 className={`text-md font-semibold ${textColor}`}>
+          {routerName}
+        </h4>
+        <p className="text-gray-600">SSID: {routerData?.ssid || "N/A"}</p>
+        <p className="text-gray-600">RSSI: {routerData?.rssi || "N/A"} dBm</p>
+        <p className="text-gray-600">Distance: {routerData?.distance || "N/A"} m</p>
+      </div>
+    );
+  };
+
+  const ssid_1 =
+    nodes["Node-807D3A47F90B"]?.["Router-1"]?.ssid || "Not available";
+  const rssi_1 =
+    nodes["Node-807D3A47F90B"]?.["Router-1"]?.rssi || "Not available";
+  const ssid_2 =
+    nodes["Node-807D3A47F90B"]?.["Router-2"]?.ssid || "Not available";
+  const rssi_2 =
+    nodes["Node-807D3A47F90B"]?.["Router-2"]?.rssi || "Not available";
+  const distance_1_Log =
+    nodes["Node-807D3A47F90B"]?.["Router-1"]?.distance || "Not available";
+  const distance_2_Log =
+    nodes["Node-807D3A47F90B"]?.["Router-2"]?.distance || "Not available";
   const distanceA_B_Log = "Calculated value here"; // คุณต้องคำนวณค่าตาม logic ของคุณ
 
   const NodeDisplay = ({ nodeData, nodeName }) => {
-    if (!nodeData) return (
-      <div className="bg-yellow-50 p-4 rounded-lg">
-        <p>No data available for {nodeName}</p>
-      </div>
-    );
+    if (!nodeData)
+      return (
+        <div className="bg-yellow-50 p-4 rounded-lg">
+          <p>No data available for {nodeName}</p>
+        </div>
+      );
 
     return (
       <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
@@ -175,10 +303,16 @@ export default function Dashboard() {
             if (key.startsWith("Router-")) {
               return (
                 <div key={key} className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-green-500">{key}</h3>
+                  <h3 className="text-lg font-semibold text-green-500">
+                    {key}
+                  </h3>
                   <p className="text-gray-600">SSID: {value.ssid || "N/A"}</p>
-                  <p className="text-gray-600">RSSI: {value.rssi || "N/A"} dBm</p>
-                  <p className="text-gray-600">Distance: {value.distance || "N/A"} m</p>
+                  <p className="text-gray-600">
+                    RSSI: {value.rssi || "N/A"} dBm
+                  </p>
+                  <p className="text-gray-600">
+                    Distance: {value.distance || "N/A"} m
+                  </p>
                 </div>
               );
             }
@@ -199,22 +333,15 @@ export default function Dashboard() {
         </h1>
         <div
           id="connection-status"
-          className={`p-3 rounded-md font-semibold mb-6 text-center ${connectionStatus === "Connected"
-            ? "bg-green-500 text-white"
-            : "bg-red-500 text-white"
-            }`}
+          className={`p-3 rounded-md font-semibold mb-6 text-center ${
+            connectionStatus === "Connected"
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
         >
           Status: {connectionStatus}
         </div>
-        {/* <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h3 className="text-2xl font-semibold mb-4 text-gray-700">
-            Datetime
-          </h3>
-          <div className="flex justify-between">
-            <p className="text-gray-600">Start: {start}</p>
-            <p className="text-gray-600">End: {end}</p>
-          </div>
-        </div> */}
+        
 
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6 mx-auto">
@@ -226,171 +353,283 @@ export default function Dashboard() {
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-green-500">Node 1</h3>
-                <h4 className="text-md font-semibold text-gray-500">Router 1</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-807D3A47F90B"]?.["Router-1"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-807D3A47F90B"]?.["Router-1"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-807D3A47F90B"]?.["Router-1"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500">
+                  Router 1
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-1"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-1"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-1"]?.distance || "N/A"}{" "}
+                  m
+                </p>
 
-                <h4 className="text-md font-semibold text-gray-500 mt-3">Router 2</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-807D3A47F90B"]?.["Router-2"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-807D3A47F90B"]?.["Router-2"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-807D3A47F90B"]?.["Router-2"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500 mt-3">
+                  Router 2
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-2"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-2"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-2"]?.distance || "N/A"}{" "}
+                  m
+                </p>
 
-                <h4 className="text-md font-semibold text-gray-500 mt-3">Router 3</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-807D3A47F90B"]?.["Router-3"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-807D3A47F90B"]?.["Router-3"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-807D3A47F90B"]?.["Router-3"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500 mt-3">
+                  Router 3
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-3"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-3"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-807D3A47F90B"]?.["Router-3"]?.distance || "N/A"}{" "}
+                  m
+                </p>
               </div>
 
               {/* Node 2 */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-green-500">Node 2</h3>
-                <h4 className="text-md font-semibold text-gray-500">Router 1</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-C45BBE4305AC"]?.["Router-1"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-C45BBE4305AC"]?.["Router-1"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-C45BBE4305AC"]?.["Router-1"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500">
+                  Router 1
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-1"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-1"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-1"]?.distance || "N/A"}{" "}
+                  m
+                </p>
 
-                <h4 className="text-md font-semibold text-gray-500 mt-3">Router 2</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-C45BBE4305AC"]?.["Router-2"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-C45BBE4305AC"]?.["Router-2"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-C45BBE4305AC"]?.["Router-2"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500 mt-3">
+                  Router 2
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-2"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-2"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-2"]?.distance || "N/A"}{" "}
+                  m
+                </p>
 
-                <h4 className="text-md font-semibold text-gray-500 mt-3">Router 3</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-C45BBE4305AC"]?.["Router-3"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-C45BBE4305AC"]?.["Router-3"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-C45BBE4305AC"]?.["Router-3"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500 mt-3">
+                  Router 3
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-3"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-3"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-C45BBE4305AC"]?.["Router-3"]?.distance || "N/A"}{" "}
+                  m
+                </p>
               </div>
 
               {/* Node 3 */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-green-500">Node 3</h3>
-                <h4 className="text-md font-semibold text-gray-500">Router 1</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-C45BBECE5D54"]?.["Router-1"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-C45BBECE5D54"]?.["Router-1"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-C45BBECE5D54"]?.["Router-1"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500">
+                  Router 1
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-1"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-1"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-1"]?.distance || "N/A"}{" "}
+                  m
+                </p>
 
-                <h4 className="text-md font-semibold text-gray-500 mt-3">Router 2</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-C45BBECE5D54"]?.["Router-2"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-C45BBECE5D54"]?.["Router-2"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-C45BBECE5D54"]?.["Router-2"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500 mt-3">
+                  Router 2
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-2"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-2"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-2"]?.distance || "N/A"}{" "}
+                  m
+                </p>
 
-                <h4 className="text-md font-semibold text-gray-500 mt-3">Router 3</h4>
-                <p className="text-gray-600">SSID: {nodes["Node-C45BBECE5D54"]?.["Router-3"]?.ssid || "N/A"}</p>
-                <p className="text-gray-600">RSSI: {nodes["Node-C45BBECE5D54"]?.["Router-3"]?.rssi || "N/A"} dBm</p>
-                <p className="text-gray-600">Distance: {nodes["Node-C45BBECE5D54"]?.["Router-3"]?.distance || "N/A"} m</p>
+                <h4 className="text-md font-semibold text-gray-500 mt-3">
+                  Router 3
+                </h4>
+                <p className="text-gray-600">
+                  SSID:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-3"]?.ssid || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  RSSI:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-3"]?.rssi || "N/A"} dBm
+                </p>
+                <p className="text-gray-600">
+                  Distance:{" "}
+                  {nodes["Node-C45BBECE5D54"]?.["Router-3"]?.distance || "N/A"}{" "}
+                  m
+                </p>
               </div>
             </div>
 
-            {/* <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-green-500">
-                Distance
-              </h3>
-              <p className="text-gray-600">
-                Distance A between Distance B using log: {distanceA_B_Log} m
-              </p>
-            </div> */}
+            
           </div>
         </div>
+      </div>
 
-        {/* <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4 text-blue-600">
-              ITU Indoor Propagation Model
-            </h2>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-500">
-                  Router 1
-                </h3>
-                <p className="text-gray-600">SSID: {ssid_1}</p>
-                <p className="text-gray-600">RSSI: {rssi_1} dBm</p>
-                <p className="text-gray-600">Distance: {distance_1_ITU} m</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-blue-500">
-                  Router 2
-                </h3>
-                <p className="text-gray-600">SSID: {ssid_2}</p>
-                <p className="text-gray-600">RSSI: {rssi_2} dBm</p>
-                <p className="text-gray-600">Distance: {distance_2_ITU} m</p>
-              </div>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-blue-500">
-                Distance
-              </h3>
-              <p className="text-gray-600">
-                Distance A between Distance B using ITU: {distanceA_B_ITU} m
-              </p>
-            </div>
-          </div>
+      {/* Node Selection Buttons */}
+      <div className="flex justify-center mb-8 gap-4">
+          <button
+            onClick={() => setCurrentNode("Node-807D3A47F90B")}
+            className={`px-4 py-2 rounded-md font-semibold ${
+              currentNode === "Node-807D3A47F90B"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-800"
+            }`}
+          >
+            Node 1
+          </button>
+          <button
+            onClick={() => setCurrentNode("Node-C45BBE4305AC")}
+            className={`px-4 py-2 rounded-md font-semibold ${
+              currentNode === "Node-C45BBE4305AC"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-800"
+            }`}
+          >
+            Node 2
+          </button>
+          <button
+            onClick={() => setCurrentNode("Node-C45BBECE5D54")}
+            className={`px-4 py-2 rounded-md font-semibold ${
+              currentNode === "Node-C45BBECE5D54"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-800"
+            }`}
+          >
+            Node 3
+          </button>
+        </div>
 
+        {/* Current Node Information - แสดงเฉพาะ Node ปัจจุบัน */}
+<div className="bg-white rounded-lg shadow-lg p-6 mx-auto mb-8">
+  <h2 className="text-2xl font-bold mb-4 text-green-600">
+    Current Node: {currentNode.replace("Node-", "Node ")}
+  </h2>
+  
+  {nodes[currentNode] ? (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <RouterInfo 
+        routerData={nodes[currentNode]?.["Router-1"]} 
+        routerName="Router-1" 
+      />
+      <RouterInfo 
+        routerData={nodes[currentNode]?.["Router-2"]} 
+        routerName="Router-2" 
+      />
+      <RouterInfo 
+        routerData={nodes[currentNode]?.["Router-3"]} 
+        routerName="Router-3" 
+      />
+    </div>
+  ) : (
+    <div className="bg-yellow-50 p-4 rounded-lg">
+      <p>No data available for this node</p>
+    </div>
+  )}
+</div>
+
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4 text-purple-600">
-              Free-space Path Loss
+            <h2 className="text-2xl font-bold mb-4 text-blue-600">
+              Distance Tracking - {currentNode.replace("Node-", "Node ")}
             </h2>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-purple-500">
-                  Router 1
-                </h3>
-                <p className="text-gray-600">SSID: {ssid_1}</p>
-                <p className="text-gray-600">RSSI: {rssi_1} dBm</p>
-                <p className="text-gray-600">Distance: {distance_1_Log} m</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-purple-500">
-                  Router 2
-                </h3>
-                <p className="text-gray-600">SSID: {ssid_2}</p>
-                <p className="text-gray-600">RSSI: {rssi_2} dBm</p>
-                <p className="text-gray-600">Distance: {distance_2_Log} m</p>
-              </div>
+            <div className="h-[400px]">
+              <canvas id="distanceChart"></canvas>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-purple-500">
-                Distance
-              </h3>
-              <p className="text-gray-600">
-                Distance A between Distance B using FSPL: {distanceA_B_Log} m
-              </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Last updated:{" "}
+              {chartHistory.distance.labels[chartHistory.distance.labels.length - 1] || "N/A"}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold mb-4 text-green-600">
+              RSSI Tracking - {currentNode.replace("Node-", "Node ")}
+            </h2>
+            <div className="h-[400px]">
+              <canvas id="rssiChart"></canvas>
             </div>
-          </div> */}
-      </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Last updated:{" "}
+              {chartHistory.rssi.labels[chartHistory.rssi.labels.length - 1] || "N/A"}
+            </p>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-4 text-blue-600">
-            Distance Comparison Chart
+        {/* Data Table */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-purple-600">
+            Detailed Data - {currentNode.replace("Node-", "Node ")}
           </h2>
-          <canvas id="distanceChart"></canvas>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white text-center">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="py-2 px-4 border-b">Model</th>
+                  <th className="py-2 px-4 border-b">Router</th>
+                  <th className="py-2 px-4 border-b">SSID</th>
+                  <th className="py-2 px-4 border-b">RSSI (dBm)</th>
+                  <th className="py-2 px-4 border-b">Distance (m)</th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody"></tbody>
+            </table>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-4 text-green-600">
-            RSSI Comparison Chart
-          </h2>
-          <canvas id="rssiChart"></canvas>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-4 text-purple-600">
-          Detailed Data Table
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white text-center">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="py-2 px-4 border-b">Model</th>
-                <th className="py-2 px-4 border-b">Router</th>
-                <th className="py-2 px-4 border-b">SSID</th>
-                <th className="py-2 px-4 border-b">RSSI (dBm)</th>
-                <th className="py-2 px-4 border-b">Distance (m)</th>
-              </tr>
-            </thead>
-            <tbody id="dataTableBody"></tbody>
-          </table>
-        </div>
-      </div>
       <div className="flex gap-4">
         <button
           id="exportJSON"

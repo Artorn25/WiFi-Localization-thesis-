@@ -493,7 +493,6 @@
   max-width: 1200px;
   margin: 40px auto;
   padding: 0 20px;
-  /* margin-top: 30px; */
 }
 
 .sample-maps-title {
@@ -595,4 +594,51 @@ canvas {
 .show-3d-map-btn:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
+}
+
+/* Tooltip Styles */
+#tooltip {
+  position: absolute;
+  background-color: #ffffff;
+  color: #2d3748;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#tooltip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 6px 6px 6px;
+  border-style: solid;
+  border-color: transparent transparent #ffffff transparent;
+  filter: drop-shadow(0 -1px 1px rgba(0, 0, 0, 0.05));
+}
+
+#tooltip::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 7px 7px 7px;
+  border-style: solid;
+  border-color: transparent transparent #e2e8f0 transparent;
 }

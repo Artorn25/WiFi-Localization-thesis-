@@ -759,7 +759,11 @@ export default function Map() {
                 <option value="">Select Map</option>
               </select>
               <input type="text" id="mapName" placeholder="Enter map name" />
-              <button className="button" id="updateMapName" ref={updateMapNameRef}>
+              <button
+                className="button"
+                id="updateMapName"
+                ref={updateMapNameRef}
+              >
                 Update Map Name
               </button>
               <button className="button" id="delete-map" ref={deleteMapRef}>
@@ -786,7 +790,8 @@ export default function Map() {
               <button className="button" id="editPoint" ref={editPointRef}>
                 Update Point Name
               </button>
-              <button className="button"
+              <button
+                className="button"
                 id="show3DMap"
                 ref={show3DMapRef}
                 style={{ display: "none" }}
@@ -833,6 +838,14 @@ export default function Map() {
             alt="Sample Map 2"
             className="map-sample"
             data-map-src="/map/floor1.png"
+            width={400}
+            height={200}
+          />
+          <NextImage
+            src="/map/floor3.png"
+            alt="Sample Map 3"
+            className="map-sample"
+            data-map-src="/map/floor3.png"
             width={400}
             height={200}
           />

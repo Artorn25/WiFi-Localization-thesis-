@@ -14,7 +14,7 @@ export class CanvasUtils {
     this.tooltip = tooltip;
     this.img = new Image();
     this.routerImg = new Image();
-    this.routerImg.src = "/symbols/router.png"; // Adjust the path to your router image
+    this.routerImg.src = "/symbols/router.png";
     this.scaleX = realWidth / FIXED_CANVAS_WIDTH;
     this.scaleY = realHeight / FIXED_CANVAS_HEIGHT;
     this.showCircles = true;
@@ -45,6 +45,18 @@ export class CanvasUtils {
     if (this.img.complete && this.img.naturalWidth !== 0) {
       this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
     }
+
+    // เพิ่ม event listener สำหรับ tooltip
+    this.canvas.removeEventListener("mousemove", this.handleMouseMove);
+    this.handleMouseMove = (event) => this.showCircleTooltip(event);
+    this.canvas.addEventListener("mousemove", this.handleMouseMove);
+
+    // เพิ่ม event listener สำหรับซ่อน tooltip เมื่อเมาส์ออก
+    this.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
+    this.handleMouseLeave = () => {
+      this.tooltip.classList.remove("show");
+    };
+    this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
   }
 
   drawImageImmediately(imgSrc) {
@@ -133,7 +145,7 @@ export class CanvasUtils {
       this.ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
       this.ctx.stroke();
 
-      this.circles.push({ x, y, radius, rssi, distance, mac });
+      this.circles.push({ x, y, radius, rssi, distance, mac, pixelX, pixelY });
     }
   }
 
@@ -170,7 +182,7 @@ export class CanvasUtils {
     this.canvas.height = FIXED_CANVAS_HEIGHT;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.circles = [];
-    this.img = new Image(); // รีเซ็ตภาพเพื่อป้องกันการแคช
+    this.img = new Image();
   }
 
   showCircleTooltip(event) {
@@ -179,8 +191,8 @@ export class CanvasUtils {
     const mouseY = event.clientY - rect.top;
 
     const hoveredCircle = this.circles.find((circle) => {
-      const dx = circle.x - mouseX;
-      const dy = circle.y - mouseY;
+      const dx = circle.pixelX - mouseX;
+      const dy = circle.pixelY - mouseY;
       const distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
       return (
         distanceFromCenter <= circle.radius + 5 &&
@@ -189,14 +201,27 @@ export class CanvasUtils {
     });
 
     if (hoveredCircle) {
-      this.tooltip.innerText = `Mac: ${hoveredCircle.mac}\nRSSI: ${
-        hoveredCircle.rssi
-      } dBm\nDistance: ${hoveredCircle.distance.toFixed(2)} m`;
-      this.tooltip.style.display = "block";
-      this.tooltip.style.left = `${event.pageX + 10}px`;
-      this.tooltip.style.top = `${event.pageY + 10}px`;
+      this.tooltip.innerText = `MAC: ${hoveredCircle.mac}\nRSSI: ${hoveredCircle.rssi} dBm\nDistance: ${hoveredCircle.distance.toFixed(2)} m`;
+      this.tooltip.classList.add("show");
+
+      let tooltipX = event.pageX + 10;
+      let tooltipY = event.pageY + 10;
+
+      const tooltipRect = this.tooltip.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+
+      if (tooltipX + tooltipRect.width > windowWidth - 10) {
+        tooltipX = event.pageX - tooltipRect.width - 10;
+      }
+      if (tooltipY + tooltipRect.height > windowHeight - 10) {
+        tooltipY = event.pageY - tooltipRect.height - 20;
+      }
+
+      this.tooltip.style.left = `${tooltipX}px`;
+      this.tooltip.style.top = `${tooltipY}px`;
     } else {
-      this.tooltip.style.display = "none";
+      this.tooltip.classList.remove("show");
     }
   }
 

@@ -15,7 +15,7 @@ import GenText from "@components/Gentext";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export default function Home() {
-  const [showInfoPopup, setShowInfoPopup] = useState(true);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [autoRedirect, setAutoRedirect] = useState(true);
   const [maps, setMaps] = useState([]);
@@ -41,6 +41,31 @@ export default function Home() {
 
   const normalizeSrc = (src) => {
     return src.trim().replace(/\/+/g, "/").toLowerCase();
+  };
+
+  // Check localStorage for popup suppression
+  useEffect(() => {
+    const popupSuppressed = localStorage.getItem("popupSuppressed");
+    if (popupSuppressed) {
+      const suppressionTime = parseInt(popupSuppressed, 10);
+      const currentTime = Date.now();
+      const oneDayInMs = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+
+      if (currentTime - suppressionTime < oneDayInMs) {
+        setShowInfoPopup(false);
+        return;
+      } else {
+        localStorage.removeItem("popupSuppressed");
+      }
+    }
+    setShowInfoPopup(true);
+  }, []);
+
+  // Handle permanent popup close
+  const handlePermanentClose = () => {
+    localStorage.setItem("popupSuppressed", Date.now().toString());
+    setShowInfoPopup(false);
+    setAutoRedirect(false);
   };
 
   const fetchSampleMaps = async () => {
@@ -124,7 +149,10 @@ export default function Home() {
               await checkImageLoad(map.mapSrc3D);
               mapSrc3D = map.mapSrc3D;
             } catch (error) {
-              console.warn(`Failed to load 3D map image for ${map.mapName}:`, map.mapSrc3D);
+              console.warn(
+                `Failed to load 3D map image for ${map.mapName}:`,
+                map.mapSrc3D
+              );
               Swal.fire({
                 title: "Warning",
                 text: `Failed to load 3D map image for ${map.mapName}. 3D mode will be unavailable.`,
@@ -202,7 +230,12 @@ export default function Home() {
       return;
     }
 
-    console.log("Attempting to load map with src:", mapSrc, "3D src:", mapSrc3D);
+    console.log(
+      "Attempting to load map with src:",
+      mapSrc,
+      "3D src:",
+      mapSrc3D
+    );
     console.log("is3DMode:", is3DMode, "selectedIndex:", selectedIndex);
 
     canvasUtils.resetCanvas();
@@ -245,7 +278,10 @@ export default function Home() {
       setLoadedMaps([selectedMap]);
 
       const selectedIndex = selectedMap.mapIndex;
-      console.log("Selected Index in fetchPointsAndListenRealtime:", selectedIndex);
+      console.log(
+        "Selected Index in fetchPointsAndListenRealtime:",
+        selectedIndex
+      );
 
       loadMapToCanvas(selectedMap.mapSrc, selectedMap.mapSrc3D, selectedIndex);
     } catch (error) {
@@ -561,7 +597,11 @@ export default function Home() {
         setMaps([selectedMap]);
         setLoadedMaps([selectedMap]);
         const selectedIndex = selectedMap.mapIndex;
-        loadMapToCanvas(selectedMap.mapSrc, selectedMap.mapSrc3D, selectedIndex);
+        loadMapToCanvas(
+          selectedMap.mapSrc,
+          selectedMap.mapSrc3D,
+          selectedIndex
+        );
 
         if (is3DMode) {
           canvasRef.current.style.display = "none";
@@ -575,7 +615,7 @@ export default function Home() {
   }, [selectedMapId, canvasUtils, canvasUtils3D, allLoadedMaps, is3DMode]);
 
   useEffect(() => {
-    if (!autoRedirect) return;
+    if (!showInfoPopup || !autoRedirect) return;
 
     const countdownInterval = setInterval(() => {
       setCountdown((prev) => prev - 1);
@@ -589,7 +629,7 @@ export default function Home() {
       clearInterval(countdownInterval);
       clearTimeout(closeTimer);
     };
-  }, [autoRedirect]);
+  }, [showInfoPopup, autoRedirect]);
 
   useEffect(() => {
     return () => {
@@ -636,6 +676,12 @@ export default function Home() {
                 onClick={() => setAutoRedirect(!autoRedirect)}
               >
                 {autoRedirect ? "Stay Open" : "Auto Close OFF"}
+              </button>
+              <button
+                className="popup-permanent-close-btn"
+                onClick={handlePermanentClose}
+              >
+                Don&apos;t Show for 1 Day
               </button>
             </div>
           </div>
