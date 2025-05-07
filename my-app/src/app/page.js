@@ -16,7 +16,7 @@ import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export default function Home() {
   const [showInfoPopup, setShowInfoPopup] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(10);
   const [autoRedirect, setAutoRedirect] = useState(true);
   const [maps, setMaps] = useState([]);
   const [loadedMaps, setLoadedMaps] = useState([]);
@@ -623,7 +623,7 @@ export default function Home() {
 
     const closeTimer = setTimeout(() => {
       setShowInfoPopup(false);
-    }, 5000);
+    }, 10000);
 
     return () => {
       clearInterval(countdownInterval);
@@ -647,6 +647,14 @@ export default function Home() {
       {showInfoPopup && (
         <div className="popup-overlay">
           <div className="popup">
+            <button
+              className="popup-permanent-close-btn"
+              onClick={handlePermanentClose}
+              title="Don't show for 1 day"
+            >
+              <span className="close-icon">✕</span>
+              <span className="close-text">Don&apos;t Show</span>
+            </button>
             <h2 className="popup-title">About WiFi Localization</h2>
             <div className="popup-content">
               <p>
@@ -666,22 +674,16 @@ export default function Home() {
             </div>
             <div className="popup-buttons">
               <button
-                className="popup-close-btn"
-                onClick={() => setShowInfoPopup(false)}
-              >
-                {autoRedirect ? "Skip Now" : "Close"}
-              </button>
-              <button
                 className="popup-cancel-btn"
                 onClick={() => setAutoRedirect(!autoRedirect)}
               >
                 {autoRedirect ? "Stay Open" : "Auto Close OFF"}
               </button>
               <button
-                className="popup-permanent-close-btn"
-                onClick={handlePermanentClose}
+                className="popup-close-btn"
+                onClick={() => setShowInfoPopup(false)}
               >
-                Don&apos;t Show for 1 Day
+                {autoRedirect ? "Skip Now" : "Close"}
               </button>
             </div>
           </div>

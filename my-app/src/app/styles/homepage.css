@@ -72,18 +72,21 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
   box-sizing: border-box;
+  position: relative; /* For absolute positioning of close button */
 }
 
 .popup-title {
   font-size: 1.2rem;
   margin-bottom: 0.75rem;
   color: #2d3748;
+  padding-right: 6rem; /* Increased to prevent overlap with wider button */
 }
 
 .popup-content {
   margin-bottom: 1.25rem;
   line-height: 1.6;
   font-size: 1rem;
+  padding-right: 1rem; /* Prevent content overlap with close button */
 }
 
 .popup-list {
@@ -137,6 +140,36 @@
 
 .popup-cancel-btn:hover {
   background: #cbd5e0;
+}
+
+.popup-permanent-close-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 0.3rem; /* Space between icon and text */
+}
+
+.popup-permanent-close-btn:hover {
+  background: #c53030;
+}
+
+.popup-permanent-close-btn .close-icon {
+  font-size: 0.9rem; /* Slightly larger icon for balance */
+}
+
+.popup-permanent-close-btn .close-text {
+  font-size: 0.8rem; /* Smaller text to fit neatly */
 }
 
 .countdown-text {
@@ -204,6 +237,7 @@
 
   .popup-title {
     font-size: 1.1rem;
+    padding-right: 4rem; /* Adjusted for smaller screens */
   }
 
   .popup-content {
@@ -215,6 +249,19 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
     max-width: 120px;
+  }
+
+  .popup-permanent-close-btn {
+    padding: 0.25rem 0.4rem 0.25rem 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  .popup-permanent-close-btn .close-icon {
+    font-size: 0.85rem;
+  }
+
+  .popup-permanent-close-btn .close-text {
+    font-size: 0.75rem;
   }
 
   .loadingAnimation {
@@ -235,6 +282,7 @@
 
   .popup-title {
     font-size: 1rem;
+    padding-right: 3rem; /* Further adjusted for very small screens */
   }
 
   .popup-content {
@@ -250,6 +298,19 @@
   .popup-cancel-btn {
     max-width: 100%;
     order: initial;
+  }
+
+  .popup-permanent-close-btn {
+    padding: 0.2rem 0.3rem 0.2rem 0.2rem;
+    font-size: 0.7rem;
+  }
+
+  .popup-permanent-close-btn .close-icon {
+    font-size: 0.8rem;
+  }
+
+  .popup-permanent-close-btn .close-text {
+    font-size: 0.7rem;
   }
 
   .loadingAnimation {
@@ -366,7 +427,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* ส่วน controls */
 .controls-container {
   width: 100%;
   max-width: 900px;
@@ -398,7 +458,6 @@
   }
 }
 
-/* Checkbox ที่ปรับแล้ว */
 .checkbox-control {
   display: flex;
   align-items: center;
@@ -474,7 +533,6 @@
   font-weight: 500;
 }
 
-/* ปุ่มต่างๆ */
 .action-btn {
   padding: 8px 16px;
   border-radius: 8px;
@@ -554,7 +612,6 @@
   opacity: 0.8;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .map-samples-grid {
     grid-template-columns: 1fr;
@@ -596,7 +653,6 @@ canvas {
   cursor: not-allowed;
 }
 
-/* Tooltip Styles */
 #tooltip {
   position: absolute;
   background-color: #ffffff;
