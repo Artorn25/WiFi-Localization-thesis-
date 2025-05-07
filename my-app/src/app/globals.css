@@ -11,32 +11,32 @@
     #6ee7b7,
     #34d399,
     #059669
-  ); /* CONFIRM SAVE */
+  ); 
   --accent-color: #f87171;
   --accent-gradient: linear-gradient(
     135deg,
     #fda4af,
     #f87171,
     #dc2626
-  ); /* DELETE MAP, DELETE POINT */
+  ); 
   --upload-gradient: linear-gradient(
     135deg,
     #a78bfa,
     #8b5cf6,
     #6d28d9
-  ); /* UPLOAD MAP */
+  );
   --reset-gradient: linear-gradient(
     135deg,
     #a5b4fc,
     #818cf8,
     #4f46e5
-  ); /* RESET */
+  ); 
   --edit-gradient: linear-gradient(
     135deg,
     #facc15,
     #eab308,
     #ca8a04
-  ); /* UPDATE POINT NAME */
+  ); 
   --background-color: #f8fafc;
   --card-color: #ffffff;
   --text-color: #0f172a;
