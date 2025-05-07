@@ -26,33 +26,30 @@ export default function Dashboard() {
     "Node-C45BBE4305AC": null,
     "Node-C45BBECE5D54": null,
   });
-  const [chartHistory, setChartHistory] = useState({
-    distance: {
-      labels: [],
-      router1: [],
-      router2: [],
-      router3: [],
+  
+  const [chartData, setChartData] = useState({
+    "Node-807D3A47F90B": {
+      distance: { labels: [], router1: [], router2: [], router3: [] },
+      rssi: { labels: [], router1: [], router2: [], router3: [] }
     },
-    rssi: {
-      labels: [],
-      router1: [],
-      router2: [],
-      router3: [],
+    "Node-C45BBE4305AC": {
+      distance: { labels: [], router1: [], router2: [], router3: [] },
+      rssi: { labels: [], router1: [], router2: [], router3: [] }
     },
+    "Node-C45BBECE5D54": {
+      distance: { labels: [], router1: [], router2: [], router3: [] },
+      rssi: { labels: [], router1: [], router2: [], router3: [] }
+    }
   });
-  const [currentNode, setCurrentNode] = useState("Node-807D3A47F90B");
 
+  const [currentNode, setCurrentNode] = useState("Node-807D3A47F90B");
   const [connectionStatus, setConnectionStatus] = useState("Unknown");
 
   function updateCharts(history) {
-    // ทำลายกราฟเก่าถ้ามี
     if (distanceChart) distanceChart.destroy();
     if (rssiChart) rssiChart.destroy();
 
-    // สร้างกราฟ Distance (เส้น)
-    const distanceCtx = document
-      .getElementById("distanceChart")
-      .getContext("2d");
+    const distanceCtx = document.getElementById("distanceChart").getContext("2d");
     distanceChart = new Chart(distanceCtx, {
       type: "line",
       data: {
@@ -75,13 +72,13 @@ export default function Dashboard() {
             fill: true,
           },
           {
-            label: 'Router 3 Distance',
+            label: "Router 3 Distance",
             data: history.distance.router3,
-            borderColor: 'rgba(75, 192, 192, 1)', // เปลี่ยนสีให้แตกต่าง
-            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            borderColor: "rgba(75, 192, 192, 1)",
+            backgroundColor: "rgba(75, 192, 192, 0.1)",
             tension: 0.1,
-            fill: true
-          }
+            fill: true,
+          },
         ],
       },
       options: {
@@ -91,12 +88,12 @@ export default function Dashboard() {
             display: true,
             title: {
               display: true,
-              text: 'Time'
+              text: "Time",
             },
             ticks: {
               autoSkip: true,
-              maxTicksLimit: 10
-            }
+              maxTicksLimit: 10,
+            },
           },
           y: {
             beginAtZero: false,
@@ -107,15 +104,11 @@ export default function Dashboard() {
           },
         },
         animation: {
-          duration: 0, // ปิด animation เพื่อให้อัปเดตทันที
+          duration: 0,
         },
-        plugins: {
-          streaming: false // ไม่จำเป็นต้องใช้ plugin เพิ่มเติม
-          },
       },
     });
 
-    // สร้างกราฟ RSSI (เส้น)
     const rssiCtx = document.getElementById("rssiChart").getContext("2d");
     rssiChart = new Chart(rssiCtx, {
       type: "line",
@@ -123,34 +116,45 @@ export default function Dashboard() {
         labels: history.rssi.labels,
         datasets: [
           {
-            label: 'Router 1 RSSI',
+            label: "Router 1 RSSI",
             data: history.rssi.router1,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            borderColor: "rgba(54, 162, 235, 1)",
+            backgroundColor: "rgba(54, 162, 235, 0.1)",
             tension: 0.1,
-            fill: true
+            fill: true,
           },
           {
-            label: 'Router 2 RSSI',
+            label: "Router 2 RSSI",
             data: history.rssi.router2,
-            borderColor: 'rgba(255, 99, 132, 1)',
-            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            borderColor: "rgba(255, 99, 132, 1)",
+            backgroundColor: "rgba(255, 99, 132, 0.1)",
             tension: 0.1,
-            fill: true
+            fill: true,
           },
           {
-            label: 'Router 3 RSSI',
+            label: "Router 3 RSSI",
             data: history.rssi.router3,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            borderColor: "rgba(75, 192, 192, 1)",
+            backgroundColor: "rgba(75, 192, 192, 0.1)",
             tension: 0.1,
-            fill: true
-          }
+            fill: true,
+          },
         ],
       },
       options: {
         responsive: true,
         scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: "Time",
+            },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 10,
+            },
+          },
           y: {
             beginAtZero: false,
             title: {
@@ -160,23 +164,20 @@ export default function Dashboard() {
           },
         },
         animation: {
-          duration: 0, // ปิด animation เพื่อให้อัปเดตทันที
+          duration: 0,
         },
       },
     });
   }
-  useEffect(() => {
-    updateCharts(chartHistory);
-  }, [chartHistory]);
 
   function updateDataTable() {
     const tableBody = document.getElementById("dataTableBody");
     if (!tableBody) return;
     tableBody.innerHTML = "";
-  
+
     const models = ["Log", "ITU", "FSPL"];
     const routers = ["Router-1", "Router-2", "Router-3"];
-  
+
     models.forEach((model) => {
       routers.forEach((router) => {
         const row = tableBody.insertRow();
@@ -189,148 +190,91 @@ export default function Dashboard() {
     });
   }
 
-  function updateDOM(data) {
-    setData(data);
-    updateCharts(data);
-    updateDataTable(data);
-  }
+  useEffect(() => {
+    updateCharts(chartData[currentNode]);
+  }, [currentNode, chartData]);
+
+  useEffect(() => {
+    updateDataTable();
+  }, [currentNode, nodes]);
 
   useEffect(() => {
     const connectionRef = ref(database, ".info/connected");
     onValue(connectionRef, (snap) => {
       setConnectionStatus(snap.val() ? "Connected" : "Disconnected");
     });
-  
+
     const dbRef = ref(database, "Data");
     onValue(dbRef, (snapshot) => {
       if (snapshot.exists()) {
         const allData = snapshot.val();
-        const nodeData = allData[currentNode]; // ใช้ currentNode แทนการ hardcode
-  
+        const nodeData = allData[currentNode];
+
         setNodes({
           "Node-807D3A47F90B": allData["Node-807D3A47F90B"],
           "Node-C45BBE4305AC": allData["Node-C45BBE4305AC"],
-          "Node-C45BBECE5D54": allData["Node-C45BBECE5D54"]
+          "Node-C45BBECE5D54": allData["Node-C45BBECE5D54"],
         });
-  
-        // สร้าง timestamp สำหรับ label
+
         const now = new Date();
         const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-  
-        setChartHistory((prev) => {
-          const newHistory = { ...prev };
+
+        setChartData(prev => {
+          const newData = {...prev};
+          const nodeHistory = newData[currentNode];
           
-          // จำกัดจำนวนข้อมูลที่เก็บไว้
-          if (newHistory.distance.labels.length >= 20) {
-            newHistory.distance.labels.shift();
-            newHistory.distance.router1.shift();
-            newHistory.distance.router2.shift();
-            newHistory.distance.router3.shift();
-            newHistory.rssi.labels.shift();
-            newHistory.rssi.router1.shift();
-            newHistory.rssi.router2.shift();
-            newHistory.rssi.router3.shift();
+          if (nodeHistory.distance.labels.length >= 20) {
+            nodeHistory.distance.labels.shift();
+            nodeHistory.distance.router1.shift();
+            nodeHistory.distance.router2.shift();
+            nodeHistory.distance.router3.shift();
+            nodeHistory.rssi.labels.shift();
+            nodeHistory.rssi.router1.shift();
+            nodeHistory.rssi.router2.shift();
+            nodeHistory.rssi.router3.shift();
           }
-  
-          // เพิ่มข้อมูลใหม่จาก Node ปัจจุบัน
-          newHistory.distance.labels.push(timeLabel);
-          newHistory.distance.router1.push(nodeData?.["Router-1"]?.distance || 0);
-          newHistory.distance.router2.push(nodeData?.["Router-2"]?.distance || 0);
-          newHistory.distance.router3.push(nodeData?.["Router-3"]?.distance || 0);
-          
-          newHistory.rssi.labels.push(timeLabel);
-          newHistory.rssi.router1.push(nodeData?.["Router-1"]?.rssi || 0);
-          newHistory.rssi.router2.push(nodeData?.["Router-2"]?.rssi || 0);
-          newHistory.rssi.router3.push(nodeData?.["Router-3"]?.rssi || 0);
-  
-          return newHistory;
+
+          nodeHistory.distance.labels.push(timeLabel);
+          nodeHistory.distance.router1.push(nodeData?.["Router-1"]?.distance || 0);
+          nodeHistory.distance.router2.push(nodeData?.["Router-2"]?.distance || 0);
+          nodeHistory.distance.router3.push(nodeData?.["Router-3"]?.distance || 0);
+
+          nodeHistory.rssi.labels.push(timeLabel);
+          nodeHistory.rssi.router1.push(nodeData?.["Router-1"]?.rssi || 0);
+          nodeHistory.rssi.router2.push(nodeData?.["Router-2"]?.rssi || 0);
+          nodeHistory.rssi.router3.push(nodeData?.["Router-3"]?.rssi || 0);
+
+          return newData;
         });
       }
     });
-  }, [currentNode]); // เพิ่ม currentNode เป็น dependency
-  const RouterInfo = ({ routerData, routerName }) => {
-    const bgColor = routerName === "Router-1" ? "bg-blue-50" : 
-                   routerName === "Router-2" ? "bg-red-50" : "bg-green-50";
-                   
-    const textColor = routerName === "Router-1" ? "text-blue-500" :
-                     routerName === "Router-2" ? "text-red-500" : "text-green-500";
+  }, [currentNode]);
 
-    return (
-      <div className={`p-4 rounded-lg ${bgColor}`}>
-        <h4 className={`text-md font-semibold ${textColor}`}>
-          {routerName}
-        </h4>
-        <p className="text-gray-600">SSID: {routerData?.ssid || "N/A"}</p>
-        <p className="text-gray-600">RSSI: {routerData?.rssi || "N/A"} dBm</p>
-        <p className="text-gray-600">Distance: {routerData?.distance || "N/A"} m</p>
-      </div>
-    );
-  };
-
-  const ssid_1 =
-    nodes["Node-807D3A47F90B"]?.["Router-1"]?.ssid || "Not available";
-  const rssi_1 =
-    nodes["Node-807D3A47F90B"]?.["Router-1"]?.rssi || "Not available";
-  const ssid_2 =
-    nodes["Node-807D3A47F90B"]?.["Router-2"]?.ssid || "Not available";
-  const rssi_2 =
-    nodes["Node-807D3A47F90B"]?.["Router-2"]?.rssi || "Not available";
-  const distance_1_Log =
-    nodes["Node-807D3A47F90B"]?.["Router-1"]?.distance || "Not available";
-  const distance_2_Log =
-    nodes["Node-807D3A47F90B"]?.["Router-2"]?.distance || "Not available";
-  const distanceA_B_Log = "Calculated value here"; // คุณต้องคำนวณค่าตาม logic ของคุณ
-
-  const NodeDisplay = ({ nodeData, nodeName }) => {
-    if (!nodeData)
-      return (
-        <div className="bg-yellow-50 p-4 rounded-lg">
-          <p>No data available for {nodeName}</p>
-        </div>
-      );
-
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-2xl font-bold mb-4 text-blue-600">
-          {nodeName}
-          {nodeData.Mac && (
-            <span className="text-sm text-gray-500 ml-2">({nodeData.Mac})</span>
-          )}
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Object.entries(nodeData).map(([key, value]) => {
-            if (key.startsWith("Router-")) {
-              return (
-                <div key={key} className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-green-500">
-                    {key}
-                  </h3>
-                  <p className="text-gray-600">SSID: {value.ssid || "N/A"}</p>
-                  <p className="text-gray-600">
-                    RSSI: {value.rssi || "N/A"} dBm
-                  </p>
-                  <p className="text-gray-600">
-                    Distance: {value.distance || "N/A"} m
-                  </p>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-      </div>
-    );
-  };
+  const RouterInfo = ({ routerData, routerName }) => (
+    <div className={`p-4 rounded-lg ${
+      routerName === "Router-1" ? "bg-blue-50" : 
+      routerName === "Router-2" ? "bg-red-50" : "bg-green-50"
+    }`}>
+      <h4 className={`text-md font-semibold ${
+        routerName === "Router-1" ? "text-blue-500" : 
+        routerName === "Router-2" ? "text-red-500" : "text-green-500"
+      }`}>
+        {routerName}
+      </h4>
+      <p className="text-gray-600">SSID: {routerData?.ssid || "N/A"}</p>
+      <p className="text-gray-600">RSSI: {routerData?.rssi || "N/A"} dBm</p>
+      <p className="text-gray-600">Distance: {routerData?.distance || "N/A"} m</p>
+    </div>
+  );
 
   return (
     <>
-      <title> Dashboard</title>
-      {/* <Header /> */}
+      <title>Dashboard</title>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
-          Combined Firebase Console Display
+          WiFi Localization System
         </h1>
+        
         <div
           id="connection-status"
           className={`p-3 rounded-md font-semibold mb-6 text-center ${
@@ -341,7 +285,6 @@ export default function Dashboard() {
         >
           Status: {connectionStatus}
         </div>
-        
 
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6 mx-auto">
@@ -519,10 +462,8 @@ export default function Dashboard() {
             
           </div>
         </div>
-      </div>
 
-      {/* Node Selection Buttons */}
-      <div className="flex justify-center mb-8 gap-4">
+        <div className="flex justify-center mb-8 gap-4">
           <button
             onClick={() => setCurrentNode("Node-807D3A47F90B")}
             className={`px-4 py-2 rounded-md font-semibold ${
@@ -555,35 +496,34 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Current Node Information - แสดงเฉพาะ Node ปัจจุบัน */}
-<div className="bg-white rounded-lg shadow-lg p-6 mx-auto mb-8">
-  <h2 className="text-2xl font-bold mb-4 text-green-600">
-    Current Node: {currentNode.replace("Node-", "Node ")}
-  </h2>
-  
-  {nodes[currentNode] ? (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <RouterInfo 
-        routerData={nodes[currentNode]?.["Router-1"]} 
-        routerName="Router-1" 
-      />
-      <RouterInfo 
-        routerData={nodes[currentNode]?.["Router-2"]} 
-        routerName="Router-2" 
-      />
-      <RouterInfo 
-        routerData={nodes[currentNode]?.["Router-3"]} 
-        routerName="Router-3" 
-      />
-    </div>
-  ) : (
-    <div className="bg-yellow-50 p-4 rounded-lg">
-      <p>No data available for this node</p>
-    </div>
-  )}
-</div>
+        <div className="bg-white rounded-lg shadow-lg p-6 mx-auto mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-green-600">
+            Current Node: {currentNode.replace("Node-", "Node ")}
+          </h2>
+          
+          {nodes[currentNode] ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <RouterInfo 
+                routerData={nodes[currentNode]?.["Router-1"]} 
+                routerName="Router-1" 
+              />
+              <RouterInfo 
+                routerData={nodes[currentNode]?.["Router-2"]} 
+                routerName="Router-2" 
+              />
+              <RouterInfo 
+                routerData={nodes[currentNode]?.["Router-3"]} 
+                routerName="Router-3" 
+              />
+            </div>
+          ) : (
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <p>No data available for this node</p>
+            </div>
+          )}
+        </div>
 
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold mb-4 text-blue-600">
               Distance Tracking - {currentNode.replace("Node-", "Node ")}
@@ -593,7 +533,7 @@ export default function Dashboard() {
             </div>
             <p className="text-sm text-gray-500 mt-2">
               Last updated:{" "}
-              {chartHistory.distance.labels[chartHistory.distance.labels.length - 1] || "N/A"}
+              {chartData[currentNode]?.distance.labels[chartData[currentNode]?.distance.labels.length - 1] || "N/A"}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-lg p-6">
@@ -605,12 +545,11 @@ export default function Dashboard() {
             </div>
             <p className="text-sm text-gray-500 mt-2">
               Last updated:{" "}
-              {chartHistory.rssi.labels[chartHistory.rssi.labels.length - 1] || "N/A"}
+              {chartData[currentNode]?.rssi.labels[chartData[currentNode]?.rssi.labels.length - 1] || "N/A"}
             </p>
           </div>
         </div>
 
-        {/* Data Table */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4 text-purple-600">
             Detailed Data - {currentNode.replace("Node-", "Node ")}
@@ -630,22 +569,22 @@ export default function Dashboard() {
             </table>
           </div>
         </div>
-      <div className="flex gap-4">
-        <button
-          id="exportJSON"
-          className="bg-yellow-300 px-4 py-2 rounded-md font-semibold hover:bg-yellow-400 transition-colors"
-        >
-          Export as JSON
-        </button>
-        <button
-          id="exportCSV"
-          className="bg-green-400 px-4 py-2 rounded-md font-semibold hover:bg-green-500 transition-colors"
-        >
-          Export as CSV
-        </button>
+
+        <div className="flex gap-4 justify-center">
+          <button
+            id="exportJSON"
+            className="bg-yellow-300 px-4 py-2 rounded-md font-semibold hover:bg-yellow-400 transition-colors"
+          >
+            Export as JSON
+          </button>
+          <button
+            id="exportCSV"
+            className="bg-green-400 px-4 py-2 rounded-md font-semibold hover:bg-green-500 transition-colors"
+          >
+            Export as CSV
+          </button>
+        </div>
       </div>
-      {/* </div > */}
-      {/* <Footer /> */}
     </>
   );
 }
