@@ -26,7 +26,7 @@ export default function Dashboard() {
     "Node-C45BBE4305AC": null,
     "Node-C45BBECE5D54": null,
   });
-  
+
   const [chartData, setChartData] = useState({
     "Node-807D3A47F90B": {
       distance: { labels: [], router1: [], router2: [], router3: [] },
@@ -44,6 +44,7 @@ export default function Dashboard() {
 
   const [currentNode, setCurrentNode] = useState("Node-807D3A47F90B");
   const [connectionStatus, setConnectionStatus] = useState("Unknown");
+
 
   function updateCharts(history) {
     if (distanceChart) distanceChart.destroy();
@@ -169,24 +170,23 @@ export default function Dashboard() {
       },
     });
   }
+  
 
   function updateDataTable() {
     const tableBody = document.getElementById("dataTableBody");
     if (!tableBody) return;
     tableBody.innerHTML = "";
 
-    const models = ["Log", "ITU", "FSPL"];
     const routers = ["Router-1", "Router-2", "Router-3"];
 
-    models.forEach((model) => {
-      routers.forEach((router) => {
-        const row = tableBody.insertRow();
-        row.insertCell(0).textContent = model;
-        row.insertCell(1).textContent = router;
-        row.insertCell(2).textContent = nodes[currentNode]?.[router]?.ssid || "N/A";
-        row.insertCell(3).textContent = nodes[currentNode]?.[router]?.rssi || "N/A";
-        row.insertCell(4).textContent = nodes[currentNode]?.[router]?.distance || "N/A";
-      });
+    routers.forEach((router) => {
+      const row = tableBody.insertRow();
+      // แสดง timestamp จากข้อมูล (ใช้ timestamp จาก Router-1 เป็นตัวแทน)
+      row.insertCell(0).textContent = nodes[currentNode]?.["Router-1"]?.timestamp || "N/A";
+      row.insertCell(1).textContent = router;
+      row.insertCell(2).textContent = nodes[currentNode]?.[router]?.ssid || "N/A";
+      row.insertCell(3).textContent = nodes[currentNode]?.[router]?.rssi || "N/A";
+      row.insertCell(4).textContent = nodes[currentNode]?.[router]?.distance || "N/A";
     });
   }
 
@@ -220,9 +220,9 @@ export default function Dashboard() {
         const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 
         setChartData(prev => {
-          const newData = {...prev};
+          const newData = { ...prev };
           const nodeHistory = newData[currentNode];
-          
+
           if (nodeHistory.distance.labels.length >= 20) {
             nodeHistory.distance.labels.shift();
             nodeHistory.distance.router1.shift();
@@ -251,14 +251,12 @@ export default function Dashboard() {
   }, [currentNode]);
 
   const RouterInfo = ({ routerData, routerName }) => (
-    <div className={`p-4 rounded-lg ${
-      routerName === "Router-1" ? "bg-blue-50" : 
-      routerName === "Router-2" ? "bg-red-50" : "bg-green-50"
-    }`}>
-      <h4 className={`text-md font-semibold ${
-        routerName === "Router-1" ? "text-blue-500" : 
-        routerName === "Router-2" ? "text-red-500" : "text-green-500"
+    <div className={`p-4 rounded-lg ${routerName === "Router-1" ? "bg-blue-50" :
+        routerName === "Router-2" ? "bg-red-50" : "bg-green-50"
       }`}>
+      <h4 className={`text-md font-semibold ${routerName === "Router-1" ? "text-blue-500" :
+          routerName === "Router-2" ? "text-red-500" : "text-green-500"
+        }`}>
         {routerName}
       </h4>
       <p className="text-gray-600">SSID: {routerData?.ssid || "N/A"}</p>
@@ -274,14 +272,13 @@ export default function Dashboard() {
         <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
           WiFi Localization System
         </h1>
-        
+
         <div
           id="connection-status"
-          className={`p-3 rounded-md font-semibold mb-6 text-center ${
-            connectionStatus === "Connected"
+          className={`p-3 rounded-md font-semibold mb-6 text-center ${connectionStatus === "Connected"
               ? "bg-green-500 text-white"
               : "bg-red-500 text-white"
-          }`}
+            }`}
         >
           Status: {connectionStatus}
         </div>
@@ -459,38 +456,35 @@ export default function Dashboard() {
               </div>
             </div>
 
-            
+
           </div>
         </div>
 
         <div className="flex justify-center mb-8 gap-4">
           <button
             onClick={() => setCurrentNode("Node-807D3A47F90B")}
-            className={`px-4 py-2 rounded-md font-semibold ${
-              currentNode === "Node-807D3A47F90B"
+            className={`px-4 py-2 rounded-md font-semibold ${currentNode === "Node-807D3A47F90B"
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-800"
-            }`}
+              }`}
           >
             Node 1
           </button>
           <button
             onClick={() => setCurrentNode("Node-C45BBE4305AC")}
-            className={`px-4 py-2 rounded-md font-semibold ${
-              currentNode === "Node-C45BBE4305AC"
+            className={`px-4 py-2 rounded-md font-semibold ${currentNode === "Node-C45BBE4305AC"
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-800"
-            }`}
+              }`}
           >
             Node 2
           </button>
           <button
             onClick={() => setCurrentNode("Node-C45BBECE5D54")}
-            className={`px-4 py-2 rounded-md font-semibold ${
-              currentNode === "Node-C45BBECE5D54"
+            className={`px-4 py-2 rounded-md font-semibold ${currentNode === "Node-C45BBECE5D54"
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-800"
-            }`}
+              }`}
           >
             Node 3
           </button>
@@ -500,20 +494,20 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold mb-4 text-green-600">
             Current Node: {currentNode.replace("Node-", "Node ")}
           </h2>
-          
+
           {nodes[currentNode] ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <RouterInfo 
-                routerData={nodes[currentNode]?.["Router-1"]} 
-                routerName="Router-1" 
+              <RouterInfo
+                routerData={nodes[currentNode]?.["Router-1"]}
+                routerName="Router-1"
               />
-              <RouterInfo 
-                routerData={nodes[currentNode]?.["Router-2"]} 
-                routerName="Router-2" 
+              <RouterInfo
+                routerData={nodes[currentNode]?.["Router-2"]}
+                routerName="Router-2"
               />
-              <RouterInfo 
-                routerData={nodes[currentNode]?.["Router-3"]} 
-                routerName="Router-3" 
+              <RouterInfo
+                routerData={nodes[currentNode]?.["Router-3"]}
+                routerName="Router-3"
               />
             </div>
           ) : (
@@ -558,14 +552,16 @@ export default function Dashboard() {
             <table className="min-w-full bg-white text-center">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="py-2 px-4 border-b">Model</th>
+                  <th className="py-2 px-4 border-b">Date/Time</th>
                   <th className="py-2 px-4 border-b">Router</th>
                   <th className="py-2 px-4 border-b">SSID</th>
                   <th className="py-2 px-4 border-b">RSSI (dBm)</th>
                   <th className="py-2 px-4 border-b">Distance (m)</th>
                 </tr>
               </thead>
-              <tbody id="dataTableBody"></tbody>
+              <tbody id="dataTableBody">
+                {/* ข้อมูลจะถูกเพิ่มโดย JavaScript ผ่านฟังก์ชัน updateDataTable */}
+              </tbody>
             </table>
           </div>
         </div>
