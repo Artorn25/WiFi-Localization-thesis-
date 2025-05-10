@@ -644,52 +644,89 @@ export default function Home() {
 
   return (
     <>
-      {showInfoPopup && (
-        <div className="popup-overlay">
-          <div className="popup">
-            <button
-              className="popup-permanent-close-btn"
-              onClick={handlePermanentClose}
-              title="Don't show for 1 day"
-            >
-              <span className="close-icon">✕</span>
-              <span className="close-text">Don&apos;t Show</span>
-            </button>
-            <h2 className="popup-title">About WiFi Localization</h2>
-            <div className="popup-content">
-              <p>
-                WiFi Localization is a technique used to determine the location
-                of a device using WiFi signals instead of GPS.
-              </p>
-              <ul className="popup-list">
-                <li>Works well indoors where GPS is less effective</li>
-                <li>Requires minimal additional hardware</li>
-                <li>Used in indoor navigation and asset tracking</li>
-              </ul>
-              {autoRedirect && (
-                <p className="countdown-text">
-                  Closing in <span className="countdown">{countdown}</span>s
-                </p>
-              )}
+{showInfoPopup && (
+  <div className="popup-overlay">
+    <div className="popup-container">
+      <div className="popup-header">
+        <h2 className="popup-title">
+          <svg className="popup-icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+          </svg>
+          WiFi Localization Technology
+        </h2>
+        <button 
+          className="combined-close-btn"
+          onClick={handlePermanentClose}
+          aria-label="Don't show for 1 day and close"
+        >
+          <span className="dont-show-text">Don&apos;t show for 1 day</span>
+          <span className="close-icon">×</span>
+        </button>
+      </div>
+      
+      <div className="popup-content">
+        <p className="popup-intro">
+          Our WiFi-based positioning system provides accurate indoor location tracking without GPS.
+        </p>
+        
+        <div className="feature-grid">
+          <div className="feature-card">
+            <div className="feature-icon">
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10.5A1.5,1.5 0 0,0 10.5,12A1.5,1.5 0 0,0 12,13.5A1.5,1.5 0 0,0 13.5,12A1.5,1.5 0 0,0 12,10.5M7.5,10.5A1.5,1.5 0 0,0 6,12A1.5,1.5 0 0,0 7.5,13.5A1.5,1.5 0 0,0 9,12A1.5,1.5 0 0,0 7.5,10.5M16.5,10.5A1.5,1.5 0 0,0 15,12A1.5,1.5 0 0,0 16.5,13.5A1.5,1.5 0 0,0 18,12A1.5,1.5 0 0,0 16.5,10.5Z" />
+              </svg>
             </div>
-            <div className="popup-buttons">
-              <button
-                className="popup-cancel-btn"
-                onClick={() => setAutoRedirect(!autoRedirect)}
-              >
-                {autoRedirect ? "Stay Open" : "Auto Close OFF"}
-              </button>
-              <button
-                className="popup-close-btn"
-                onClick={() => setShowInfoPopup(false)}
-              >
-                {autoRedirect ? "Skip Now" : "Close"}
-              </button>
+            <h3>Precise Indoor Tracking</h3>
+            <p>Works in environments where GPS signals are weak or unavailable</p>
+          </div>
+          
+          <div className="feature-card">
+            <div className="feature-icon">
+              <svg viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,15A2,2 0 0,1 10,13C10,11.89 10.9,11 12,11A2,2 0 0,1 14,13A2,2 0 0,1 12,15M7,10C5.89,10 5,10.9 5,12A2,2 0 0,0 7,14A2,2 0 0,0 9,12C9,10.89 8.1,10 7,10M17,10C15.89,10 15,10.9 15,12A2,2 0 0,0 17,14A2,2 0 0,0 19,12C19,10.89 18.1,10 17,10M12,2L4,5V11.09C4,16.14 7.41,20.85 12,22C16.59,20.85 20,16.14 20,11.09V5L12,2Z" />
+              </svg>
             </div>
+            <h3>Minimal Setup</h3>
+            <p>Uses existing WiFi infrastructure with no additional hardware</p>
           </div>
         </div>
-      )}
-
+        
+        {autoRedirect && (
+          <div className="countdown-container">
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ width: `${(countdown/10)*100}%` }}
+              ></div>
+            </div>
+            <span className="countdown-text">
+              Auto-closing in {countdown} second{countdown !== 1 ? 's' : ''}
+            </span>
+          </div>
+        )}
+      </div>
+      
+      <div className="popup-footer">
+        <label className="toggle-control">
+          <input 
+            type="checkbox" 
+            checked={autoRedirect}
+            onChange={() => setAutoRedirect(!autoRedirect)}
+          />
+          <span className="toggle-slider"></span>
+          <span className="toggle-label">Auto-close</span>
+        </label>
+        
+        <button 
+          className="primary-btn"
+          onClick={() => setShowInfoPopup(false)}
+        >
+          Got it!
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       <div>
         <GenText />
         <div className="home-container">
