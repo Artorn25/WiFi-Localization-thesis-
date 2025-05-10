@@ -1072,3 +1072,157 @@ canvas {
   border-style: solid;
   border-color: transparent transparent #e2e8f0 transparent;
 }
+
+/* Position Display for Calculated Positions */
+.position-display {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #6366f1;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  display: block; /* 确保เป็น block เพื่อป้องกันการรบกวนจาก parent */
+  overflow: visible; /* ป้องกันการตัดข้อความ */
+}
+
+.position-display h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2d3748;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.position-display h3::before {
+  content: "📍";
+  font-size: 1.3rem;
+}
+
+.position-display p {
+  display: block; /* บังคับให้เป็น block element */
+  margin: 0 0 12px 0; /* เพิ่มระยะห่างระหว่างบรรทัด */
+  padding: 10px 15px;
+  font-size: 0.95rem;
+  color: #4a5568;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  white-space: normal; /* 确保ข้อความขึ้นบรรทัดใหม่ตามปกติ */
+  word-break: break-word; /* ป้องกันข้อความยาวเกินจนล้น */
+  line-height: 1.5; /* เพิ่มความสูงบรรทัดเพื่อให้อ่านง่าย */
+}
+
+.position-display p:last-child {
+  margin-bottom: 0; /* ลบ margin-bottom สำหรับ <p> ตัวสุดท้าย */
+}
+
+.position-display p:hover {
+  background-color: #edf2f7;
+  transform: translateX(5px);
+}
+
+.position-display p::before {
+  content: "•";
+  color: #6366f1;
+  margin-right: 10px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+/* Responsive adjustments for position display */
+@media (max-width: 1023px) {
+  .position-display {
+    margin-top: 15px;
+    padding: 15px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .position-display h3 {
+    font-size: 1.3rem;
+  }
+
+  .position-display h3::before {
+    font-size: 1.2rem;
+  }
+
+  .position-display p {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+
+  .position-display p::before {
+    margin-right: 8px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .position-display {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    border-left-width: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .position-display h3 {
+    font-size: 1.2rem;
+  }
+
+  .position-display h3::before {
+    font-size: 1.1rem;
+  }
+
+  .position-display p {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+  }
+
+  .position-display p::before {
+    margin-right: 6px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .position-display {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    border-left-width: 2px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .position-display h3 {
+    font-size: 1.1rem;
+    gap: 8px;
+  }
+
+  .position-display h3::before {
+    font-size: 1rem;
+  }
+
+  .position-display p {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    margin-bottom: 6px;
+  }
+
+  .position-display p::before {
+    margin-right: 5px;
+    font-size: 0.9rem;
+  }
+
+  .position-display p:hover {
+    transform: none;
+  }
+}
