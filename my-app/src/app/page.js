@@ -29,6 +29,7 @@ export default function Home() {
   const [sampleMaps, setSampleMaps] = useState([]);
   const [selectedMapId, setSelectedMapId] = useState("");
   const [is3DMode, setIs3DMode] = useState(false);
+  const [calculatedPositions, setCalculatedPositions] = useState({}); // เปลี่ยนชื่อ state เพื่อสะท้อนว่าเป็นหลายพิกัด
 
   const canvasRef = useRef(null);
   const canvas3DRef = useRef(null);
@@ -43,13 +44,12 @@ export default function Home() {
     return src.trim().replace(/\/+/g, "/").toLowerCase();
   };
 
-  // Check localStorage for popup suppression
   useEffect(() => {
     const popupSuppressed = localStorage.getItem("popupSuppressed");
     if (popupSuppressed) {
       const suppressionTime = parseInt(popupSuppressed, 10);
       const currentTime = Date.now();
-      const oneDayInMs = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+      const oneDayInMs = 24 * 60 * 60 * 1000;
 
       if (currentTime - suppressionTime < oneDayInMs) {
         setShowInfoPopup(false);
@@ -61,7 +61,6 @@ export default function Home() {
     setShowInfoPopup(true);
   }, []);
 
-  // Handle permanent popup close
   const handlePermanentClose = () => {
     localStorage.setItem("popupSuppressed", Date.now().toString());
     setShowInfoPopup(false);
@@ -162,7 +161,7 @@ export default function Home() {
               });
             }
           }
-          const mapIndex = parseInt(map.mapIndex, 10) || mapManager.maps.length;
+          const mapIndex = allLoadedMaps.length + loadedMapsData.length;
           loadedMapsData.push({ ...map, mapSrc3D, mapIndex });
           mapManager.maps[mapIndex] = {
             id: map.id,
@@ -191,7 +190,7 @@ export default function Home() {
         return [...prev, ...newMaps];
       });
 
-      mapManager.loadMaps(loadedMapsData);
+      mapManager.loadMaps([...mapManager.maps, ...loadedMapsData]);
       setIsLoadingMaps(false);
       console.log("Loaded maps:", loadedMapsData);
       console.log("mapManager.maps after load:", mapManager.maps);
@@ -250,9 +249,14 @@ export default function Home() {
     }
 
     if (selectedIndex >= 0 && mapManager.maps[selectedIndex]) {
-      trilaterationUtils.refreshMap(selectedIndex, showPoints);
+      const positions = trilaterationUtils?.refreshMap(
+        selectedIndex,
+        showPoints
+      );
+      setCalculatedPositions(positions || {});
     } else {
       console.warn("Invalid selectedIndex or map not found in mapManager.maps");
+      setCalculatedPositions({});
     }
   };
 
@@ -262,6 +266,9 @@ export default function Home() {
         console.log("Please select a map first");
         canvasUtils?.resetCanvas();
         canvasUtils3D?.resetCanvas();
+        setSelectedPoints([]);
+        setShowPoints(false);
+        setCalculatedPositions({});
         return;
       }
 
@@ -270,6 +277,9 @@ export default function Home() {
         console.log("No map found for this mapId:", newMapId);
         canvasUtils?.resetCanvas();
         canvasUtils3D?.resetCanvas();
+        setSelectedPoints([]);
+        setShowPoints(false);
+        setCalculatedPositions({});
         return;
       }
 
@@ -283,11 +293,21 @@ export default function Home() {
         selectedIndex
       );
 
+      listenersRef.current.forEach(({ ref, listener }) => {
+        off(ref, "value", listener);
+      });
+      listenersRef.current = [];
+
+      pointManager.resetPointsForMap(selectedIndex);
+
       loadMapToCanvas(selectedMap.mapSrc, selectedMap.mapSrc3D, selectedIndex);
     } catch (error) {
       console.error("Error loading map:", error);
       canvasUtils?.resetCanvas();
       canvasUtils3D?.resetCanvas();
+      setSelectedPoints([]);
+      setShowPoints(false);
+      setCalculatedPositions({});
     }
   };
 
@@ -301,6 +321,7 @@ export default function Home() {
         timer: 1500,
         showConfirmButton: false,
       });
+      setCalculatedPositions({});
       return;
     }
 
@@ -309,6 +330,9 @@ export default function Home() {
       console.log("No map found for this mapId");
       canvasUtils?.resetCanvas();
       canvasUtils3D?.resetCanvas();
+      setSelectedPoints([]);
+      setShowPoints(false);
+      setCalculatedPositions({});
       return;
     }
 
@@ -332,6 +356,7 @@ export default function Home() {
       console.log("handleShowPoints - initialPoints:", initialPoints);
 
       pointManager.stopRealTimeUpdates();
+      pointManager.resetPointsForMap(mapIndex);
       pointManager.pointsPerMap[mapIndex] = initialPoints;
       pointManager.points = initialPoints;
       setSelectedPoints(initialPoints);
@@ -374,13 +399,15 @@ export default function Home() {
 
               if (targetPoint) {
                 targetPoint.data = allData;
+                pointManager.updatePointData(pointName, allData, mapIndex);
               }
             });
 
             setSelectedPoints([...pointManager.pointsPerMap[mapIndex]]);
 
             if (trilaterationUtils) {
-              trilaterationUtils.refreshMap(mapIndex, true);
+              const positions = trilaterationUtils.refreshMap(mapIndex, true);
+              setCalculatedPositions(positions || {});
             }
           } else {
             console.log("No data found in Firebase");
@@ -390,11 +417,14 @@ export default function Home() {
               );
               if (targetPoint) {
                 targetPoint.data = [];
+                pointManager.updatePointData(point.name, [], mapIndex);
               }
             });
             setSelectedPoints([...pointManager.pointsPerMap[mapIndex]]);
-            if (trilaterationUtils)
-              trilaterationUtils.refreshMap(mapIndex, true);
+            if (trilaterationUtils) {
+              const positions = trilaterationUtils.refreshMap(mapIndex, true);
+              setCalculatedPositions(positions || {});
+            }
           }
         },
         (error) => {
@@ -404,13 +434,15 @@ export default function Home() {
             "Failed to fetch real-time data from Firebase.",
             "error"
           );
+          setCalculatedPositions({});
         }
       );
 
       listenersRef.current.push({ ref: dataRef, listener });
 
       if (trilaterationUtils) {
-        trilaterationUtils.refreshMap(mapIndex, true);
+        const positions = trilaterationUtils.refreshMap(mapIndex, true);
+        setCalculatedPositions(positions || {});
       }
     } catch (error) {
       console.error("Error setting up points and real-time listener:", error);
@@ -418,6 +450,7 @@ export default function Home() {
       setShowPoints(false);
       canvasUtils?.resetCanvas();
       canvasUtils3D?.resetCanvas();
+      setCalculatedPositions({});
     }
   };
 
@@ -459,6 +492,7 @@ export default function Home() {
     setShowPoints(false);
     setSelectedMapId("");
     setIs3DMode(false);
+    setCalculatedPositions({});
 
     listenersRef.current.forEach(({ ref, listener }) => {
       off(ref, "value", listener);
@@ -576,7 +610,11 @@ export default function Home() {
           (map) => map.id === selectedMapId
         );
         if (selectedMap) {
-          trilaterationUtils.refreshMap(selectedMap.mapIndex, true);
+          const positions = trilaterationUtils.refreshMap(
+            selectedMap.mapIndex,
+            true
+          );
+          setCalculatedPositions(positions || {});
         }
       }
     }
@@ -644,89 +682,108 @@ export default function Home() {
 
   return (
     <>
-{showInfoPopup && (
-  <div className="popup-overlay">
-    <div className="popup-container">
-      <div className="popup-header">
-        <h2 className="popup-title">
-          <svg className="popup-icon" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
-          </svg>
-          WiFi Localization Technology
-        </h2>
-        <button 
-          className="combined-close-btn"
-          onClick={handlePermanentClose}
-          aria-label="Don't show for 1 day and close"
-        >
-          <span className="dont-show-text">Don&apos;t show for 1 day</span>
-          <span className="close-icon">×</span>
-        </button>
-      </div>
-      
-      <div className="popup-content">
-        <p className="popup-intro">
-          Our WiFi-based positioning system provides accurate indoor location tracking without GPS.
-        </p>
-        
-        <div className="feature-grid">
-          <div className="feature-card">
-            <div className="feature-icon">
-              <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10.5A1.5,1.5 0 0,0 10.5,12A1.5,1.5 0 0,0 12,13.5A1.5,1.5 0 0,0 13.5,12A1.5,1.5 0 0,0 12,10.5M7.5,10.5A1.5,1.5 0 0,0 6,12A1.5,1.5 0 0,0 7.5,13.5A1.5,1.5 0 0,0 9,12A1.5,1.5 0 0,0 7.5,10.5M16.5,10.5A1.5,1.5 0 0,0 15,12A1.5,1.5 0 0,0 16.5,13.5A1.5,1.5 0 0,0 18,12A1.5,1.5 0 0,0 16.5,10.5Z" />
-              </svg>
+      {showInfoPopup && (
+        <div className="popup-overlay">
+          <div className="popup-container">
+            <div className="popup-header">
+              <h2 className="popup-title">
+                <svg className="popup-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
+                  />
+                </svg>
+                WiFi Localization Technology
+              </h2>
+              <button
+                className="combined-close-btn"
+                onClick={handlePermanentClose}
+                aria-label="Don't show for 1 day and close"
+              >
+                <span className="dont-show-text">
+                  Don&apos;t show for 1 day
+                </span>
+                <span className="close-icon">×</span>
+              </button>
             </div>
-            <h3>Precise Indoor Tracking</h3>
-            <p>Works in environments where GPS signals are weak or unavailable</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="feature-icon">
-              <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12,15A2,2 0 0,1 10,13C10,11.89 10.9,11 12,11A2,2 0 0,1 14,13A2,2 0 0,1 12,15M7,10C5.89,10 5,10.9 5,12A2,2 0 0,0 7,14A2,2 0 0,0 9,12C9,10.89 8.1,10 7,10M17,10C15.89,10 15,10.9 15,12A2,2 0 0,0 17,14A2,2 0 0,0 19,12C19,10.89 18.1,10 17,10M12,2L4,5V11.09C4,16.14 7.41,20.85 12,22C16.59,20.85 20,16.14 20,11.09V5L12,2Z" />
-              </svg>
+
+            <div className="popup-content">
+              <p className="popup-intro">
+                Our WiFi-based positioning system provides accurate indoor
+                location tracking without GPS.
+              </p>
+
+              <div className="feature-grid">
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,10.5A1.5,1.5 0 0,0 10.5,12A1.5,1.5 0 0,0 12,13.5A1.5,1.5 0 0,0 13.5,12A1.5,1.5 0 0,0 12,10.5M7.5,10.5A1.5,1.5 0 0,0 6,12A1.5,1.5 0 0,0 7.5,13.5A1.5,1.5 0 0,0 9,12A1.5,1.5 0 0,0 7.5,10.5M16.5,10.5A1.5,1.5 0 0,0 15,12A1.5,1.5 0 0,0 16.5,13.5A1.5,1.5 0 0,0 18,12A1.5,1.5 0 0,0 16.5,10.5Z"
+                      />
+                    </svg>
+                  </div>
+                  <h3>Precise Indoor Tracking</h3>
+                  <p>
+                    Works in environments where GPS signals are weak or
+                    unavailable
+                  </p>
+                </div>
+
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M12,15A2,2 0 0,1 10,13C10,11.89 10.9,11 12,11A2,2 0 0,1 14,13A2,2 0 0,1 12,15M7,10C5.89,10 5,10.9 5,12A2,2 0 0,0 7,14A2,2 0 0,0 9,12C9,10.89 8.1,10 7,10M17,10C15.89,10 15,10.9 15,12A2,2 0 0,0 17,14A2,2 0 0,0 19,12C19,10.89 18.1,10 17,10M12,2L4,5V11.09C4,16.14 7.41,20.85 12,22C16.59,20.85 20,16.14 20,11.09V5L12,2Z"
+                      />
+                    </svg>
+                  </div>
+                  <h3>Minimal Setup</h3>
+                  <p>
+                    Uses existing WiFi infrastructure with no additional
+                    hardware
+                  </p>
+                </div>
+              </div>
+
+              {autoRedirect && (
+                <div className="countdown-container">
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${(countdown / 10) * 100}%` }}
+                    ></div>
+                  </div>
+                  <span className="countdown-text">
+                    Auto-closing in {countdown} second
+                    {countdown !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              )}
             </div>
-            <h3>Minimal Setup</h3>
-            <p>Uses existing WiFi infrastructure with no additional hardware</p>
+
+            <div className="popup-footer">
+              <label className="toggle-control">
+                <input
+                  type="checkbox"
+                  checked={autoRedirect}
+                  onChange={() => setAutoRedirect(!autoRedirect)}
+                />
+                <span className="toggle-slider"></span>
+                <span className="toggle-label">Auto-close</span>
+              </label>
+
+              <button
+                className="primary-btn"
+                onClick={() => setShowInfoPopup(false)}
+              >
+                Got it!
+              </button>
+            </div>
           </div>
         </div>
-        
-        {autoRedirect && (
-          <div className="countdown-container">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${(countdown/10)*100}%` }}
-              ></div>
-            </div>
-            <span className="countdown-text">
-              Auto-closing in {countdown} second{countdown !== 1 ? 's' : ''}
-            </span>
-          </div>
-        )}
-      </div>
-      
-      <div className="popup-footer">
-        <label className="toggle-control">
-          <input 
-            type="checkbox" 
-            checked={autoRedirect}
-            onChange={() => setAutoRedirect(!autoRedirect)}
-          />
-          <span className="toggle-slider"></span>
-          <span className="toggle-label">Auto-close</span>
-        </label>
-        
-        <button 
-          className="primary-btn"
-          onClick={() => setShowInfoPopup(false)}
-        >
-          Got it!
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
       <div>
         <GenText />
         <div className="home-container">
@@ -746,6 +803,16 @@ export default function Home() {
             ></canvas>
           </div>
 
+            {Object.keys(calculatedPositions).length > 0 && (
+              <div className="position-display">
+                <h3>Calculated Positions</h3>
+                {Object.entries(calculatedPositions).map(([mac, pos]) => (
+                  <p key={mac}>
+                    {pos.name}: X: {pos.x}, Y: {pos.y} (MAC: {mac})
+                  </p>
+                ))}
+              </div>
+            )}
           <div className="controls-container">
             <div className="control-item">
               <label className="checkbox-control">

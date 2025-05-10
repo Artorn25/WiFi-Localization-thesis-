@@ -31,7 +31,7 @@ export class TrilaterationUtils {
 
     const x = (C * E - F * B) / denominator;
     const y = (D * C - A * F) / denominator;
-    return { x, y };
+    return { x: x.toFixed(2), y: y.toFixed(2) }; // ปัดเป็นทศนิยม 2 ตำแหน่ง
   }
 
   assignNodeIndex(mac) {
@@ -45,12 +45,11 @@ export class TrilaterationUtils {
     console.log("refreshMap called with selectedIndex:", selectedIndex);
     console.log("mapManager.maps:", this.mapManager.maps);
 
-    // ตรวจสอบว่า selectedIndex มีอยู่ใน mapManager.maps หรือไม่
     if (selectedIndex === undefined || selectedIndex === null || !this.mapManager.maps[selectedIndex]) {
       console.log(
         "Skipping refreshMap: Invalid selectedIndex or map not found"
       );
-      return;
+      return null;
     }
 
     const activeCanvasUtils = this.canvasUtils3D && this.canvasUtils3D.canvas.style.display !== "none"
@@ -183,6 +182,8 @@ export class TrilaterationUtils {
         }
       });
     }
+
+    return this.trilaterationPositions; // คืนค่า trilaterationPositions
   }
 
   startRealTimeUpdate() {

@@ -5,7 +5,7 @@ export class PointManager {
   constructor(canvasUtils, trilaterationUtils) {
     this.canvasUtils = canvasUtils;
     this.trilaterationUtils = trilaterationUtils;
-    this.pointsPerMap = [];
+    this.pointsPerMap = {};
     this.markerCoordinatesPerMap = {};
     this.points = [];
     this.markerCoordinates = [];
@@ -46,6 +46,14 @@ export class PointManager {
     this.markerCoordinatesPerMap[selectedIndex].push({ x, y });
     this.canvasUtils.drawMarker(x, y, "blue");
     this.addPoint(x, y, name, selectedIndex);
+  }
+
+  addPoint(x, y, name, selectedIndex) {
+    if (!this.pointsPerMap[selectedIndex]) {
+      this.pointsPerMap[selectedIndex] = [];
+    }
+    this.pointsPerMap[selectedIndex].push({ x, y, name, data: [] });
+    this.points = this.pointsPerMap[selectedIndex];
   }
 
   updatePointSelects() {
@@ -150,18 +158,32 @@ export class PointManager {
   }
 
   updatePointData(pointName, data, selectedIndex) {
-    if (!this.pointsPerMap[selectedIndex]) return;
-  
-    // กรองข้อมูลที่ไม่สมบูรณ์
+    if (!this.pointsPerMap[selectedIndex]) {
+      this.pointsPerMap[selectedIndex] = [];
+    }
+
     const validData = data.filter(
       item => item.rssi && item.distance > 0 && item.mac
     );
-  
+
     this.pointsPerMap[selectedIndex].forEach((point) => {
       if (point.name === pointName) {
         point.data = validData;
         console.log(`Updated ${pointName} with ${validData.length} valid records`);
       }
     });
+
+    this.points = this.pointsPerMap[selectedIndex] || [];
+    if (this.trilaterationUtils) {
+      this.trilaterationUtils.refreshMap(selectedIndex, true);
+    }
+  }
+
+  resetPointsForMap(selectedIndex) {
+    this.pointsPerMap[selectedIndex] = [];
+    this.points = [];
+    this.markerCoordinatesPerMap[selectedIndex] = [];
+    this.markerCoordinates = [];
+    this.stopRealTimeUpdates();
   }
 }

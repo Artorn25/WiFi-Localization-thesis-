@@ -49,8 +49,9 @@ export class MapManager {
         `Map uploaded successfully\nMap name: ${mapName}`,
         "success"
       );
-      this.maps.push({ src: mapSrc, name: mapName, index: this.maps.length });
-      return this.maps.length - 1;
+      const mapIndex = this.maps.length;
+      this.maps.push({ src: mapSrc, name: mapName, index: mapIndex });
+      return mapIndex;
     }
     return null;
   }
@@ -60,13 +61,9 @@ export class MapManager {
       id: map.id,
       src: map.mapSrc,
       name: map.mapName,
-      index,
+      src3D: map.mapSrc3D,
+      index: map.mapIndex, // ใช้ mapIndex จากข้อมูลที่ส่งมา
     }));
-  }
-
-  // ลบฟังก์ชัน updateMapSelect ออก เนื่องจากจัดการใน React แล้ว
-  updateMapSelect() {
-    // ไม่ต้องใช้แล้ว เนื่องจากจัดการใน Home.jsx ผ่าน React state
   }
 
   deleteMap(selectedIndex, canvasUtils) {
@@ -88,7 +85,6 @@ export class MapManager {
       return;
     }
 
-    // ลบแผนที่
     this.maps.splice(selectedIndex, 1);
     this.maps.forEach((map, i) => {
       map.index = i;
