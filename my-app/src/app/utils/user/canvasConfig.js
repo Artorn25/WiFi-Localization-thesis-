@@ -4,9 +4,8 @@ const FIXED_CANVAS_WIDTH = 1000;
 const FIXED_CANVAS_HEIGHT = 400;
 const CENTER_X = FIXED_CANVAS_WIDTH / 2;
 const CENTER_Y = FIXED_CANVAS_HEIGHT / 2;
-// const CENTER_Y = FIXED_CANVAS_HEIGHT / 3;
 const realWidth = 63;
-const realHeight = 23.6;
+const realHeight = 24;
 
 export class CanvasUtils {
   constructor(canvas, tooltip) {
