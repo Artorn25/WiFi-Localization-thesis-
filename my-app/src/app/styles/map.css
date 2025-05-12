@@ -480,7 +480,7 @@ input:focus,
 }
 
 @media (max-width: 768px) {
-  .container {
+  .m-container {
     padding: 0.4rem;
   }
 

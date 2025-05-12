@@ -1,105 +1,59 @@
 "use client";
 import Image from "next/image";
 import "@styles/bu.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Bu() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [images, setImages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const imageRefs = useRef([]);
+
+  const imageSources = Array.from({ length: 9 }, (_, i) => `/wifib${i + 1}.jpg`);
 
   useEffect(() => {
-    // โค้ดที่เกี่ยวข้องกับ `document` และ `window` ต้องอยู่ใน useEffect
-    const imageElements = document.querySelectorAll(".image-grid img");
-    setImages(Array.from(imageElements));
-
+    // Load GSAP
     const script = document.createElement("script");
-    script.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js";
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js";
     script.async = true;
     document.body.appendChild(script);
+    
     return () => {
       document.body.removeChild(script);
     };
   }, []);
 
-  function openModal(img) {
-    const modal = document.getElementById("imageModal");
-    const modalImg = document.getElementById("modalImage");
-    modal.style.display = "block";
-    modalImg.src = img.src;
-    setCurrentImageIndex(Array.from(images).indexOf(img));
-    setTimeout(() => (modal.style.opacity = "1"), 10);
-  }
+  const openModal = (index) => {
+    setCurrentImageIndex(index);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
 
-  function closeModal() {
-    const modal = document.getElementById("imageModal");
-    modal.style.opacity = "0";
-    setTimeout(() => (modal.style.display = "none"), 300);
-  }
+  const closeModal = () => {
+    setIsModalOpen(false);
+    document.body.style.overflow = 'auto';
+  };
 
-  function changeImage(step) {
+  const changeImage = (step) => {
     let newIndex = currentImageIndex + step;
-    if (newIndex >= images.length) {
-      newIndex = 0;
-    } else if (newIndex < 0) {
-      newIndex = images.length - 1;
-    }
+    if (newIndex >= imageSources.length) newIndex = 0;
+    if (newIndex < 0) newIndex = imageSources.length - 1;
     setCurrentImageIndex(newIndex);
-    const modalImg = document.getElementById("modalImage");
-    modalImg.src = images[newIndex].src;
-    modalImg.style.animation = "none";
-    modalImg.offsetHeight; // trigger reflow
-    modalImg.style.animation = null;
-  }
+  };
 
   useEffect(() => {
-    // Close the modal when clicking outside the image
-    const handleClickOutside = (event) => {
-      const modal = document.getElementById("imageModal");
-      if (event.target === modal) {
-        closeModal();
-      }
+    const handleKeyDown = (e) => {
+      if (!isModalOpen) return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'ArrowLeft') changeImage(-1);
+      if (e.key === 'ArrowRight') changeImage(1);
     };
-    window.addEventListener("click", handleClickOutside);
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
-      window.removeEventListener("click", handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
-
-  function testSpeed() {
-    const speedResult = document.getElementById("speed-result");
-    speedResult.textContent = "Testing...";
-
-    // Simulate a speed test (this is just for demonstration)
-    setTimeout(() => {
-      const speed = Math.floor(Math.random() * 500) + 500; // Random speed between 500-1000 Mbps
-      speedResult.textContent = `Your current WiFi speed: ${speed} Mbps`;
-
-      // Add a visual indicator
-      if (speed < 600) {
-        speedResult.style.color = "#ff6b6b";
-      } else if (speed < 800) {
-        speedResult.style.color = "#feca57";
-      } else {
-        speedResult.style.color = "#48dbfb";
-      }
-    }, 3000);
-  }
-
-  useEffect(() => {
-    // Animate WiFi speed on page load
-    const speedElement = document.querySelector(".wifi-speed");
-    let speed = 0;
-    const interval = setInterval(() => {
-      speed += 50;
-      if (speed <= 1000) {
-        speedElement.textContent = `Up to ${speed} Mbps Speed`;
-      } else {
-        clearInterval(interval);
-      }
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+  }, [isModalOpen]);
 
   return (
     <>
@@ -138,22 +92,23 @@ export default function Bu() {
           </div>
 
           <div className="image-grid">
-            {[...Array(9)].map((_, index) => (
-              <Image
-                key={index}
-                src={`/wifib${index + 1}.jpg`} // ตรวจสอบว่ารูปอยู่ใน public
-                alt={`BU WiFi Image ${index + 1}`}
-                onClick={(e) => openModal(e.target)}
-                width={200}
-                height={200}
-              />
+            {imageSources.map((src, index) => (
+              <div 
+                key={index} 
+                className="image-wrapper"
+                onClick={() => openModal(index)}
+                ref={el => imageRefs.current[index] = el}
+              >
+                <Image
+                  src={src}
+                  alt={`BU WiFi Image ${index + 1}`}
+                  width={200}
+                  height={200}
+                  quality={85}
+                  loading={index < 3 ? "eager" : "lazy"}
+                />
+              </div>
             ))}
-          </div>
-
-          <div className="speed-test">
-            <h3>Test Your WiFi Speed</h3>
-            <button onClick={testSpeed}>Start Speed Test</button>
-            <div id="speed-result"></div>
           </div>
         </div>
         <a href="/wifi" className="back-button">
@@ -161,31 +116,46 @@ export default function Bu() {
         </a>
       </div>
 
-      {/* Modal */}
-      <div id="imageModal" className="modal">
-        <span className="close" onClick={closeModal}>
-          &times;
-        </span>
-        {images[currentImageIndex] && ( // ตรวจสอบว่ามีภาพก่อนแสดง
-          <Image
-            className="modal-content"
-            id="modalImage"
-            src={images[currentImageIndex].src}
-            alt={`Modal Image ${currentImageIndex + 1}`}
-            width={500}
-            height={500}
-          />
-        )}
-        <div className="navigation">
-          <a className="prev" onClick={() => changeImage(-1)}>
-            &#10094;
-          </a>
-          <a className="next" onClick={() => changeImage(1)}>
-            &#10095;
-          </a>
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <span className="close" onClick={closeModal}>
+              &times;
+            </span>
+            
+            <div className="modal-image-container">
+              <Image
+                className="modal-content"
+                src={imageSources[currentImageIndex]}
+                alt={`Modal Image ${currentImageIndex + 1}`}
+                width={800}
+                height={600}
+                quality={100}
+              />
+            </div>
+            
+            <div className="navigation">
+              <button className="nav-button prev" onClick={(e) => {
+                e.stopPropagation();
+                changeImage(-1);
+              }}>
+                &#10094;
+              </button>
+              <button className="nav-button next" onClick={(e) => {
+                e.stopPropagation();
+                changeImage(1);
+              }}>
+                &#10095;
+              </button>
+            </div>
+            
+            <div className="image-counter">
+              {currentImageIndex + 1} / {imageSources.length}
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="wifi-icon">📶</div>
+      )}
+
     </>
   );
 }

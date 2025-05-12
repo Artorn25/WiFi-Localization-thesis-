@@ -822,7 +822,7 @@ export default function Map() {
           pointerEvents: "none",
         }}
       ></div>
-      <div id="map-sample-container" className="container">
+      <div id="map-sample-container" className="m-container">
         <h3>Example Maps to use</h3>
         <div className="map-samples">
           <NextImage

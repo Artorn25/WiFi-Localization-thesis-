@@ -1,79 +1,105 @@
 "use client";
 import "@styles/ais.css";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Ais() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("android");
-  const images = [
-    { src: "/wifia1.jpg" },
-    { src: "/wifia2.jpg" },
-    { src: "/wifia3.jpg" },
-    { src: "/wifia4.jpg" },
-    { src: "/wifia5.jpg" },
-    { src: "/wifia6.jpg" },
-    { src: "/wifia7.jpg" },
-  ];
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const imageRefs = useRef([]);
+
+  // กำหนดรูปภาพสำหรับแต่ละ Tab
+  const imageSources = {
+    android: [
+      "/wifia1.jpg",
+      "/wifia2.jpg",
+      "/wifia3.jpg"
+    ],
+    ios: [
+      "/wifia4.jpg",
+      "/wifia5.jpg",
+      "/wifia6.jpg",
+      "/wifia7.jpg"
+    ]
+  };
 
   useEffect(() => {
+    // Load GSAP
     const script = document.createElement("script");
-    script.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js";
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js";
     script.async = true;
     document.body.appendChild(script);
+
+    // Handle scroll event
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollButton(true);
+      } else {
+        setShowScrollButton(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    
     return () => {
       document.body.removeChild(script);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
-  function closeModal() {
-    var modal = document.getElementById("imageModal");
-    modal.classList.remove("show");
-    setTimeout(() => (modal.style.display = "none"), 300);
-  }
+  const openModal = (index) => {
+    setCurrentImageIndex(index);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
 
-  function changeImage(n) {
-    let newIndex = currentImageIndex + n;
-    if (newIndex >= images.length) {
-      newIndex = 0;
-    } else if (newIndex < 0) {
-      newIndex = images.length - 1;
-    }
+  const closeModal = () => {
+    setIsModalOpen(false);
+    document.body.style.overflow = 'auto';
+  };
+
+  const changeImage = (step) => {
+    const currentImages = imageSources[activeTab];
+    let newIndex = currentImageIndex + step;
+    if (newIndex >= currentImages.length) newIndex = 0;
+    if (newIndex < 0) newIndex = currentImages.length - 1;
     setCurrentImageIndex(newIndex);
-    document.getElementById("modalImage").src = images[newIndex].src;
-  }
+  };
 
-  function scrollToTop() {
+  const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
+      behavior: "smooth"
     });
-  }
+  };
 
-  function openTab(event, tabName) {
-    event.preventDefault();
+  const openTab = (e, tabName) => {
+    e.preventDefault();
     setActiveTab(tabName);
-  }
+    setCurrentImageIndex(0); // รีเซ็ต index เมื่อเปลี่ยน Tab
+  };
 
-  if (typeof window !== "undefined") {
-    window.onscroll = function () {
-      var scrollTopBtn = document.querySelector(".scroll-to-top");
-      if (
-        document.body.scrollTop > 20 ||
-        document.documentElement.scrollTop > 20
-      ) {
-        scrollTopBtn.classList.add("show");
-      } else {
-        scrollTopBtn.classList.remove("show");
-      }
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isModalOpen) return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'ArrowLeft') changeImage(-1);
+      if (e.key === 'ArrowRight') changeImage(1);
     };
-  }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isModalOpen, activeTab, currentImageIndex]);
 
   return (
-    <>
+    <div className="main">
       <div className="ais-container">
-        <h1>AIS WiFi</h1>
+        <h1 className="topic-ais">AIS WiFi</h1>
         <div className="content">
           <svg
             className="wifi-icon"
@@ -94,11 +120,10 @@ export default function Ais() {
             Connect to AIS WiFi for blazing-fast internet access. Choose your
             device type below to get started:
           </p>
+          
           <div className="tabs">
             <button
-              className={`tab-button ${
-                activeTab === "android" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "android" ? "active" : ""}`}
               onClick={(e) => openTab(e, "android")}
             >
               Android
@@ -117,43 +142,48 @@ export default function Ais() {
           >
             <h2>Android Instructions</h2>
             <div className="image-grid">
-              {images.map((image, index) => (
-                <Image
-                  key={index}
-                  src={image.src}
-                  alt={`AIS Android WiFi ${index + 1}`}
-                  onClick={() => {
-                    setCurrentImageIndex(index);
-                    document.getElementById("imageModal").style.display =
-                      "block";
-                    document.getElementById("imageModal").classList.add("show");
-                  }}
-                  width={200}
-                  height={200}
-                />
+              {imageSources.android.map((src, index) => (
+                <div 
+                  key={`android-${index}`} 
+                  className="image-wrapper"
+                  onClick={() => openModal(index)}
+                  ref={el => imageRefs.current[`android-${index}`] = el}
+                >
+                  <Image
+                    src={src}
+                    alt={`AIS Android WiFi ${index + 1}`}
+                    width={200}
+                    height={200}
+                    quality={85}
+                    loading="eager"
+                  />
+                </div>
               ))}
             </div>
           </div>
+          
           <div
             id="ios"
             className={`tab-content ${activeTab === "ios" ? "active" : ""}`}
           >
             <h2>iOS Instructions</h2>
             <div className="image-grid">
-              {images.map((image, index) => (
-                <Image
-                  key={index}
-                  src={image.src}
-                  alt={`AIS iOS WiFi ${index + 1}`}
-                  onClick={() => {
-                    setCurrentImageIndex(index);
-                    document.getElementById("imageModal").style.display =
-                      "block";
-                    document.getElementById("imageModal").classList.add("show");
-                  }}
-                  width={200}
-                  height={200}
-                />
+              {imageSources.ios.map((src, index) => (
+                <div 
+                  key={`ios-${index}`} 
+                  className="image-wrapper"
+                  onClick={() => openModal(index)}
+                  ref={el => imageRefs.current[`ios-${index}`] = el}
+                >
+                  <Image
+                    src={src}
+                    alt={`AIS iOS WiFi ${index + 1}`}
+                    width={200}
+                    height={200}
+                    quality={85}
+                    loading="eager"
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -162,31 +192,55 @@ export default function Ais() {
           Back to WiFi Options
         </a>
       </div>
+
       {/* Modal */}
-      <div id="imageModal" className="modal">
-        <span className="close" onClick={closeModal}>
-          &times;
-        </span>
-        <Image
-          className="modal-content"
-          id="modalImage"
-          src={images[currentImageIndex].src}
-          alt={`Modal Image ${currentImageIndex + 1}`} // เพิ่มบรรทัดนี้
-          width={500}
-          height={500}
-        />
-        <div className="navigation">
-          <a className="prev" onClick={() => changeImage(-1)}>
-            &#10094;
-          </a>
-          <a className="next" onClick={() => changeImage(1)}>
-            &#10095;
-          </a>
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <span className="close" onClick={closeModal}>
+              &times;
+            </span>
+            
+            <div className="modal-image-container">
+              <Image
+                className="modal-content"
+                src={imageSources[activeTab][currentImageIndex]}
+                alt={`Modal Image ${currentImageIndex + 1}`}
+                width={800}
+                height={600}
+                quality={100}
+              />
+            </div>
+            
+            <div className="navigation">
+              <button className="nav-button prev" onClick={(e) => {
+                e.stopPropagation();
+                changeImage(-1);
+              }}>
+                &#10094;
+              </button>
+              <button className="nav-button next" onClick={(e) => {
+                e.stopPropagation();
+                changeImage(1);
+              }}>
+                &#10095;
+              </button>
+            </div>
+            
+            <div className="image-counter">
+              {currentImageIndex + 1} / {imageSources[activeTab].length}
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="scroll-to-top" onClick={scrollToTop}>
+      )}
+
+      {/* Scroll to top button */}
+      <div 
+        className={`scroll-to-top ${showScrollButton ? "show" : ""}`} 
+        onClick={scrollToTop}
+      >
         ↑
       </div>
-    </>
+    </div>
   );
 }
