@@ -48,139 +48,6 @@
   flex-direction: column;
 }
 
-/* Popup Styles */
-/* .popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.3s ease-out;
-}
-
-.popup {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 600px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  box-sizing: border-box;
-  position: relative; 
-}
-
-.popup-title {
-  font-size: 1.2rem;
-  margin-bottom: 0.75rem;
-  color: #2d3748;
-  padding-right: 6rem; 
-}
-
-.popup-content {
-  margin-bottom: 1.25rem;
-  line-height: 1.6;
-  font-size: 1rem;
-  padding-right: 1rem; 
-}
-
-.popup-list {
-  margin: 0.75rem 0;
-  padding-left: 1.5rem;
-}
-
-.popup-list li {
-  margin-bottom: 0.5rem;
-}
-
-.popup-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.popup-close-btn {
-  background: #3182ce;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1;
-  max-width: 150px;
-  text-align: center;
-  order: 2;
-}
-
-.popup-close-btn:hover {
-  background: #2c5282;
-}
-
-.popup-cancel-btn {
-  background: #e2e8f0;
-  color: #4a5568;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1;
-  max-width: 150px;
-  text-align: center;
-  order: 1;
-}
-
-.popup-cancel-btn:hover {
-  background: #cbd5e0;
-}
-
-.popup-permanent-close-btn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: #e53e3e;
-  color: white;
-  border: none;
-  padding: 0.3rem 0.5rem 0.3rem 0.3rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  gap: 0.3rem; 
-}
-
-.popup-permanent-close-btn:hover {
-  background: #c53030;
-}
-
-.popup-permanent-close-btn .close-icon {
-  font-size: 0.9rem; 
-}
-
-.popup-permanent-close-btn .close-text {
-  font-size: 0.8rem; 
-}
-
-.countdown-text {
-  margin-top: 1.25rem;
-  text-align: center;
-}
-
-.countdown {
-  font-weight: bold;
-  color: #e53e3e;
-} */
 /* Modern Popup Styles */
 .popup-overlay {
   position: fixed;
@@ -207,6 +74,7 @@
   transform: translateY(20px);
   opacity: 0;
   animation: popIn 0.3s ease-out forwards;
+  margin: 10px;
 }
 
 @keyframes popIn {
@@ -223,6 +91,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .popup-title {
@@ -237,23 +106,6 @@
 .popup-icon {
   width: 24px;
   height: 24px;
-}
-
-.popup-close-btn {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.popup-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .popup-content {
@@ -348,6 +200,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .toggle-control {
@@ -405,46 +259,13 @@
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 120px;
+  text-align: center;
 }
 
 .primary-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
-}
-
-/* Header right section */
-.popup-header-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-/* Don't show button styles */
-.dont-show-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dont-show-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.dont-show-icon {
-  opacity: 0.8;
-}
-
-/* Adjust close button position */
-.popup-close-btn {
-  margin-left: 0;
 }
 
 .combined-close-btn {
@@ -477,50 +298,278 @@
   font-weight: bold;
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
+/* Responsive adjustments for popup */
+@media (max-width: 768px) {
   .popup-container {
     max-width: 95%;
-    margin: 0 10px;
+    margin: 15px;
   }
 
-  .feature-grid {
-    grid-template-columns: 1fr;
+  .popup-header {
+    padding: 15px;
+  }
+
+  .popup-title {
+    font-size: 1.2rem;
+  }
+
+  .popup-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .popup-content {
     padding: 20px;
   }
 
+  .popup-intro {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .feature-card {
+    padding: 15px;
+  }
+
+  .feature-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 12px;
+  }
+
+  .feature-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .feature-card h3 {
+    font-size: 1rem;
+  }
+
+  .feature-card p {
+    font-size: 0.9rem;
+  }
+
+  .countdown-container {
+    margin-top: 20px;
+  }
+
+  .countdown-text {
+    font-size: 0.85rem;
+  }
+
+  .popup-footer {
+    padding: 15px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toggle-control {
+    margin-bottom: 15px;
+  }
+
+  .toggle-label {
+    font-size: 0.9rem;
+  }
+
+  .primary-btn {
+    padding: 10px;
+    font-size: 0.95rem;
+    min-width: 100%;
+  }
+
   .combined-close-btn {
-    padding: 4px 6px 4px 10px;
-    font-size: 0.8rem;
+    padding: 6px 8px 6px 10px;
+    font-size: 0.75rem;
     gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popup-container {
+    max-width: 90%;
+    margin: 10px;
   }
 
   .popup-header {
-    flex-wrap: wrap;
+    padding: 12px;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 10px;
   }
 
   .popup-title {
-    order: 1;
-    width: 100%;
+    font-size: 1.1rem;
+  }
+
+  .popup-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .popup-content {
+    padding: 15px;
+  }
+
+  .popup-intro {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+  }
+
+  .feature-grid {
+    gap: 12px;
+  }
+
+  .feature-card {
+    padding: 12px;
+  }
+
+  .feature-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 10px;
+  }
+
+  .feature-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .feature-card h3 {
+    font-size: 0.95rem;
+  }
+
+  .feature-card p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .countdown-container {
+    margin-top: 15px;
+  }
+
+  .progress-bar {
+    height: 5px;
+  }
+
+  .countdown-text {
+    font-size: 0.8rem;
+  }
+
+  .popup-footer {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .toggle-slider {
+    width: 38px;
+    height: 22px;
+  }
+
+  .toggle-slider:after {
+    width: 18px;
+    height: 18px;
+    top: 2px;
+    left: 2px;
+  }
+
+  .toggle-control input:checked + .toggle-slider:after {
+    transform: translateX(16px);
+  }
+
+  .toggle-label {
+    font-size: 0.85rem;
+  }
+
+  .primary-btn {
+    padding: 8px;
+    font-size: 0.9rem;
   }
 
   .combined-close-btn {
-    order: 2;
-    margin-left: auto;
+    padding: 5px 6px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    align-items: center;
   }
 
-  .popup-header-right {
-    width: 100%;
-    justify-content: space-between;
+  .dont-show-text {
+    display: none;
   }
 
-  .dont-show-btn {
+  .combined-close-btn::before {
+    content: "Don't show for 1 day";
+    position: absolute;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .combined-close-btn:hover::before {
+    opacity: 1;
+  }
+
+  .close-icon {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .popup-container {
+    max-width: 95%;
+    margin: 5px;
+  }
+
+  .popup-header {
+    padding: 10px;
+  }
+
+  .popup-title {
+    font-size: 1rem;
+  }
+
+  .popup-content {
+    padding: 12px;
+  }
+
+  .popup-intro {
+    font-size: 0.9rem;
+  }
+
+  .feature-card {
+    padding: 10px;
+  }
+
+  .feature-card h3 {
+    font-size: 0.9rem;
+  }
+
+  .feature-card p {
     font-size: 0.8rem;
-    padding: 5px 10px;
+  }
+
+  .popup-footer {
+    padding: 10px;
+  }
+
+  .primary-btn {
+    font-size: 0.85rem;
   }
 }
 
@@ -535,8 +584,8 @@
   align-items: center;
   justify-content: center;
   gap: 15px;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
-  z-index: 2000; /* Ensure it appears above other elements */
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -572,40 +621,6 @@
     flex-direction: column;
   }
 
-  .popup {
-    max-width: 90%;
-    padding: 1rem;
-  }
-
-  .popup-title {
-    font-size: 1.1rem;
-    padding-right: 4rem; /* Adjusted for smaller screens */
-  }
-
-  .popup-content {
-    font-size: 0.9rem;
-  }
-
-  .popup-close-btn,
-  .popup-cancel-btn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-    max-width: 120px;
-  }
-
-  .popup-permanent-close-btn {
-    padding: 0.25rem 0.4rem 0.25rem 0.3rem;
-    font-size: 0.75rem;
-  }
-
-  .popup-permanent-close-btn .close-icon {
-    font-size: 0.85rem;
-  }
-
-  .popup-permanent-close-btn .close-text {
-    font-size: 0.75rem;
-  }
-
   .loadingAnimation {
     width: 120px;
     height: 120px;
@@ -617,44 +632,6 @@
 }
 
 @media (max-width: 480px) {
-  .popup {
-    max-width: 95%;
-    padding: 0.8rem;
-  }
-
-  .popup-title {
-    font-size: 1rem;
-    padding-right: 3rem; /* Further adjusted for very small screens */
-  }
-
-  .popup-content {
-    font-size: 0.85rem;
-  }
-
-  .popup-buttons {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .popup-close-btn,
-  .popup-cancel-btn {
-    max-width: 100%;
-    order: initial;
-  }
-
-  .popup-permanent-close-btn {
-    padding: 0.2rem 0.3rem 0.2rem 0.2rem;
-    font-size: 0.7rem;
-  }
-
-  .popup-permanent-close-btn .close-icon {
-    font-size: 0.8rem;
-  }
-
-  .popup-permanent-close-btn .close-text {
-    font-size: 0.7rem;
-  }
-
   .loadingAnimation {
     width: 80px;
     height: 80px;
@@ -662,38 +639,6 @@
 
   .loadingText {
     font-size: 0.9rem;
-  }
-
-  .dont-show-text {
-    display: none;
-  }
-
-  .combined-close-btn {
-    padding: 6px;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    justify-content: center;
-  }
-
-  .combined-close-btn::before {
-    content: "Don't show";
-    position: absolute;
-    white-space: nowrap;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    bottom: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .combined-close-btn:hover::before {
-    opacity: 1;
   }
 }
 
@@ -907,19 +852,6 @@
   font-weight: 500;
 }
 
-.action-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .map-sample-container {
   width: 100%;
   max-width: 1200px;
@@ -1086,8 +1018,8 @@ canvas {
   width: 100%;
   box-sizing: border-box;
   transition: all 0.3s ease;
-  display: block; /* 确保เป็น block เพื่อป้องกันการรบกวนจาก parent */
-  overflow: visible; /* ป้องกันการตัดข้อความ */
+  display: block;
+  overflow: visible;
 }
 
 .position-display h3 {
@@ -1106,21 +1038,21 @@ canvas {
 }
 
 .position-display p {
-  display: block; /* บังคับให้เป็น block element */
-  margin: 0 0 12px 0; /* เพิ่มระยะห่างระหว่างบรรทัด */
+  display: block;
+  margin: 0 0 12px 0;
   padding: 10px 15px;
   font-size: 0.95rem;
   color: #4a5568;
   background-color: #f8f9fa;
   border-radius: 8px;
   transition: background-color 0.2s ease, transform 0.2s ease;
-  white-space: normal; /* 确保ข้อความขึ้นบรรทัดใหม่ตามปกติ */
-  word-break: break-word; /* ป้องกันข้อความยาวเกินจนล้น */
-  line-height: 1.5; /* เพิ่มความสูงบรรทัดเพื่อให้อ่านง่าย */
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
 }
 
 .position-display p:last-child {
-  margin-bottom: 0; /* ลบ margin-bottom สำหรับ <p> ตัวสุดท้าย */
+  margin-bottom: 0;
 }
 
 .position-display p:hover {
