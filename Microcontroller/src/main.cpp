@@ -12,27 +12,18 @@
 #define GREEN_PIN D7
 #define BLUE_PIN D8
 
-// #define WIFI_SSID "BANTY"
-// #define WIFI_PASSWORD "12345678"
-#define WIFI_SSID "Galax"
-#define WIFI_PASSWORD "0990500633"
-// #define WIFI_SSID "Anty"
-// #define WIFI_PASSWORD "12345678"
-// #define WIFI_SSID "BO$$"
-// #define WIFI_PASSWORD "00000000"
-// #define WIFI_SSID "Checkka"
-// #define WIFI_PASSWORD "checkzzzz"
-#define API_KEY "AIzaSyCFhkQgV566VA1QjexbaCsAJ8iCfQXpW0g"
-#define DATABASE_URL "https://esp8266-t1-37f02-default-rtdb.asia-southeast1.firebasedatabase.app/"
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PASSWORD "YOUR_PASSWORD"
 
-const char* target_SSID_1 = "TP-Link_2536_1";
-const char* target_SSID_2 = "TP-Link_2536_2";
-const char* target_SSID_3 = "TP-Link_2536_3";
+#define API_KEY "API_KEY"
+#define DATABASE_URL "https://YOUR_PROJECT_ID.firebaseio.com/"
 
-// SimpleKalmanFilter kalmanFilter1(1, 1, 0.05), kalmanFilter2(1, 1, 0.05), kalmanFilter3(1, 1, 0.05);
-SimpleKalmanFilter kalmanFilter1(3, 3, 0.05);
-SimpleKalmanFilter kalmanFilter2(3, 3, 0.05);
-SimpleKalmanFilter kalmanFilter3(3, 3, 0.05);
+const char* target_SSID_1 = "TARGET_SSID_1";
+const char* target_SSID_2 = "TARGET_SSID_2";
+const char* target_SSID_3 = "TARGET_SSID_3";
+
+SimpleKalmanFilter kalmanFilter1(1, 1, 0.05), kalmanFilter2(1, 1, 0.05), kalmanFilter3(1, 1, 0.05);
+
 
 const float n = 4.0;
 // const float n = 3.8; 
@@ -153,8 +144,7 @@ void setup() {
 void loop() {
   int analogValue = analogRead(A0); // 0 - 1023
 
-  // แปลงเป็นแรงดันแบต (วงจรแบ่งแรงดัน: R1=30k, R2=10k)
-  float voltage = analogValue * ((30.0 + 10.0) / 10.0) * (1.0 / 1023.0); // = raw * (4.0 / 1023.0)
+  float voltage = analogValue * ((30.0 + 10.0) / 10.0) * (1.0 / 1023.0); 
 
   Serial.print("Analog: ");
   Serial.print(analogValue);
@@ -162,17 +152,14 @@ void loop() {
   Serial.println(voltage, 2);  
 
   if (voltage < 3.4) {
-    // แบตต่ำ – แสดงสีแดง
     digitalWrite(RED_PIN, HIGH);
     digitalWrite(GREEN_PIN, LOW);
     digitalWrite(BLUE_PIN, LOW);
   } else if (voltage < 3.8) {
-    // แบตปานกลาง – แสดงสีเหลือง (แดง + เขียว)
     digitalWrite(RED_PIN, HIGH);
     digitalWrite(GREEN_PIN, HIGH);
     digitalWrite(BLUE_PIN, LOW);
   } else {
-    // แบตเต็ม – แสดงสีเขียว
     digitalWrite(RED_PIN, LOW);
     digitalWrite(GREEN_PIN, HIGH);
     digitalWrite(BLUE_PIN, LOW);
@@ -189,7 +176,6 @@ void loop() {
 
   String currentTimestamp = getFormattedTime(rawTime);
 
-  // สแกน Wi-Fi ทุก 2 วินาที
   if (millis() - lastScanTime > 500) {
     lastScanTime = millis();
     int numNetworks = WiFi.scanNetworks();
@@ -217,7 +203,6 @@ void loop() {
         }
       }
 
-      // อัปเดต Firebase ทุก 0.5 วินาที
       if (Firebase.ready() && signupOK && (millis() - lastUpdateTime > 500)) {
         lastUpdateTime = millis();
 
