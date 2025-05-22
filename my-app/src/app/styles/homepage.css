@@ -269,7 +269,7 @@
 }
 
 .combined-close-btn {
-  background: none;
+  background-color: rgba(252, 255, 253, 0.4);
   border: none;
   color: white;
   cursor: pointer;
@@ -404,7 +404,7 @@
   }
 
   .popup-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .popup-icon {
@@ -492,18 +492,18 @@
     font-size: 0.9rem;
   }
 
-  .combined-close-btn {
+  /* .combined-close-btn {
     padding: 5px 6px;
     border-radius: 50%;
     width: 32px;
     height: 32px;
     justify-content: center;
     align-items: center;
-  }
+  } */
 
-  .dont-show-text {
+  /* .dont-show-text {
     display: none;
-  }
+  } */
 
   .combined-close-btn::before {
     content: "Don't show for 1 day";
@@ -525,8 +525,53 @@
     opacity: 1;
   }
 
+  /* .close-icon {
+    font-size: 1.1rem;
+  } */
+
+  .combined-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dont-show-text {
+    display: none;
+  }
+
   .close-icon {
     font-size: 1.1rem;
+    margin: 0;
+  }
+
+  /* Tooltip for mobile */
+  .combined-close-btn::after {
+    content: "Don't show for 1 day";
+    position: absolute;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .combined-close-btn:hover::after {
+    opacity: 1;
   }
 }
 
@@ -570,6 +615,23 @@
 
   .primary-btn {
     font-size: 0.85rem;
+  }
+
+  .combined-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .close-icon {
+    font-size: 1rem;
+  }
+
+  .combined-close-btn::after {
+    font-size: 0.7rem;
+    bottom: -36px;
+    padding: 4px 8px;
   }
 }
 
@@ -1013,7 +1075,7 @@ canvas {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border-left: 4px solid #6366f1;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;

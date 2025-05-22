@@ -2,12 +2,12 @@
 // next.config.js
 const nextConfig = {
   images: {
-    domains: ["localhost"], // อนุญาตให้ใช้รูปภาพจาก localhost
+    domains: ["wifi.localization.com"], // อนุญาตให้ใช้รูปภาพจาก localhost
     // หรือใช้ remotePatterns สำหรับการกำหนดค่าแบบละเอียด
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "localhost",
+        protocol: "https",
+        hostname: "wifi.localization.com",
         port: "3000",
         pathname: "/**", // อนุญาตทุก path ภายใต้ localhost:3000
       },
