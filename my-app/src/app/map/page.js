@@ -27,6 +27,8 @@ export default function Map() {
 
   useEffect(() => {
     console.log("Map component useEffect started");
+    console.log("Sample map container:", document.getElementById("map-sample-container"));
+    console.log("Sample maps:", document.querySelectorAll(".map-sample").length);
     const canvas = canvasRef.current;
     const canvas3D = canvas3DRef.current;
     const tooltip = document.getElementById("tooltip");
@@ -155,7 +157,7 @@ export default function Map() {
               hoveredPoint.name
             }\nDistance: ${hoveredPoint.distance.toFixed(2)} m\nRSSI: ${
               hoveredPoint.rssi
-            } dBm`;
+            } dBm\nQuadrant: ${canvasUtilsInstance.getQuadrant(hoveredPoint.x, hoveredPoint.y)}`;
             tooltip.style.display = "block";
             tooltip.style.left = `${event.pageX + 10}px`;
             tooltip.style.top = `${event.pageY + 10}px`;
@@ -327,11 +329,7 @@ export default function Map() {
                     trilaterationUtils.startRealTimeUpdate();
                     show3DMapRef.current.style.display = "block";
                   } else {
-                    mapManager.alert(
-                      "Warning",
-                      "Map upload cancelled. Please upload a map to continue.",
-                      "warning"
-                    );
+                    console.log("Map upload cancelled by user");
                   }
                 })
                 .catch((error) => {
@@ -373,11 +371,7 @@ export default function Map() {
                   trilaterationUtils.startRealTimeUpdate();
                   show3DMapRef.current.style.display = "block";
                 } else {
-                  mapManager.alert(
-                    "Warning",
-                    "Map selection cancelled. Please select a map to continue.",
-                    "warning"
-                  );
+                  console.log("Map selection cancelled by user");
                 }
               })
               .catch((error) => {
@@ -415,16 +409,15 @@ export default function Map() {
 
           if (mapManager.maps.length > 0) {
             mapSelect.value = "0";
-            const newIndex = mapSelect.value;
-            canvasUtils.img.src = mapManager.maps[newIndex].src;
-            canvasUtils3D.img.src = mapManager.maps[newIndex].src.replace(
+            canvasUtils.img.src = mapManager.maps[0].src;
+            canvasUtils3D.img.src = mapManager.maps[0].src.replace(
               ".png",
               "_3D.png"
             );
-            pointManager.points = pointManager.pointsPerMap[newIndex] || [];
+            pointManager.points = pointManager.pointsPerMap[0] || [];
             pointManager.markerCoordinates =
-              pointManager.markerCoordinatesPerMap[newIndex] || [];
-            trilaterationUtils.refreshMap(newIndex);
+              pointManager.markerCoordinatesPerMap[0] || [];
+            trilaterationUtils.refreshMap(0);
             show3DMapRef.current.style.display = "block";
           } else {
             canvasUtils.resetCanvas();
@@ -583,7 +576,6 @@ export default function Map() {
               mapIndex: selectedIndex,
               mapName: mapManager.maps[selectedIndex]?.name,
               mapSrc: mapManager.maps[selectedIndex]?.src,
-              // เพิ่ม mapSrc3D โดยแทนที่ .png ด้วย _3D.png
               mapSrc3D: mapManager.maps[selectedIndex]?.src.replace(
                 ".png",
                 "_3D.png"
@@ -670,6 +662,7 @@ export default function Map() {
       "newPointName",
       "tooltip",
       "distanceDisplay",
+      "trilaterationPositions",
     ];
     elementIds.forEach((id) => {
       if (!document.getElementById(id)) {
@@ -753,6 +746,11 @@ export default function Map() {
             </label>
           </div>
           <div id="map-controls">
+            <div className="position-display">
+            <p id="trilaterationPositions">
+                   
+                  </p>
+            </div>
             <div className="controls-group">
               <label htmlFor="mapName">Map Name:</label>
               <select className="select" id="map-select" ref={mapSelectRef}>

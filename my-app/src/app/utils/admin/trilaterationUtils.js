@@ -133,7 +133,12 @@ export class TrilaterationUtils {
         }
       });
 
-      // วาดจุด trilateration
+      // วาดจุด trilateration และอัปเดต DOM
+      const positionDisplay = document.getElementById("trilaterationPositions");
+      if (positionDisplay) {
+        positionDisplay.innerHTML = "";
+      }
+
       Object.keys(macGroups).forEach((mac) => {
         const circlesInNode = macGroups[mac];
         const nodeIndex = this.assignNodeIndex(mac);
@@ -173,9 +178,20 @@ export class TrilaterationUtils {
               nodeName,
               mac
             );
+            // อัปเดต DOM ด้วยตำแหน่ง
+            if (positionDisplay) {
+              const positionText = document.createElement("p");
+              positionText.textContent = `${nodeName}: (x: ${position.x.toFixed(2)}, y: ${position.y.toFixed(2)}) [${utils.getQuadrant(position.x, position.y)}]`;
+              positionDisplay.appendChild(positionText);
+            }
           }
         }
       });
+
+      // ถ้าไม่มีตำแหน่ง แสดงข้อความว่าไม่มีข้อมูล
+      if (positionDisplay && Object.keys(this.trilaterationPositions).length === 0) {
+        positionDisplay.innerHTML = "<p>No trilateration positions available</p>";
+      }
     });
   }
 

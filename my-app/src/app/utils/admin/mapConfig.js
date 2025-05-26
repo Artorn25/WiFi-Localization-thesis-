@@ -3,7 +3,8 @@ import Swal from "sweetalert2/dist/sweetalert2.js";
 export class MapManager {
   constructor(mapSelectRef) {
     this.maps = [];
-    this.mapSelectRef = mapSelectRef; // รับ mapSelectRef จาก constructor
+    this.mapSelectRef = mapSelectRef;
+    console.log("MapManager initialized with mapSelectRef:", mapSelectRef);
   }
 
   alert(topic, text, icon) {
@@ -29,40 +30,45 @@ export class MapManager {
 
   async editMapName(mapSrc) {
     console.log("Editing map name for src:", mapSrc);
-    const { value: mapName } = await Swal.fire({
-      title: "Enter a name for this map",
-      input: "text",
-      inputAttributes: {
-        style: "width: 80%; margin: 0 auto;", 
-        size: "20" 
-      },
-      placeholder: "Map name",
-      showCancelButton: true,
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      inputValidator: (value) => {
-        if (!value.trim()) {
-          return "You need to write a map name!";
-        }
-        if (this.maps.some((map) => map.name === value.trim())) {
-          return "Map name already exists! Please choose a different name.";
-        }
-        return null;
-      },
-    });
+    console.log("Current maps before adding:", this.maps);
+    try {
+      const { value: mapName } = await Swal.fire({
+        title: "Enter a name for this map",
+        input: "text",
+        inputPlaceholder: "Map name",
+        inputAttributes: {
+          style: "width: 80%; margin: 0 auto;",
+          size: "20",
+        },
+        showCancelButton: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        inputValidator: (value) => {
+          if (!value.trim()) {
+            return "You need to write a map name!";
+          }
+          if (this.maps.some((map) => map.name === value.trim())) {
+            return "Map name already exists! Please choose a different name.";
+          }
+          return null;
+        },
+      });
 
-    if (mapName) {
-      this.alert(
-        "Success",
-        `Map uploaded successfully\nMap name: ${mapName}`,
-        "success"
-      );
-      this.maps.push({ src: mapSrc, name: mapName });
-      this.updateMapSelect();
-      console.log("Map added:", this.maps);
-      return this.maps.length - 1;
+      if (mapName) {
+        const newMap = { src: mapSrc, name: mapName };
+        this.maps.push(newMap);
+        console.log("Map added:", newMap, "Current maps:", this.maps);
+        this.updateMapSelect();
+        this.alert("Success", `Map uploaded successfully\nMap name: ${mapName}`, "success");
+        return this.maps.length - 1;
+      }
+      console.log("Map name input cancelled");
+      return null;
+    } catch (error) {
+      console.error("Error in editMapName:", error);
+      this.alert("Error", "Failed to add map. Please try again.", "error");
+      return null;
     }
-    return null;
   }
 
   updateMapSelect() {
@@ -79,6 +85,7 @@ export class MapManager {
       option.textContent = map.name || `Map ${index + 1}`;
       mapSelect.appendChild(option);
     });
+    console.log("Map select updated, options:", mapSelect.options.length);
   }
 
   deleteMap(selectedIndex, canvasUtils) {
