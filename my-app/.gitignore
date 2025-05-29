@@ -23,6 +23,9 @@
 # vercel
 .vercel
 
+# files
+/public/.well-known
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
