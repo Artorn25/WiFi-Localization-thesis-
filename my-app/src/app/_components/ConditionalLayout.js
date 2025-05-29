@@ -25,16 +25,16 @@ export default function ConditionalLayout({ children }) {
 
   return (
     <>
-     {isInitialLoading ? (
-          <Loading />
-        ) : (
-          <>
-            {!isHomePage && <Header />}
-            {children}
-            <ReportButton />
-            <Footer />
-          </>
-        )}
+      {isInitialLoading ? (
+        <Loading />
+      ) : (
+        <>
+          {!isHomePage && <Header />}
+          {children}
+          <ReportButton />
+          <Footer />
+        </>
+      )}
     </>
   );
 }
