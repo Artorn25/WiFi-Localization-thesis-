@@ -9,15 +9,9 @@ export class TrilaterationUtils {
   }
 
   calculateTrilateration(point1, point2, point3) {
-    const x1 = point1.x,
-      y1 = point1.y,
-      d1 = point1.distance / this.canvasUtils.scaleX;
-    const x2 = point2.x,
-      y2 = point2.y,
-      d2 = point2.distance / this.canvasUtils.scaleX;
-    const x3 = point3.x,
-      y3 = point3.y,
-      d3 = point3.distance / this.canvasUtils.scaleX;
+    const x1 = point1.x, y1 = point1.y, d1 = point1.distance / this.canvasUtils.scaleX;
+    const x2 = point2.x, y2 = point2.y, d2 = point2.distance / this.canvasUtils.scaleX;
+    const x3 = point3.x, y3 = point3.y, d3 = point3.distance / this.canvasUtils.scaleX;
 
     const A = 2 * (x2 - x1);
     const B = 2 * (y2 - y1);
@@ -31,7 +25,7 @@ export class TrilaterationUtils {
 
     const x = (C * E - F * B) / denominator;
     const y = (D * C - A * F) / denominator;
-    return { x: x.toFixed(2), y: y.toFixed(2) }; // ปัดเป็นทศนิยม 2 ตำแหน่ง
+    return { x, y }; // ไม่ปัดทศนิยมเหมือนไฟล์ 2
   }
 
   assignNodeIndex(mac) {
@@ -43,29 +37,28 @@ export class TrilaterationUtils {
 
   refreshMap(selectedIndex, showPoints = false) {
     console.log("refreshMap called with selectedIndex:", selectedIndex);
-    console.log("mapManager.maps:", this.mapManager.maps);
-
-    if (selectedIndex === undefined || selectedIndex === null || !this.mapManager.maps[selectedIndex]) {
-      console.log(
-        "Skipping refreshMap: Invalid selectedIndex or map not found"
-      );
+    if (
+      selectedIndex === undefined ||
+      selectedIndex === null ||
+      !this.mapManager.maps[selectedIndex]
+    ) {
+      console.log("Skipping refreshMap: Invalid selectedIndex or map not found");
       return null;
     }
 
-    const activeCanvasUtils = this.canvasUtils3D && this.canvasUtils3D.canvas.style.display !== "none"
-      ? this.canvasUtils3D
-      : this.canvasUtils;
+    const activeCanvasUtils =
+      this.canvasUtils3D && this.canvasUtils3D.canvas.style.display !== "none"
+        ? this.canvasUtils3D
+        : this.canvasUtils;
 
     activeCanvasUtils.ctx.clearRect(
-      0,
-      0,
+      0, 0,
       activeCanvasUtils.canvas.width,
       activeCanvasUtils.canvas.height
     );
     activeCanvasUtils.ctx.drawImage(
       activeCanvasUtils.img,
-      0,
-      0,
+      0, 0,
       activeCanvasUtils.canvas.width,
       activeCanvasUtils.canvas.height
     );
@@ -73,12 +66,14 @@ export class TrilaterationUtils {
     activeCanvasUtils.circles = [];
     this.trilaterationPositions = {};
 
-    this.pointManager.points =
-      this.pointManager.pointsPerMap[selectedIndex] || [];
+    this.pointManager.points = this.pointManager.pointsPerMap[selectedIndex] || [];
     this.pointManager.markerCoordinates =
       this.pointManager.markerCoordinatesPerMap[selectedIndex] || [];
 
-    console.log("refreshMap - points to draw:", this.pointManager.points);
+    // วาด marker เหมือนไฟล์ 2
+    this.pointManager.markerCoordinates.forEach((marker) => {
+      activeCanvasUtils.drawMarker(marker.x, marker.y, "blue");
+    });
 
     if (showPoints) {
       this.pointManager.points.forEach((point) => {
@@ -138,6 +133,12 @@ export class TrilaterationUtils {
         }
       });
 
+      // อัปเดต DOM เหมือนไฟล์ 2
+      const positionDisplay = document.getElementById("trilaterationPositions");
+      if (positionDisplay) {
+        positionDisplay.innerHTML = "";
+      }
+
       Object.keys(macGroups).forEach((mac) => {
         const circlesInNode = macGroups[mac];
         const nodeIndex = this.assignNodeIndex(mac);
@@ -170,6 +171,7 @@ export class TrilaterationUtils {
               x: position.x,
               y: position.y,
               name: nodeName,
+              quadrant: activeCanvasUtils.getQuadrant(position.x, position.y),
             };
             activeCanvasUtils.drawIntersectionPoint(
               position.x,
@@ -178,12 +180,21 @@ export class TrilaterationUtils {
               mac,
               showPoints
             );
+            if (positionDisplay) {
+              const positionText = document.createElement("p");
+              positionText.textContent = `${nodeName}: (x: ${position.x.toFixed(2)}, y: ${position.y.toFixed(2)}) [${activeCanvasUtils.getQuadrant(position.x, position.y)}]`;
+              positionDisplay.appendChild(positionText);
+            }
           }
         }
       });
+
+      if (positionDisplay && Object.keys(this.trilaterationPositions).length === 0) {
+        positionDisplay.innerHTML = "<p>No trilateration positions available</p>";
+      }
     }
 
-    return this.trilaterationPositions; // คืนค่า trilaterationPositions
+    return this.trilaterationPositions;
   }
 
   startRealTimeUpdate() {
@@ -199,12 +210,11 @@ export class TrilaterationUtils {
 
   startAutoRefresh(interval = 1000) {
     this.stopAutoRefresh();
-
     this.refreshInterval = setInterval(() => {
       const mapSelect = document.getElementById("map-select");
       if (mapSelect?.value) {
         const selectedMap = this.mapManager.maps.find(
-          map => map.id === mapSelect.value
+          (map) => map.id === mapSelect.value
         );
         if (selectedMap) {
           this.refreshMap(selectedMap.index, true);

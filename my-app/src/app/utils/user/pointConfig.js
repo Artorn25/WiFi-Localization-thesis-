@@ -1,11 +1,12 @@
 import { dbRef, dbfs } from "./firebaseConfig";
 import { onValue, off } from "firebase/database";
+import { collection, doc, setDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 
 export class PointManager {
   constructor(canvasUtils, trilaterationUtils) {
     this.canvasUtils = canvasUtils;
     this.trilaterationUtils = trilaterationUtils;
-    this.pointsPerMap = {};
+    this.pointsPerMap = []; // เปลี่ยนเป็น array เหมือนไฟล์ 2
     this.markerCoordinatesPerMap = {};
     this.points = [];
     this.markerCoordinates = [];
@@ -16,7 +17,19 @@ export class PointManager {
     }
   }
 
-  validatePoint(pointName) {
+  async checkDuplicatePointName(pointName) {
+    try {
+      const pointsRef = collection(dbfs, "points");
+      const q = query(pointsRef, where("ssid", "==", pointName));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking duplicate point name:", error);
+      return false;
+    }
+  }
+
+  async validatePoint(pointName) {
     if (!pointName) {
       this.canvasUtils.alert(
         "Warning",
@@ -25,13 +38,20 @@ export class PointManager {
       );
       return false;
     }
-    for (const mapIndex in this.pointsPerMap) {
-      if (
-        this.pointsPerMap[mapIndex].some((point) => point.name === pointName)
-      ) {
+    const isDuplicate = await this.checkDuplicatePointName(pointName);
+    if (isDuplicate) {
+      this.canvasUtils.alert(
+        "Error",
+        "Point name already exists in Firestore.",
+        "error"
+      );
+      return false;
+    }
+    for (let mapIndex = 0; mapIndex < this.pointsPerMap.length; mapIndex++) {
+      if (this.pointsPerMap[mapIndex]?.some((point) => point.name === pointName)) {
         this.canvasUtils.alert(
           "Error",
-          "Point name must be unique across all maps.",
+          "Point name must be unique across all maps locally.",
           "error"
         );
         return false;
@@ -40,20 +60,67 @@ export class PointManager {
     return true;
   }
 
+  async savePointToFirestore(x, y, name, color) {
+    try {
+      const isDuplicate = await this.checkDuplicatePointName(name);
+      if (isDuplicate) {
+        throw new Error("Point name already exists in Firestore.");
+      }
+      const pointsRef = collection(dbfs, "points");
+      await setDoc(doc(pointsRef, name), {
+        coordinates: { x, y },
+        createdAt: serverTimestamp(),
+        details: {
+          color,
+          scaleX: this.canvasUtils.scaleX,
+          scaleY: this.canvasUtils.scaleY,
+        },
+        mapIndex: document.getElementById("map-select")?.value,
+        ssid: name,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error saving point to Firestore: ", error);
+      throw error;
+    }
+  }
+
   addMarkerAndPoint(x, y, name, selectedIndex) {
     if (!this.markerCoordinatesPerMap[selectedIndex])
       this.markerCoordinatesPerMap[selectedIndex] = [];
-    this.markerCoordinatesPerMap[selectedIndex].push({ x, y });
+    this.markerCoordinatesPerMap[selectedIndex].push({ x, y, name });
     this.canvasUtils.drawMarker(x, y, "blue");
+    if (this.trilaterationUtils.canvasUtils3D) {
+      this.trilaterationUtils.canvasUtils3D.drawMarker(x, y, "blue");
+    }
     this.addPoint(x, y, name, selectedIndex);
   }
 
-  addPoint(x, y, name, selectedIndex) {
+  async addPoint(x, y, name, selectedIndex) {
+    if (!(await this.validatePoint(name))) {
+      return;
+    }
     if (!this.pointsPerMap[selectedIndex]) {
       this.pointsPerMap[selectedIndex] = [];
     }
-    this.pointsPerMap[selectedIndex].push({ x, y, name, data: [] });
+    const color = this.drawMode ? "blue" : "red";
+    this.canvasUtils.drawPoint(x, y, name, color);
+    if (this.trilaterationUtils.canvasUtils3D) {
+      this.trilaterationUtils.canvasUtils3D.drawPoint(x, y, name, color);
+    }
+    const newPoint = {
+      x, y, name, color, distance: 0, rssi: "Not available", data: []
+    };
+    this.pointsPerMap[selectedIndex].push(newPoint);
     this.points = this.pointsPerMap[selectedIndex];
+    await this.savePointToFirestore(x, y, name, color);
+    this.startRealTimeUpdate(newPoint, selectedIndex);
+    this.updatePointSelects();
+    this.canvasUtils.alert(
+      "Success",
+      `Point "${name}" added successfully at (${x.toFixed(2)}, ${y.toFixed(2)})`,
+      "success"
+    );
   }
 
   updatePointSelects() {
@@ -161,18 +228,15 @@ export class PointManager {
     if (!this.pointsPerMap[selectedIndex]) {
       this.pointsPerMap[selectedIndex] = [];
     }
-
     const validData = data.filter(
       item => item.rssi && item.distance > 0 && item.mac
     );
-
     this.pointsPerMap[selectedIndex].forEach((point) => {
       if (point.name === pointName) {
         point.data = validData;
         console.log(`Updated ${pointName} with ${validData.length} valid records`);
       }
     });
-
     this.points = this.pointsPerMap[selectedIndex] || [];
     if (this.trilaterationUtils) {
       this.trilaterationUtils.refreshMap(selectedIndex, true);

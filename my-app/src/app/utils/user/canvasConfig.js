@@ -2,8 +2,8 @@ import Swal from "sweetalert2";
 
 const FIXED_CANVAS_WIDTH = 1000;
 const FIXED_CANVAS_HEIGHT = 400;
-const CENTER_X = FIXED_CANVAS_WIDTH / 2;
-const CENTER_Y = FIXED_CANVAS_HEIGHT / 2;
+const CENTER_X = FIXED_CANVAS_WIDTH / 2; // 500
+const CENTER_Y = FIXED_CANVAS_HEIGHT / 2; // 200
 const realWidth = 63;
 const realHeight = 24;
 
@@ -41,20 +41,28 @@ export class CanvasUtils {
       offsetX = (this.canvas.width - drawWidth) / 2;
       offsetY = 0;
     }
+
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // ลบการเติมพื้นหลังสีดำเพื่อให้ canvas โล่ง
     if (this.img.complete && this.img.naturalWidth !== 0) {
       this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
+    } else {
+      this.img.onload = () => {
+        this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
+      };
+      this.img.onerror = () => {
+        console.error("Failed to load image:", this.img.src);
+        this.alert("Error", `Failed to load map image: ${this.img.src}`, "error");
+      };
     }
 
-    // เพิ่ม event listener สำหรับ tooltip
     this.canvas.removeEventListener("mousemove", this.handleMouseMove);
     this.handleMouseMove = (event) => this.showCircleTooltip(event);
     this.canvas.addEventListener("mousemove", this.handleMouseMove);
 
-    // เพิ่ม event listener สำหรับซ่อน tooltip เมื่อเมาส์ออก
     this.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.handleMouseLeave = () => {
-      this.tooltip.classList.remove("show");
+      this.tooltip.style.display = "none";
     };
     this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
   }
@@ -81,57 +89,55 @@ export class CanvasUtils {
   toCartesian(pixelX, pixelY) {
     const x = pixelX - CENTER_X;
     const y = -(pixelY - CENTER_Y);
+    console.log(`toCartesian: pixel(${pixelX}, ${pixelY}) -> Cartesian(${x}, ${y}) [${this.getQuadrant(x, y)}]`);
     return { x, y };
   }
 
   toCanvas(x, y) {
     const pixelX = x + CENTER_X;
     const pixelY = -y + CENTER_Y;
+    console.log(`toCanvas: Cartesian(${x}, ${y}) [${this.getQuadrant(x, y)}] -> pixel(${pixelX}, ${pixelY})`);
     return { pixelX, pixelY };
+  }
+
+  getQuadrant(x, y) {
+    if (x > 0 && y > 0) return "Top-right (+,+)";
+    if (x < 0 && y > 0) return "Top-left (-,+)";
+    if (x < 0 && y < 0) return "Bottom-left (-,-)";
+    if (x > 0 && y < 0) return "Bottom-right (+,-)";
+    return "Origin (0,0)";
   }
 
   drawMarker(x, y, color) {
     const { pixelX, pixelY } = this.toCanvas(x, y);
-    this.ctx.fillStyle = color;
-    this.ctx.beginPath();
-    this.ctx.arc(pixelX, pixelY, 5, 0, 2 * Math.PI);
-    this.ctx.fill();
-    this.ctx.stroke();
-  }
-
-  drawPoint(x, y, name, color = "black", showPoints = false) {
-    if (!showPoints) return;
-    const { pixelX, pixelY } = this.toCanvas(x, y);
-
-    const routerSize = 20;
     if (this.routerImg.complete && this.routerImg.naturalWidth !== 0) {
-      this.ctx.drawImage(
-        this.routerImg,
-        pixelX - routerSize / 2,
-        pixelY - routerSize / 2,
-        routerSize,
-        routerSize
-      );
+      this.ctx.drawImage(this.routerImg, pixelX - 10, pixelY - 10, 20, 20);
     } else {
       this.ctx.fillStyle = color;
       this.ctx.beginPath();
       this.ctx.arc(pixelX, pixelY, 5, 0, 2 * Math.PI);
       this.ctx.fill();
-      this.routerImg.onload = () => {
-        this.initializeCanvas();
-        this.drawPoint(x, y, name, color, showPoints);
-      };
-      this.routerImg.onerror = () => {
-        console.error("Failed to load router image");
-      };
+      this.ctx.stroke();
     }
+  }
 
-    // Draw point label
+  drawPoint(x, y, name, color = "black", showPoints = false) {
+    if (!showPoints) return;
+    const { pixelX, pixelY } = this.toCanvas(x, y);
+    if (this.routerImg.complete && this.routerImg.naturalWidth !== 0) {
+      this.ctx.drawImage(this.routerImg, pixelX - 10, pixelY - 10, 20, 20);
+    } else {
+      this.ctx.fillStyle = color;
+      this.ctx.beginPath();
+      this.ctx.arc(pixelX, pixelY, 5, 0, 2 * Math.PI);
+      this.ctx.fill();
+    }
     this.ctx.fillStyle = "black";
+    this.ctx.font = "12px Arial";
     this.ctx.fillText(
-      `${name} (${Math.round(x)}, ${Math.round(y)})`,
-      pixelX + 5,
-      pixelY - 5
+      `${name} (x: ${Math.round(x)}, y: ${Math.round(y)})`,
+      pixelX + 15,
+      pixelY - 15
     );
   }
 
@@ -139,13 +145,11 @@ export class CanvasUtils {
     if (this.showCircles && distance > 0 && showPoints) {
       const { pixelX, pixelY } = this.toCanvas(x, y);
       const radius = distance / this.scaleX;
-
       this.ctx.beginPath();
       this.ctx.arc(pixelX, pixelY, radius, 0, 2 * Math.PI);
       this.ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
       this.ctx.stroke();
-
-      this.circles.push({ x, y, radius, rssi, distance, mac, pixelX, pixelY });
+      this.circles.push({ x, y, radius, rssi, distance, mac });
     }
   }
 
@@ -156,7 +160,6 @@ export class CanvasUtils {
     }
     const color = this.intersectionColors[mac];
     const { pixelX, pixelY } = this.toCanvas(x, y);
-
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
     this.ctx.arc(pixelX, pixelY, 5, 0, 2 * Math.PI);
@@ -164,7 +167,8 @@ export class CanvasUtils {
     this.ctx.strokeStyle = color;
     this.ctx.stroke();
     this.ctx.fillStyle = "black";
-    this.ctx.fillText(name, pixelX + 5, pixelY - 5);
+    this.ctx.font = "12px Arial";
+    this.ctx.fillText(`${name} [${this.getQuadrant(x, y)}]`, pixelX + 5, pixelY - 5);
   }
 
   drawLine(x1, y1, x2, y2) {
@@ -191,8 +195,9 @@ export class CanvasUtils {
     const mouseY = event.clientY - rect.top;
 
     const hoveredCircle = this.circles.find((circle) => {
-      const dx = circle.pixelX - mouseX;
-      const dy = circle.pixelY - mouseY;
+      const { pixelX, pixelY } = this.toCanvas(circle.x, circle.y);
+      const dx = pixelX - mouseX;
+      const dy = pixelY - mouseY;
       const distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
       return (
         distanceFromCenter <= circle.radius + 5 &&
@@ -203,27 +208,12 @@ export class CanvasUtils {
     if (hoveredCircle) {
       this.tooltip.innerText = `MAC: ${hoveredCircle.mac}\nRSSI: ${
         hoveredCircle.rssi
-      } dBm\nDistance: ${hoveredCircle.distance.toFixed(2)} m`;
-      this.tooltip.classList.add("show");
-
-      let tooltipX = event.pageX + 10;
-      let tooltipY = event.pageY + 10;
-
-      const tooltipRect = this.tooltip.getBoundingClientRect();
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-
-      if (tooltipX + tooltipRect.width > windowWidth - 10) {
-        tooltipX = event.pageX - tooltipRect.width - 10;
-      }
-      if (tooltipY + tooltipRect.height > windowHeight - 10) {
-        tooltipY = event.pageY - tooltipRect.height - 20;
-      }
-
-      this.tooltip.style.left = `${tooltipX}px`;
-      this.tooltip.style.top = `${tooltipY}px`;
+      } dBm\nDistance: ${hoveredCircle.distance.toFixed(2)} m\nQuadrant: ${this.getQuadrant(hoveredCircle.x, hoveredCircle.y)}`;
+      this.tooltip.style.display = "block";
+      this.tooltip.style.left = `${event.pageX + 10}px`;
+      this.tooltip.style.top = `${event.pageY + 10}px`;
     } else {
-      this.tooltip.classList.remove("show");
+      this.tooltip.style.display = "none";
     }
   }
 
