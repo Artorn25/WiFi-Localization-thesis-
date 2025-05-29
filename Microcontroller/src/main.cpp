@@ -22,7 +22,7 @@ const char* target_SSID_1 = "TARGET_SSID_1";
 const char* target_SSID_2 = "TARGET_SSID_2";
 const char* target_SSID_3 = "TARGET_SSID_3";
 
-SimpleKalmanFilter kalmanFilter1(1, 1, 0.05), kalmanFilter2(1, 1, 0.05), kalmanFilter3(1, 1, 0.05);
+SimpleKalmanFilter kalmanFilter1(2, 2, 0.05), kalmanFilter2(2, 2, 0.05), kalmanFilter3(2, 2, 0.05);
 
 
 const float n = 4.0;
